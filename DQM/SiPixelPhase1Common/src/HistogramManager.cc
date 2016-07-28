@@ -58,6 +58,7 @@ void HistogramManager::executeStep1Spec(
     SummationSpecification& s, Table& t, SummationStep::Stage stage,
     AbstractHistogram*& fastpath) {
   int dimensions = this->dimensions;
+  double z = 0; // quantity for profiles
   for (unsigned int i = 0; i < s.steps.size(); i++) {
     auto& step = s.steps[i];
     if (step.stage == stage) {
@@ -79,17 +80,19 @@ void HistogramManager::executeStep1Spec(
           break;
         }
         case SummationStep::EXTEND_X:
-          assert((x == 0.0 && dimensions != 1) ||
-                 !"Can only EXTEND on COUNTs in step1");
+          assert((x == 0.0 && dimensions != 1) || 
+                 (y == 0.0 && dimensions == 1) ||
+                 !"Illegal EXTEND in step1");
+          if (dimensions == 1) y = x;
           x = significantvalues[step.columns.at(0)];
           significantvalues.erase(step.columns.at(0));
-          dimensions = dimensions == 0 ? 1 : 2;
+          dimensions = dimensions < 2 ? dimensions+1 : dimensions;
           break;
         case SummationStep::EXTEND_Y:
-          assert(y == 0.0 || !"Can only EXTEND on COUNTs in step1");
           y = significantvalues[step.columns.at(0)];
           significantvalues.erase(step.columns.at(0));
-          dimensions = 2;
+          // EXTEND_Y on 2D data implies Profile (or bug)
+          dimensions = dimensions == 2 ? 3 : 2; // 3 for 2D profile
           break;
         case SummationStep::GROUPBY: {
           assert(
@@ -111,6 +114,11 @@ void HistogramManager::executeStep1Spec(
           break;
         }
         case SummationStep::REDUCE:
+          // assert(step.arg == "MEAN") 
+          z = y = x;
+          x = 0.0;
+          dimensions = 2; // Profile always needs 2D (or 3D) fill
+          break;
         case SummationStep::CUSTOM:
         case SummationStep::NO_TYPE:
           assert(!"Illegal step; booking should have caught this.");
@@ -127,13 +135,15 @@ void HistogramManager::executeStep1Spec(
     }
     fastpath = &(histo->second);
   }
-  if (dimensions == 0) {
+  if (dimensions == 0)
     fastpath->fill(0);
-  } else if (dimensions == 1)
+  else if (dimensions == 1)
     fastpath->fill(x);
-  else /* dimensions == 2 */ {
+  else if (dimensions == 2)
     fastpath->fill(x, y);
-  }
+  else /* dimensions == 3 */
+    fastpath->fill(x, y, z);
+  
 }
 
 void HistogramManager::fill(double x, double y, DetId sourceModule,
@@ -180,10 +190,21 @@ void HistogramManager::fill(DetId sourceModule, const edm::Event* sourceEvent,
 // This is only used for ndigis-like counting. It could be more optimized, but
 // is probably fine for a per-event thing.
 void HistogramManager::executePerEventHarvesting() {
+  // We have a masive problem here regarding semantics: for geometrical structure,
+  // we always want to see all the counters, even if they are 0. The counters are
+  // all created during booking ad then ket, all fine.
+  // For time-based things however, we do not know the range before we see the
+  // data, so we cannot book the counters beforhand. Also, it does not make sense
+  // to record 0 counts: a event can only be in one Lumisection, it does not make
+  // sense to record it as a 0 count for all others.
+  // The hacky solution is to check that the quantity was UNDEFINED in booking,
+  // which indicates sth. event-dependent, and in this case ignore the UNDEFINED
+  // counters and delete the defined ones, that they don't pollute later events.
   if (!enabled) return;
   for (unsigned int i = 0; i < specs.size(); i++) {
     auto& s = specs[i];
     auto& t = tables[i];
+    bool range_undefined = false;
     for (auto e : t) {
       // There are two types of entries: counters and histograms. We only want
       // ctrs here.
@@ -192,9 +213,30 @@ void HistogramManager::executePerEventHarvesting() {
         // this is actually useless, since we will use the fast path. But better
         // for consistence.
         significantvalues[i].values = e.first.values;
+
+        bool defined = true;
+        for (auto v : e.first.values) 
+          defined &= (v.second != GeometryInterface::UNDEFINED);
+        if (!defined) {
+          range_undefined = true;
+          continue;
+        }
+
         auto fastpath = &e.second;
         executeStep1Spec(0.0, 0.0, significantvalues[i], s, t,
                          SummationStep::STAGE1_2, fastpath);
+      }
+    }
+    if (range_undefined) {
+      for (auto it = t.begin(); it != t.end(); ++it) {
+        if (it->first.values.size() == s.steps[0].columns.size()) {
+          bool defined = true;
+          for (auto v : it->first.values) 
+            defined &= (v.second != GeometryInterface::UNDEFINED);
+          if (defined) {
+            it = t.erase(it);
+          }
+        }
       }
     }
   }
@@ -245,6 +287,7 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
           if (e.second == GeometryInterface::UNDEFINED) ok = false;
         if (!ok) continue;
       }
+      bool do_profile = false;
       auto dimensions = this->dimensions;
       std::string name = this->name;
       std::string title = this->title;
@@ -254,6 +297,7 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
       double range_x_min = this->range_min, range_x_max = this->range_max;
       int range_y_nbins = this->range_y_nbins;
       double range_y_min = this->range_y_min, range_y_max = this->range_y_max;
+      double range_z_min = 0, range_z_max = 0; // only for 2D profile
       for (SummationStep step : s.steps) {
         if (step.stage == SummationStep::STAGE1 ||
             step.stage == SummationStep::STAGE1_2) {
@@ -277,10 +321,15 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
               GeometryInterface::Column col0 =
                   significantvalues.get(step.columns.at(0)).first;
               std::string colname = geometryInterface.pretty(col0);
-              assert(dimensions != 1 || !"1D to 1D reduce NYI in step1");
-              dimensions = dimensions == 0 ? 1 : 2;
               title = title + " per " + colname;
               name = name + "_per_" + colname;
+              if (dimensions == 1) {
+                ylabel = xlabel;
+                range_y_min = range_x_min;
+                range_y_max = range_x_max;
+                range_y_nbins = range_x_nbins;
+              }
+              dimensions = dimensions == 0 ? 1 : 2;
               xlabel = colname;
               range_x_min = geometryInterface.minValue(col0[0]) - 0.5;
               range_x_max = geometryInterface.maxValue(col0[0]) + 0.5;
@@ -296,6 +345,9 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
               dimensions = 2;
               title = title + " per " + colname;
               name = name + "_per_" + colname;
+              if (do_profile) { // we loose the Z- (former Y-) label here 
+                title = title + " (Z: " + ylabel + ")";
+              }
               ylabel = colname;
               range_y_min = geometryInterface.minValue(col0[0]) - 0.5;
               range_y_max = geometryInterface.maxValue(col0[0]) + 0.5;
@@ -325,7 +377,22 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
               significantvalues = new_vals;
               break;
             }
-            case SummationStep::REDUCE:
+            case SummationStep::REDUCE: {
+              assert(step.arg == "MEAN" || !"Only profiles in step 1");
+              assert(dimensions == 1 || !"Profile needs a 1D mean");
+              assert(do_profile == false || !"Already doing a profile!");
+              title = "Profile of " + title;
+              do_profile = true;
+              ylabel = xlabel;
+              range_y_nbins = range_x_nbins;
+              range_y_min = range_z_min = range_x_min;
+              range_y_max = range_z_max = range_x_max;
+              range_x_nbins = 1;
+              range_x_min = 0;
+              range_x_max = 1;
+              dimensions = 0;
+              break;
+            }
             case SummationStep::CUSTOM:
             case SummationStep::NO_TYPE:
               assert(!"Operation not supported in step1. Try save() before to switch to Harvesting.");
@@ -339,13 +406,30 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
       iBooker.setCurrentFolder(makePath(significantvalues));
 
       if (dimensions == 0 || dimensions == 1) {
-        histo.me = iBooker.book1D(name.c_str(), (title + ";" + xlabel).c_str(),
-                                  range_x_nbins, range_x_min, range_x_max);
+        if (!do_profile) {
+          histo.me = iBooker.book1D(name.c_str(), (title + ";" + xlabel).c_str(),
+                                    range_x_nbins, range_x_min, range_x_max);
+        } else {
+          histo.me = iBooker.bookProfile(name.c_str(), 
+                                    (title + ";" + xlabel + ";" + ylabel).c_str(),
+                                    range_x_nbins, range_x_min, range_x_max,
+                                    // force infinite range to make TProfile sane.
+                                    /* range_y_min */ -(1./0.), /*range_y_max*/ (1./0.));
+          histo.me->getTH1()->GetYaxis()->SetCanExtend(1);
+        }
       } else if (dimensions == 2) {
-        histo.me = iBooker.book2D(name.c_str(),
-                                  (title + ";" + xlabel + ";" + ylabel).c_str(),
-                                  range_x_nbins, range_x_min, range_x_max,
-                                  range_y_nbins, range_y_min, range_y_max);
+        if (!do_profile) {
+          histo.me = iBooker.book2D(name.c_str(),
+                                    (title + ";" + xlabel + ";" + ylabel).c_str(),
+                                    range_x_nbins, range_x_min, range_x_max,
+                                    range_y_nbins, range_y_min, range_y_max);
+        } else {
+          histo.me = iBooker.bookProfile2D(name.c_str(),
+                                    (title + ";" + xlabel + ";" + ylabel).c_str(),
+                                    range_x_nbins, range_x_min, range_x_max,
+                                    range_y_nbins, range_y_min, range_y_max,
+                                    /* range_z_min */ -(1./0.), /*range_z_max*/ (1./0.));
+        }
       }
     }
   }
@@ -396,6 +480,7 @@ void HistogramManager::loadFromDQMStore(SummationSpecification& s, Table& t,
             break;
           }
           case SummationStep::REDUCE:
+            break; // not visible in name 
           case SummationStep::CUSTOM:
           case SummationStep::NO_TYPE:
             assert(!"Illegal step; booking should have caught this.");
