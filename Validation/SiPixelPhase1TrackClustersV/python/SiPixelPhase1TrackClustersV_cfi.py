@@ -141,4 +141,4 @@ SiPixelPhase1TrackClustersHarvesterV = cms.EDAnalyzer("SiPixelPhase1HarvesterV",
         histograms = SiPixelPhase1TrackClustersConf,
         geometry = SiPixelPhase1Geometry
 )
-v
+
