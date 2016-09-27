@@ -6,7 +6,7 @@ SiPixelPhase1TrackClustersOnTrackCharge = DefaultHisto.clone(
   title = "Corrected Cluster Charge",
   range_min = 0, range_max = 100, range_nbins = 200,
   xlabel = "Charge size (in ke)",
-  topFolderName = "PixelPhase1/OnTrack",
+  topFolderName = "PixelPhase1V/OnTrack",
 
   specs = cms.VPSet(
     Specification().groupBy("").save(),
@@ -20,7 +20,7 @@ SiPixelPhase1TrackClustersOnTrackSize = DefaultHisto.clone(
   title = "Total Cluster Size",
   range_min = 0, range_max = 30, range_nbins = 30,
   xlabel = "Cluster size (in pixels)",
-  topFolderName = "PixelPhase1/OnTrack",
+  topFolderName = "PixelPhase1V/OnTrack",
   specs = cms.VPSet(
     Specification().groupBy("").save(),
     Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk").saveAll(),
@@ -34,7 +34,7 @@ SiPixelPhase1TrackClustersOnTrackNClusters = DefaultHisto.clone(
   range_min = 0, range_max = 10, range_nbins = 10,
   xlabel = "Number of Clusters",
   dimensions = 0,
-  topFolderName = "PixelPhase1/OnTrack",
+  topFolderName = "PixelPhase1V/OnTrack",
   specs = cms.VPSet(
     Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk" + "/DetId/Event") 
                    .reduce("COUNT") 
@@ -52,7 +52,7 @@ SiPixelPhase1TrackClustersOnTrackPositionB = DefaultHisto.clone(
   range_y_min = -3.2, range_y_max = 3.2, range_y_nbins = 200,
   xlabel = "Global Z (cm)", ylabel = "Global \phi",
   dimensions = 2,
-  topFolderName = "PixelPhase1/OnTrack",
+  topFolderName = "PixelPhase1V/OnTrack",
   specs = cms.VPSet(
     Specification().groupBy("PXBarrel/PXLayer").save(),
     Specification().groupBy("").save(),
@@ -67,7 +67,7 @@ SiPixelPhase1TrackClustersOnTrackPositionF = DefaultHisto.clone(
   range_min   = -20, range_max   = 20, range_nbins   = 200,
   range_y_min = -20, range_y_max = 20, range_y_nbins = 200,
   dimensions = 2,
-  topFolderName = "PixelPhase1/OnTrack",
+  topFolderName = "PixelPhase1V/OnTrack",
   specs = cms.VPSet(
     Specification().groupBy("PXForward/PXDisk").save(),
   )

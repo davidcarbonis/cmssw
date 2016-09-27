@@ -38,7 +38,7 @@ DefaultHisto = cms.PSet(
   # If False, no histograms are booked for DetIds where any column is undefined.
   bookUndefined = cms.bool(True),
   # where the plots should go.
-  topFolderName = cms.string("PixelPhase1"),
+  topFolderName = cms.string("PixelPhase1V"),
 
   # Histogram parameters
   name = cms.string("unnamed"),
