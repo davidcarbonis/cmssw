@@ -74,19 +74,19 @@ SiPixelPhase1TrackClustersOnTrackPositionF = DefaultHisto.clone(
 )
 
 SiPixelPhase1TrackClustersOffTrackCharge = \
-  SiPixelPhase1TrackClustersOnTrackCharge.clone(topFolderName = "PixelPhase1/OffTrack", 
+  SiPixelPhase1TrackClustersOnTrackCharge.clone(topFolderName = "PixelPhase1V/OffTrack", 
   title = "Cluster Charge")
 SiPixelPhase1TrackClustersOffTrackSize = \
-  SiPixelPhase1TrackClustersOnTrackSize.clone(topFolderName = "PixelPhase1/OffTrack")
+  SiPixelPhase1TrackClustersOnTrackSize.clone(topFolderName = "PixelPhase1V/OffTrack")
 
 SiPixelPhase1TrackClustersOffTrackNClusters = \
-  SiPixelPhase1TrackClustersOnTrackNClusters.clone(topFolderName = "PixelPhase1/OffTrack")
+  SiPixelPhase1TrackClustersOnTrackNClusters.clone(topFolderName = "PixelPhase1V/OffTrack")
 
 SiPixelPhase1TrackClustersOffTrackPositionB = \
-  SiPixelPhase1TrackClustersOnTrackPositionB.clone(topFolderName = "PixelPhase1/OffTrack")
+  SiPixelPhase1TrackClustersOnTrackPositionB.clone(topFolderName = "PixelPhase1V/OffTrack")
 
 SiPixelPhase1TrackClustersOffTrackPositionF = \
-  SiPixelPhase1TrackClustersOnTrackPositionF.clone(topFolderName = "PixelPhase1/OffTrack")
+  SiPixelPhase1TrackClustersOnTrackPositionF.clone(topFolderName = "PixelPhase1V/OffTrack")
 
 SiPixelPhase1TrackClustersNTracks = DefaultHisto.clone(
   name = "ntracks",

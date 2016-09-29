@@ -57,8 +57,8 @@ DefaultHisto = cms.PSet(
   # The column names are either defined in the GeometryInterface.cc or read from TrackerTopology.
   # The "|" means "try the first, if not present try the second", it should be used to have Barrel- and 
   # Endcap names side by side. The "/" separates columns and also defines how the output folders are nested.
-  defaultGrouping  = cms.string("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade"),
-  defaultPerModule = cms.string("PXBarrel|PXForward/PXLayer|PXDisk/DetId"),
+#  defaultGrouping  = cms.string("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade"),
+#  defaultPerModule = cms.string("PXBarrel|PXForward/PXLayer|PXDisk/DetId"),
 
   # This structure is output by the SpecficationBuilder.
   specs = cms.VPSet()
@@ -83,14 +83,14 @@ DefaultHisto = cms.PSet(
 
 # Commonly used specifications. 
 StandardSpecifications1D = [
-    Specification(PerLadder).groupBy(DefaultHisto.defaultGrouping) # per-ladder and profiles
+    Specification(PerLadder).groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade") # per-ladder and profiles
                             .save()
                             .reduce("MEAN")
-                            .groupBy(parent(DefaultHisto.defaultGrouping), "EXTEND_X")
+                            .groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade"), "EXTEND_X")
                             .saveAll(),
-    Specification(PerLayer1D).groupBy(parent(DefaultHisto.defaultGrouping)) # per-layer
+    Specification(PerLayer1D).groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade")) # per-layer
                              .save(),
-    Specification(PerModule).groupBy(DefaultHisto.defaultPerModule).save()
+    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId").save()
 ]
 
 StandardSpecificationTrend = ( # the () are only for syntax reasons
@@ -112,15 +112,15 @@ StandardSpecification2DProfile = (
 
 # the same for NDigis and friends. Needed due to technical limitations...
 StandardSpecifications1D_Num = [
-    Specification(PerLadder).groupBy(DefaultHisto.defaultGrouping.value() + "/DetId/Event") 
+    Specification(PerLadder).groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade" + "/DetId/Event") 
                             .reduce("COUNT") # per-event counting
-                            .groupBy(DefaultHisto.defaultGrouping).save()
-                            .reduce("MEAN")
-                            .groupBy(parent(DefaultHisto.defaultGrouping), "EXTEND_X")
-                            .saveAll(),
-    Specification(PerModule).groupBy(DefaultHisto.defaultPerModule.value() + "/Event")
+                            .groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade").save(),
+#                            .reduce("MEAN")
+#                            .groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade"), "EXTEND_X")
+#                            .saveAll(),
+    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId" + "/Event")
                             .reduce("COUNT")
-                            .groupBy(DefaultHisto.defaultPerModule)
+                            .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId")
                             .save()
 ]
 

@@ -21,9 +21,8 @@ class SiPixelPhase1DigisV : public SiPixelPhase1BaseV {
   enum {
     ADC, // digi ADC readouts
     NDIGIS, // number of digis per event and module
-    NDIGIS_FED, // number of digis per event and FED
-    EVENT, // event frequency
-    MAP, // digi hitmap per module
+    ROW, // number of digis per row
+    COLUMN, // number of digis per column
     DEBUG, // geometry debugging
 
     MAX_HIST // a sentinel that gives the number of quantities (not a plot).

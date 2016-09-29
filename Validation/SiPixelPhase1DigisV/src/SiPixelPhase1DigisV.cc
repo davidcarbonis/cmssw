@@ -36,15 +36,13 @@ void SiPixelPhase1DigisV::analyze(const edm::Event& iEvent, const edm::EventSetu
   for (it = input->begin(); it != input->end(); ++it) {
     for(PixelDigi const& digi : *it) {
       histo[ADC].fill((double) digi.adc(), DetId(it->detId()), &iEvent);
-      histo[MAP].fill(DetId(it->detId()), &iEvent, digi.column(), digi.row()); 
-      histo[NDIGIS    ].fill(DetId(it->detId()), &iEvent); // count
-      histo[NDIGIS_FED].fill(DetId(it->detId()), &iEvent); 
+      histo[ROW].fill((double) digi.row(), DetId(it->detId()), &iEvent);
+      histo[COLUMN].fill((double) digi.column(), DetId(it->detId()), &iEvent);
+      histo[NDIGIS].fill(DetId(it->detId()), &iEvent); // count
     }
     histo[DEBUG].fill(geometryInterface.extract(geometryInterface.intern("PXLadder"), DetId(it->detId())), DetId(it->detId()));
   }
-  histo[EVENT].fill(DetId(0), &iEvent);
-  histo[NDIGIS    ].executePerEventHarvesting();
-  histo[NDIGIS_FED].executePerEventHarvesting(); 
+  histo[NDIGIS].executePerEventHarvesting();
 }
 
 DEFINE_FWK_MODULE(SiPixelPhase1DigisV);
