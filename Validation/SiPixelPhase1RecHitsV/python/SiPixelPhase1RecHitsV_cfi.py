@@ -7,6 +7,7 @@ SiPixelPhase1RecHitsNRecHits = DefaultHisto.clone(
   range_min = 0, range_max = 10, range_nbins = 10,
   xlabel = "number of rechits",
   dimensions = 0,
+  topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
     StandardSpecificationTrend_Num,
     StandardSpecification2DProfile_Num
@@ -19,6 +20,7 @@ SiPixelPhase1RecHitsClustX = DefaultHisto.clone(
   range_min = 0, range_max = 10, range_nbins = 10,
   xlabel = "RecHit size X dimension",
   dimensions = 1,
+  topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
     StandardSpecification2DProfile
   )
@@ -36,6 +38,7 @@ SiPixelPhase1RecHitsErrorX = DefaultHisto.clone(
   range_min = 0, range_max = 0.02, range_nbins = 100,
   xlabel = "X error",
   dimensions = 1,
+  topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
     StandardSpecification2DProfile
   )
@@ -56,8 +59,9 @@ SiPixelPhase1RecHitsPosition = DefaultHisto.clone(
   xlabel = "x offset",
   ylabel = "y offset",
   dimensions = 2,
+  topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
-    Specification(PerModule).groupBy(DefaultHisto.defaultPerModule).save(),
+    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId").save(),
   )
 )
 
