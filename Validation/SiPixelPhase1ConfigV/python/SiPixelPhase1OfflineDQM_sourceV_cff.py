@@ -12,7 +12,5 @@ from Validation.SiPixelPhase1TrackClustersV.SiPixelPhase1TrackClustersV_cfi impo
 PerModule.enabled = False
 
 siPixelPhase1OfflineDQM_sourceV = cms.Sequence(SiPixelPhase1DigisAnalyzerV
-                                            + SiPixelPhase1ClustersAnalyzerV
                                             #+ SiPixelPhase1RecHitsAnalyzerV
-                                            + SiPixelPhase1TrackClustersAnalyzerV
                                             )
