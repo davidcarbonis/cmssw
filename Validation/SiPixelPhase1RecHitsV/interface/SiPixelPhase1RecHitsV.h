@@ -29,6 +29,7 @@ class SiPixelPhase1RecHitsV : public SiPixelPhase1BaseV {
   void analyze(const edm::Event&, const edm::EventSetup&);
 
   private:
+  TrackerHitAssociator::Config trackerHitAssociatorConfig_;
   edm::EDGetTokenT<SiPixelRecHitCollection> srcToken_;
 };
 

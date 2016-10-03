@@ -17,14 +17,17 @@
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 
 SiPixelPhase1RecHitsV::SiPixelPhase1RecHitsV(const edm::ParameterSet& iConfig) :
-  SiPixelPhase1BaseV(iConfig) { 
-  srcToken_ = consumes<SiPixelRecHitCollection>(iConfig.getParameter<edm::InputTag>("src"));
-}
+  SiPixelPhase1BaseV(iConfig),
+  trackerHitAssociatorConfig_(iConfig, consumesCollector()),
+  srcToken_ ( consumes<SiPixelRecHitCollection>(iConfig.getParameter<edm::InputTag>("src")) )
+{}
 
 void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   edm::Handle<SiPixelRecHitCollection> input;
   iEvent.getByToken(srcToken_, input);
   if (!input.isValid()) return;
+
+  TrackerHitAssociator associate(iEvent, trackerHitAssociatorConfig_);
 
   SiPixelRecHitCollection::const_iterator it;
   for (it = input->begin(); it != input->end(); ++it) {
@@ -33,8 +36,8 @@ void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSe
     for(SiPixelRecHit const& rechit : *it) {
       SiPixelRecHit::ClusterRef const& clust = rechit.cluster();
 
-//      std::vector<PSimHit> associateSimHit;
-//      associateSimHit = associate.associateHit(recHit);
+      std::vector<PSimHit> associateSimHit;
+      associateSimHit = associate.associateHit(rechit);
  
       int sizeX = (*clust).sizeX();
       int sizeY = (*clust).sizeY();
@@ -46,7 +49,7 @@ void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSe
       LocalError lerr = rechit.localPositionError();
       float lerr_x = sqrt(lerr.xx());
       float lerr_y = sqrt(lerr.yy());
-/*
+
       // loop over associated sim hits and find the closest
       if ( !associateSimHit.empty() ) {
       float closestSimHit = 9999.9;
@@ -65,7 +68,7 @@ void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSe
           }
         }
       }
-*/
+
       histo[NRECHITS].fill(id, &iEvent);
 
       histo[CLUST_X].fill(sizeX, id, &iEvent);
