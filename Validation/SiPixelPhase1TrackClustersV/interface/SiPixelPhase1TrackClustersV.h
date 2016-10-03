@@ -15,20 +15,9 @@
 
 class SiPixelPhase1TrackClustersV : public SiPixelPhase1BaseV {
   enum {
-    ONTRACK_CHARGE,
-    ONTRACK_SIZE,
-    ONTRACK_NCLUSTERS,
-    ONTRACK_POSITION_B,
-    ONTRACK_POSITION_F,
-
-    OFFTRACK_CHARGE,
-    OFFTRACK_SIZE,
-    OFFTRACK_NCLUSTERS,
-    OFFTRACK_POSITION_B,
-    OFFTRACK_POSITION_F,
-
-    NTRACKS,
-    NTRACKS_VOLUME
+    CHARGE,
+    SIZE_X,
+    SIZE_Y,
   };
 
   public:
