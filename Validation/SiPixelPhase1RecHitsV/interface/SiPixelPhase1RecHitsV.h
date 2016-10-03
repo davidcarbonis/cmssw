@@ -11,6 +11,7 @@
 
 #include "Validation/SiPixelPhase1CommonV/interface/SiPixelPhase1BaseV.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHitCollection.h"
+#include "SimTracker/TrackerHitAssociation/interface/TrackerHitAssociator.h"
 
 class SiPixelPhase1RecHitsV : public SiPixelPhase1BaseV {
   enum {
@@ -27,6 +28,7 @@ class SiPixelPhase1RecHitsV : public SiPixelPhase1BaseV {
   void analyze(const edm::Event&, const edm::EventSetup&);
 
   private:
+  TrackerHitAssociator::Config trackerHitAssociatorConfig_;
   edm::EDGetTokenT<SiPixelRecHitCollection> srcToken_;
 };
 
