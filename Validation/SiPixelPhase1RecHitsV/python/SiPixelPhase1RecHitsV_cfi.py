@@ -1,5 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-from DQM.SiPixelPhase1Common.HistogramManager_cfi import *
+from Validation.SiPixelPhase1CommonV.HistogramManager_cfi import *
 
 SiPixelPhase1RecHitsNRecHits = DefaultHisto.clone(
   name = "rechits",
@@ -7,9 +7,15 @@ SiPixelPhase1RecHitsNRecHits = DefaultHisto.clone(
   range_min = 0, range_max = 10, range_nbins = 10,
   xlabel = "number of rechits",
   dimensions = 0,
+  topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
-    StandardSpecificationTrend_Num,
-    StandardSpecification2DProfile_Num
+#    StandardSpecificationTrend_Num,
+#    StandardSpecification2DProfile_Num
+    Specification(PerLadder).groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade") # per-ladder and profiles
+                            .save(),
+    Specification(PerLayer1D).groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade")) # per-layer
+                             .save(),
+    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId").save()
   )
 )
 
@@ -19,8 +25,10 @@ SiPixelPhase1RecHitsClustX = DefaultHisto.clone(
   range_min = 0, range_max = 10, range_nbins = 10,
   xlabel = "RecHit size X dimension",
   dimensions = 1,
+  topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
-    StandardSpecification2DProfile
+#    StandardSpecification2DProfile
+    StandardSpecifications1D
   )
 )
 
@@ -36,8 +44,10 @@ SiPixelPhase1RecHitsErrorX = DefaultHisto.clone(
   range_min = 0, range_max = 0.02, range_nbins = 100,
   xlabel = "X error",
   dimensions = 1,
+  topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
-    StandardSpecification2DProfile
+    StandardSpecifications1D
+#    StandardSpecification2DProfile
   )
 )
 
@@ -56,8 +66,9 @@ SiPixelPhase1RecHitsPosition = DefaultHisto.clone(
   xlabel = "x offset",
   ylabel = "y offset",
   dimensions = 2,
+  topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
-    Specification(PerModule).groupBy(DefaultHisto.defaultPerModule).save(),
+    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId").save(),
   )
 )
 
@@ -70,13 +81,13 @@ SiPixelPhase1RecHitsConf = cms.VPSet(
   SiPixelPhase1RecHitsPosition,
 )
 
-SiPixelPhase1RecHitsAnalyzer = cms.EDAnalyzer("SiPixelPhase1RecHits",
+SiPixelPhase1RecHitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1RecHitsV",
         src = cms.InputTag("siPixelRecHits"),
         histograms = SiPixelPhase1RecHitsConf,
         geometry = SiPixelPhase1Geometry
 )
 
-SiPixelPhase1RecHitsHarvester = cms.EDAnalyzer("SiPixelPhase1Harvester",
+SiPixelPhase1RecHitsHarvesterV = cms.EDAnalyzer("SiPixelPhase1HarvesterV",
         histograms = SiPixelPhase1RecHitsConf,
         geometry = SiPixelPhase1Geometry
 )

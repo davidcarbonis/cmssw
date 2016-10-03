@@ -1,0 +1,3 @@
+<use   name="Validation/SiPixelPhase1CommonV"/>
+<use   name="DataFormats/TrackerRecHit2D"/>
+<flags   EDM_PLUGIN="1"/>

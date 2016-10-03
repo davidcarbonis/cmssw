@@ -18,7 +18,7 @@ from Validation.RecoTau.DQMMCValidation_cfi import *
 from Validation.RecoVertex.PostProcessorVertex_cff import *
 from Validation.RecoMET.METPostProcessor_cff import *
 from DQMOffline.RecoB.dqmCollector_cff import *
-
+from Validation.SiPixelPhase1ConfigV.SiPixelPhase1OfflineDQM_harvestingV_cff import *
 
 postValidation = cms.Sequence(
       recoMuonPostProcessors
@@ -35,6 +35,7 @@ postValidation = cms.Sequence(
     + runTauEff + makeBetterPlots
     + bTagCollectorSequenceMCbcl
     + METPostProcessor
+    + siPixelPhase1OfflineDQM_harvestingV
 )
 eras.phase1Pixel.toReplaceWith(postValidation, postValidation.copyAndExclude([ # FIXME
     runTauEff # Excessive printouts because 2017 doesn't have HLT yet
