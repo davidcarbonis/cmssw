@@ -1,6 +1,39 @@
 import FWCore.ParameterSet.Config as cms
 from Validation.SiPixelPhase1CommonV.HistogramManager_cfi import *
 
+SiPixelPhase1RecHitsInTimeEvents = DefaultHisto.clone(
+  name = "in_time_bunch",
+  title = "Events (in-time bunch)",
+  range_min = 0, range_max = 10, range_nbins = 10,
+  xlabel = "number of in-time rechits events",
+  dimensions = 0,
+  topFolderName = "PixelPhase1V/RecHits",
+  specs = cms.VPSet(
+    Specification(PerLadder).groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade") # per-ladder and$
+                            .save(),
+    Specification(PerLayer1D).groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade")) # per-l$
+                             .save(),
+    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId").save()
+  )
+)
+
+SiPixelPhase1RecHitsOutTimeEvents = DefaultHisto.clone(
+  name = "out_time_bunch",
+  title = "Events (out-time bunch)",
+  range_min = 0, range_max = 10, range_nbins = 10,
+  xlabel = "number of out-time rechit events",
+  dimensions = 0,
+  topFolderName = "PixelPhase1V/RecHits",
+  specs = cms.VPSet(
+    Specification(PerLadder).groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade") # per-ladder and$
+                            .save(),
+    Specification(PerLayer1D).groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade")) # per-l$
+                             .save(),
+    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId").save()
+  )
+)
+
+
 SiPixelPhase1RecHitsNRecHits = DefaultHisto.clone(
   name = "rechits",
   title = "RecHits",
@@ -19,11 +52,11 @@ SiPixelPhase1RecHitsNRecHits = DefaultHisto.clone(
   )
 )
 
-SiPixelPhase1RecHitsClustX = DefaultHisto.clone(
-  name = "rechitsize_x",
-  title = "X size of RecHit clusters",
-  range_min = 0, range_max = 10, range_nbins = 10,
-  xlabel = "RecHit size X dimension",
+SiPixelPhase1RecHitsPosX = DefaultHisto.clone(
+  name = "rechit_x",
+  title = "X position of RecHits",
+  range_min = -2., range_max = 2., range_nbins = 400,
+  xlabel = "RecHit position X dimension",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
   specs = cms.VPSet(
@@ -32,10 +65,30 @@ SiPixelPhase1RecHitsClustX = DefaultHisto.clone(
   )
 )
 
-SiPixelPhase1RecHitsClustY = SiPixelPhase1RecHitsClustX.clone(
-  name = "rechitsize_y",
-  title = "Y size of RecHit clusters",
-  xlabel = "RecHit size Y dimension"
+SiPixelPhase1RecHitsPosY = SiPixelPhase1RecHitsPosX.clone(
+  name = "rechit_y",
+  title = "Y position of RecHits",
+  xlabel = "RecHit position Y dimension",
+  range_min = -4., range_max = 4., range_nbins = 800,
+)
+
+SiPixelPhase1RecHitsResX = DefaultHisto.clone(
+  name = "res_x",
+  title = "X resolution of RecHits",
+  range_min = -200., range_max = 200., range_nbins = 800,
+  xlabel = "RecHit resolution X dimension",
+  dimensions = 1,
+  topFolderName = "PixelPhase1V/RecHits",
+  specs = cms.VPSet(
+#    StandardSpecification2DProfile
+    StandardSpecifications1D
+  )
+)
+
+SiPixelPhase1RecHitsResY = SiPixelPhase1RecHitsResX.clone(
+  name = "res_y",
+  title = "Y resolution of RecHits",
+  xlabel = "RecHit resolution Y dimension"
 )
 
 SiPixelPhase1RecHitsErrorX = DefaultHisto.clone(
@@ -57,32 +110,30 @@ SiPixelPhase1RecHitsErrorY = SiPixelPhase1RecHitsErrorX.clone(
   xlabel = "Y error"
 )
 
-SiPixelPhase1RecHitsPosition = DefaultHisto.clone(
-  enabled = False,
-  name = "rechit_pos",
-  title = "Position of RecHits on Module",
-  range_min   = -1, range_max   = 1, range_nbins   = 100,
-  range_y_min = -4, range_y_max = 4, range_y_nbins = 100,
-  xlabel = "x offset",
-  ylabel = "y offset",
-  dimensions = 2,
-  topFolderName = "PixelPhase1V/RecHits",
-  specs = cms.VPSet(
-    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId").save(),
-  )
-)
-
 SiPixelPhase1RecHitsConf = cms.VPSet(
+  SiPixelPhase1RecHitsInTimeEvents,
+  SiPixelPhase1RecHitsOutTimeEvents,
   SiPixelPhase1RecHitsNRecHits,
-  SiPixelPhase1RecHitsClustX,
-  SiPixelPhase1RecHitsClustY,
+  SiPixelPhase1RecHitsPosX,
+  SiPixelPhase1RecHitsPosY,
+  SiPixelPhase1RecHitsResX,
+  SiPixelPhase1RecHitsResY,
   SiPixelPhase1RecHitsErrorX,
   SiPixelPhase1RecHitsErrorY,
-  SiPixelPhase1RecHitsPosition,
 )
 
 SiPixelPhase1RecHitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1RecHitsV",
         src = cms.InputTag("siPixelRecHits"),
+        # Track assoc. parameters
+        associatePixel = cms.bool(True),
+        ROUList = cms.vstring('g4SimHitsTrackerHitsPixelBarrelLowTof', 
+            'g4SimHitsTrackerHitsPixelBarrelHighTof', 
+            'g4SimHitsTrackerHitsPixelEndcapLowTof', 
+            'g4SimHitsTrackerHitsPixelEndcapHighTof'),
+        associateStrip = cms.bool(False),
+        associateRecoTracks = cms.bool(False),
+        pixelSimLinkSrc = cms.InputTag("simSiPixelDigis"),
+        stripSimLinkSrc = cms.InputTag("simSiStripDigis"),
         histograms = SiPixelPhase1RecHitsConf,
         geometry = SiPixelPhase1Geometry
 )
@@ -91,3 +142,4 @@ SiPixelPhase1RecHitsHarvesterV = cms.EDAnalyzer("SiPixelPhase1HarvesterV",
         histograms = SiPixelPhase1RecHitsConf,
         geometry = SiPixelPhase1Geometry
 )
+

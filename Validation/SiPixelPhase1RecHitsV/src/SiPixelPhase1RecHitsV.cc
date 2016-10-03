@@ -18,7 +18,7 @@
 
 SiPixelPhase1RecHitsV::SiPixelPhase1RecHitsV(const edm::ParameterSet& iConfig) :
   SiPixelPhase1BaseV(iConfig),
-  trackerHitAssociatorConfig_(iConfig, consumesCollector()),
+  trackerHitAssociatorConfig_( iConfig, consumesCollector() ),
   srcToken_ ( consumes<SiPixelRecHitCollection>(iConfig.getParameter<edm::InputTag>("src")) )
 {}
 
@@ -38,9 +38,7 @@ void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSe
 
       std::vector<PSimHit> associateSimHit;
       associateSimHit = associate.associateHit(rechit);
- 
-      int sizeX = (*clust).sizeX();
-      int sizeY = (*clust).sizeY();
+      std::vector<PSimHit>::const_iterator closestIt = associateSimHit.begin();
 
       LocalPoint lp = rechit.localPosition();
       float rechit_x = lp.x();
@@ -53,7 +51,6 @@ void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSe
       // loop over associated sim hits and find the closest
       if ( !associateSimHit.empty() ) {
       float closestSimHit = 9999.9;
-      std::vector<PSimHit>::const_iterator closestIt = associateSimHit.begin();
 
        for (std::vector<PSimHit>::const_iterator m = associateSimHit.begin(); m < associateSimHit.end(); m++) {
 	  float sim_x1 ( (*m).entryPoint().x() ), sim_x2 ( (*m).exitPoint().x() ), sim_xpos ( 0.5*(sim_x1+sim_x2) );
@@ -69,15 +66,28 @@ void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSe
         }
       }
 
+      // Sim Hit stuff
+      const PSimHit& simHit = *closestIt;
+      int bunch = simHit.eventId().bunchCrossing();
+      float sim_x1 ( simHit.entryPoint().x() ), sim_x2 ( simHit.exitPoint().x() ), sim_xpos ( 0.5*(sim_x1 + sim_x2) );
+      float sim_y1 ( simHit.entryPoint().y() ), sim_y2 ( simHit.exitPoint().y() ), sim_ypos ( 0.5*(sim_y1 + sim_y2) );
+
+      float res_x = (rechit_x - sim_xpos) * 10000.0;
+      float res_y = (rechit_y - sim_ypos) * 10000.0;
+
+      if ( bunch == 0 ) histo[IN_TIME_BUNCH].fill(id, &iEvent);
+      if ( bunch != 0 ) histo[OUT_TIME_BUNCH].fill(id, &iEvent);
+ 
       histo[NRECHITS].fill(id, &iEvent);
 
-      histo[CLUST_X].fill(sizeX, id, &iEvent);
-      histo[CLUST_Y].fill(sizeY, id, &iEvent);
+      histo[RECHIT_X].fill(rechit_x, id, &iEvent);
+      histo[RECHIT_Y].fill(rechit_y, id, &iEvent);
+
+      histo[RES_X].fill(res_x, id, &iEvent);
+      histo[RES_Y].fill(res_y, id, &iEvent);
 
       histo[ERROR_X].fill(lerr_x, id, &iEvent);
       histo[ERROR_Y].fill(lerr_y, id, &iEvent);
-
-      histo[POS].fill(rechit_x, rechit_y, id, &iEvent);
     }
   }
 
