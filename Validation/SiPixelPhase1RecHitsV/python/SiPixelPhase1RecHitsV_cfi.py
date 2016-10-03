@@ -55,7 +55,7 @@ SiPixelPhase1RecHitsNRecHits = DefaultHisto.clone(
 SiPixelPhase1RecHitsPosX = DefaultHisto.clone(
   name = "rechit_x",
   title = "X position of RecHits",
-  range_min = -2., range_max = 2., range_nbins = 400,
+  range_min = -2., range_max = 2., range_nbins = 80,
   xlabel = "RecHit position X dimension",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
@@ -69,13 +69,13 @@ SiPixelPhase1RecHitsPosY = SiPixelPhase1RecHitsPosX.clone(
   name = "rechit_y",
   title = "Y position of RecHits",
   xlabel = "RecHit position Y dimension",
-  range_min = -4., range_max = 4., range_nbins = 800,
+  range_min = -4., range_max = 4., range_nbins = 80,
 )
 
 SiPixelPhase1RecHitsResX = DefaultHisto.clone(
   name = "res_x",
   title = "X resolution of RecHits",
-  range_min = -200., range_max = 200., range_nbins = 800,
+  range_min = -200., range_max = 200., range_nbins = 200,
   xlabel = "RecHit resolution X dimension",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
