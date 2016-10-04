@@ -18,13 +18,16 @@ class SiPixelPhase1RecHitsV : public SiPixelPhase1BaseV {
   enum {
     IN_TIME_BUNCH,
     OUT_TIME_BUNCH,
-    NRECHITS,
+    NSIMHITS,
     RECHIT_X,
     RECHIT_Y,
     RES_X,
     RES_Y,
     ERROR_X,
     ERROR_Y,
+    PULL_X,
+    PULL_Y,
+
   };
 
   public:

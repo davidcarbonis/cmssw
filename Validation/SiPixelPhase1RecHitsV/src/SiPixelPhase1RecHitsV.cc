@@ -69,16 +69,23 @@ void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSe
       // Sim Hit stuff
       const PSimHit& simHit = *closestIt;
       int bunch = simHit.eventId().bunchCrossing();
+      int event = simHit.eventId().event();
+
       float sim_x1 ( simHit.entryPoint().x() ), sim_x2 ( simHit.exitPoint().x() ), sim_xpos ( 0.5*(sim_x1 + sim_x2) );
       float sim_y1 ( simHit.entryPoint().y() ), sim_y2 ( simHit.exitPoint().y() ), sim_ypos ( 0.5*(sim_y1 + sim_y2) );
 
       float res_x = (rechit_x - sim_xpos) * 10000.0;
       float res_y = (rechit_y - sim_ypos) * 10000.0;
 
-      if ( bunch == 0 ) histo[IN_TIME_BUNCH].fill(id, &iEvent);
-      if ( bunch != 0 ) histo[OUT_TIME_BUNCH].fill(id, &iEvent);
+      float pull_x = ( rechit_x - sim_xpos ) / lerr_x;
+      float pull_y = ( rechit_y - sim_ypos ) / lerr_y;
+
+      // Now Plotting stuff
+
+      if ( bunch == 0 ) histo[IN_TIME_BUNCH].fill(bunch, id, &iEvent);
+      if ( bunch != 0 ) histo[OUT_TIME_BUNCH].fill(bunch, id, &iEvent);
  
-      histo[NRECHITS].fill(id, &iEvent);
+      histo[NSIMHITS].fill(event, id, &iEvent);
 
       histo[RECHIT_X].fill(rechit_x, id, &iEvent);
       histo[RECHIT_Y].fill(rechit_y, id, &iEvent);
@@ -88,10 +95,11 @@ void SiPixelPhase1RecHitsV::analyze(const edm::Event& iEvent, const edm::EventSe
 
       histo[ERROR_X].fill(lerr_x, id, &iEvent);
       histo[ERROR_Y].fill(lerr_y, id, &iEvent);
+
+      histo[PULL_X].fill(pull_x, id, &iEvent);
+      histo[PULL_Y].fill(pull_y, id, &iEvent); 
     }
   }
-
-  histo[NRECHITS].executePerEventHarvesting();
 }
 
 DEFINE_FWK_MODULE(SiPixelPhase1RecHitsV);
