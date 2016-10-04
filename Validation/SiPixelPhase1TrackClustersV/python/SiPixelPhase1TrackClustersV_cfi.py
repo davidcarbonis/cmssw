@@ -8,6 +8,8 @@ SiPixelPhase1TrackClustersCharge = DefaultHisto.clone(
   xlabel = "Charge size (in ke)",
   topFolderName = "PixelPhase1V/Clusters",
   specs = cms.VPSet(
+    Specification().groupBy("").save(),
+    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk").saveAll(),
     Specification(PerLadder).groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade") # per-ladder and profiles
                             .save(),
     Specification(PerLayer1D).groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade")) # per-layer
@@ -23,8 +25,8 @@ SiPixelPhase1TrackClustersSizeX = DefaultHisto.clone(
   xlabel = "Cluster size (in pixels)",
   topFolderName = "PixelPhase1V/Clusters",
   specs = cms.VPSet(
-#    Specification().groupBy("").save(),
-#    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk").saveAll(),
+    Specification().groupBy("").save(),
+    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk").saveAll(),
     Specification(PerLadder).groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade") # per-ladder and profiles
                             .save(),
     Specification(PerLayer1D).groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade")) # per-layer
@@ -40,6 +42,8 @@ SiPixelPhase1TrackClustersSizeY = DefaultHisto.clone(
   xlabel = "Cluster size (in pixels)",
   topFolderName = "PixelPhase1V/Clusters",
   specs = cms.VPSet(
+    Specification().groupBy("").save(),
+    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk").saveAll(),
     Specification(PerLadder).groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade") # per-ladder and profiles
                             .save(),
     Specification(PerLayer1D).groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade")) # per-layer
