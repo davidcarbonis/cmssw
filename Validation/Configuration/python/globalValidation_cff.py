@@ -37,6 +37,7 @@ from Validation.RPCRecHits.rpcRecHitValidation_cfi import *
 from Validation.DTRecHits.DTRecHitQuality_cfi import *
 from Validation.RecoTau.DQMMCValidation_cfi import *
 from Validation.L1T.L1Validator_cfi import *
+from Validation.SiPixelPhase1ConfigV.SiPixelPhase1OfflineDQM_sourceV_cff import *
 from DQMOffline.RecoB.dqmAnalyzer_cff import *
 
 # filter/producer "pre-" sequence for globalValidation
@@ -88,6 +89,7 @@ globalValidation = cms.Sequence(   trackerHitsValidation
                                  + pfTauRunDQMValidation
                                  + bTagPlotsMCbcl
                                  + L1Validator
+                                 + siPixelPhase1OfflineDQM_sourceV
 )
 
 

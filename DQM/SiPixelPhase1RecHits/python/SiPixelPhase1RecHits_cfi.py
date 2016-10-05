@@ -5,24 +5,11 @@ SiPixelPhase1RecHitsNRecHits = DefaultHisto.clone(
   name = "rechits",
   title = "RecHits",
   range_min = 0, range_max = 10, range_nbins = 10,
-  xlabel = "rechits",
+  xlabel = "number of rechits",
   dimensions = 0,
   specs = cms.VPSet(
-    Specification().groupBy(DefaultHisto.defaultGrouping.value() + "/DetId/Event") 
-                   .reduce("COUNT") 
-                   .groupBy(DefaultHisto.defaultGrouping)
-                   .save()
-                   .reduce("MEAN")
-                   .groupBy(parent(DefaultHisto.defaultGrouping), "EXTEND_X")
-                   .saveAll(),
-    Specification().groupBy(DefaultHisto.defaultGrouping.value() + "/DetId/Event")
-                   .reduce("COUNT")
-                   .groupBy(parent(DefaultHisto.defaultGrouping))
-                   .save(),
-    Specification(PerModule).groupBy(DefaultHisto.defaultPerModule.value() + "/Event")
-                            .reduce("COUNT")
-                            .groupBy(DefaultHisto.defaultPerModule)
-                            .save()
+    StandardSpecificationTrend_Num,
+    StandardSpecification2DProfile_Num
   )
 )
 
@@ -30,23 +17,17 @@ SiPixelPhase1RecHitsClustX = DefaultHisto.clone(
   name = "rechitsize_x",
   title = "X size of RecHit clusters",
   range_min = 0, range_max = 10, range_nbins = 10,
-  xlabel = "RecHit X-Size",
+  xlabel = "RecHit size X dimension",
   dimensions = 1,
   specs = cms.VPSet(
-    Specification().groupBy(DefaultHisto.defaultGrouping)
-                   .save()
-                   .reduce("MEAN")
-                   .groupBy(parent(DefaultHisto.defaultGrouping), "EXTEND_X")
-                   .saveAll(),
-    Specification().groupBy(parent(DefaultHisto.defaultGrouping)).save(),
-    Specification(PerModule).groupBy(DefaultHisto.defaultPerModule).save(),
+    StandardSpecification2DProfile
   )
 )
 
 SiPixelPhase1RecHitsClustY = SiPixelPhase1RecHitsClustX.clone(
   name = "rechitsize_y",
   title = "Y size of RecHit clusters",
-  xlabel = "RecHit Y-Size"
+  xlabel = "RecHit size Y dimension"
 )
 
 SiPixelPhase1RecHitsErrorX = DefaultHisto.clone(
@@ -56,13 +37,7 @@ SiPixelPhase1RecHitsErrorX = DefaultHisto.clone(
   xlabel = "X error",
   dimensions = 1,
   specs = cms.VPSet(
-    Specification().groupBy(DefaultHisto.defaultGrouping)
-                   .save()
-                   .reduce("MEAN")
-                   .groupBy(parent(DefaultHisto.defaultGrouping), "EXTEND_X")
-                   .saveAll(),
-    Specification().groupBy(parent(DefaultHisto.defaultGrouping)).save(),
-    Specification(PerModule).groupBy(DefaultHisto.defaultPerModule).save(),
+    StandardSpecification2DProfile
   )
 )
 
@@ -73,6 +48,7 @@ SiPixelPhase1RecHitsErrorY = SiPixelPhase1RecHitsErrorX.clone(
 )
 
 SiPixelPhase1RecHitsPosition = DefaultHisto.clone(
+  enabled = False,
   name = "rechit_pos",
   title = "Position of RecHits on Module",
   range_min   = -1, range_max   = 1, range_nbins   = 100,
@@ -81,7 +57,6 @@ SiPixelPhase1RecHitsPosition = DefaultHisto.clone(
   ylabel = "y offset",
   dimensions = 2,
   specs = cms.VPSet(
-    Specification().groupBy(DefaultHisto.defaultGrouping).save(),
     Specification(PerModule).groupBy(DefaultHisto.defaultPerModule).save(),
   )
 )
