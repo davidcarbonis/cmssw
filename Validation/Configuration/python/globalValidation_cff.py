@@ -89,7 +89,6 @@ globalValidation = cms.Sequence(   trackerHitsValidation
                                  + pfTauRunDQMValidation
                                  + bTagPlotsMCbcl
                                  + L1Validator
-                                 + siPixelPhase1OfflineDQM_sourceV
 )
 
 
@@ -131,6 +130,11 @@ _run3_globalValidation += gemSimValid
 _phase2_globalValidation = _run3_globalValidation.copy()
 _phase2_globalValidation += me0SimValid
 
+_phase_1_globalValidation = globalValidation.copy()
+_phase_1_globalValidation += siPixelPhase1OfflineDQM_sourceV
+
 from Configuration.StandardSequences.Eras import eras
 eras.run3_GEM.toReplaceWith( globalValidation, _run3_globalValidation )
 eras.phase2_muon.toReplaceWith( globalValidation, _phase2_globalValidation )
+eras.phase1Pixel.toReplaceWith( globalValidation, _phase_1_globalValidation )
+

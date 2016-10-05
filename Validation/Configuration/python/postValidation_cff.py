@@ -35,7 +35,6 @@ postValidation = cms.Sequence(
     + runTauEff + makeBetterPlots
     + bTagCollectorSequenceMCbcl
     + METPostProcessor
-    + siPixelPhase1OfflineDQM_harvestingV
 )
 eras.phase1Pixel.toReplaceWith(postValidation, postValidation.copyAndExclude([ # FIXME
     runTauEff # Excessive printouts because 2017 doesn't have HLT yet
@@ -87,6 +86,11 @@ _run3_postValidation += MuonGEMRecHitsPostProcessors
 _phase2_postValidation = _run3_postValidation.copy()
 _phase2_postValidation += hgcalPostProcessor
 
+_phase1_postValidation = postValidation.copy()
+_phase1_postValidation += siPixelPhase1OfflineDQM_harvestingV
+
 from Configuration.StandardSequences.Eras import eras
 eras.run3_GEM.toReplaceWith( postValidation, _run3_postValidation )
 eras.phase2_hgcal.toReplaceWith( postValidation, _phase2_postValidation )
+eras.phase1Pixel.toReplaceWith( postValidation, _phase1_postValidation )
+
