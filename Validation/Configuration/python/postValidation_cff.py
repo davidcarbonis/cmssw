@@ -18,7 +18,6 @@ from Validation.RecoTau.DQMMCValidation_cfi import *
 from Validation.RecoVertex.PostProcessorVertex_cff import *
 from Validation.RecoMET.METPostProcessor_cff import *
 from DQMOffline.RecoB.dqmCollector_cff import *
-from Validation.SiPixelPhase1ConfigV.SiPixelPhase1OfflineDQM_harvestingV_cff import *
 
 postValidation = cms.Sequence(
       recoMuonPostProcessors
@@ -77,6 +76,7 @@ from Validation.MuonGEMHits.PostProcessor_cff import *
 from Validation.MuonGEMDigis.PostProcessor_cff import *
 from Validation.MuonGEMRecHits.PostProcessor_cff import *
 from Validation.HGCalValidation.HGCalPostProcessor_cff import *
+from Validation.SiPixelPhase1ConfigV.SiPixelPhase1OfflineDQM_harvestingV_cff import *
 
 _run3_postValidation = postValidation.copy()
 _run3_postValidation += MuonGEMHitsPostProcessors
