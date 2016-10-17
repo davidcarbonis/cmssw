@@ -31,7 +31,15 @@ SiPixelPhase1TrackEfficiencyValid = DefaultHisto.clone(
                    .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade", "EXTEND_X")
                    .groupBy("PXBarrel|PXForward/PXLayer|PXDisk", "EXTEND_Y")
                    .save()
-                   .custom("perroc")
+                   .custom("perroc"),
+    Specification().groupBy("PXBarrel/PXLayer/signedModule/ROCinLayerCol")
+                   .groupBy("PXBarrel/PXLayer/signedModule", "EXTEND_X")
+                   .groupBy("PXBarrel/PXLayer", "EXTEND_Y")
+                   .save(),
+    Specification().groupBy("PXBarrel/PXLayer/signedLadder/ROCinLayerRow")
+                   .groupBy("PXBarrel/PXLayer/signedLadder", "EXTEND_X")
+                   .groupBy("PXBarrel/PXLayer", "EXTEND_Y")
+                   .save()
   )
 )
 
