@@ -324,14 +324,14 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     }
   );
   addExtractor(intern("ROCinLayerRow"),
-    [pxmodule, pxlayer, maxmodule, roc, roc_rows] (InterestingQuantities const& iq) {
+    [pxmodule, maxmodule, roc, roc_rows] (InterestingQuantities const& iq) {
       auto mod = pxmodule(iq);
       if (mod == UNDEFINED) return UNDEFINED;
 
       int rocRow = int(iq.row / roc_rows);
 
       if (mod < 0) return Value ( (mod - (maxmodule/2 + 1)) * 2 + rocRow ); // range -(max_module/2)..-1, 0..
-      if (mod >= 0) return Value ( (mod + 1) * 2 + rocRow);    // range -(max_module/2)..-1, 1..
+      if (mod >= 0) return Value ( (mod + 1) * 2 + rocRow );    // range -(max_module/2)..-1, 1..
 
       assert(!"Shell logic problem");
       return UNDEFINED;
