@@ -324,36 +324,40 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     }
   );
   addExtractor(intern("ROCinLayerRow"),
-    [pxmodule, maxmodule, roc, roc_rows] (InterestingQuantities const& iq) {
-      auto mod = pxmodule(iq);
-      if (mod == UNDEFINED) return UNDEFINED;
-
-      int rocRow = int(iq.row / roc_rows);
-
-      if (mod < 0) return Value ( (mod - (maxmodule/2 + 1)) * 2 + rocRow ); // range -(max_module/2)..-1, 0..
-      if (mod >= 0) return Value ( (mod + 1) * 2 + rocRow );    // range -(max_module/2)..-1, 1..
-
-      assert(!"Shell logic problem");
-      return UNDEFINED;
-    }
-  );
-  addExtractor(intern("ROCinLayerCol"),
-    [pxladder, pxlayer, maxladders, roc, roc_cols, n_rocs] (InterestingQuantities const& iq) {
+    [pxladder, pxlayer, maxladders, roc, roc_rows] (InterestingQuantities const& iq) {
 
       auto ladder = pxladder(iq);
       if (ladder == UNDEFINED) return UNDEFINED;
+
+      int rocRow = int(iq.row / roc_rows);
+
       auto layer  = pxlayer(iq);
       int frac = (int) ((ladder-1) / float(maxladders[layer]) * 4); // floor semantics
       Value quarter = maxladders[layer] / 4;
 
-      int rocCol = int(iq.col / roc_cols);
-
-      if (frac == 0) return Value( (-ladder + quarter + 1) * 8 + (rocCol) );
-      if (frac == 1) return Value( (-ladder + quarter) * 8 + (rocCol) );
-      if (frac == 2) return Value( (-ladder + quarter) * 8 + (rocCol) );
-      if (frac == 3) return Value( (-ladder  + 4*quarter + quarter + 1) * 8 + (rocCol) );
+      if (frac == 0) return Value( (-ladder + quarter + 1) * 2 + (rocRow) -1 );
+      if (frac == 1) return Value( (-ladder + quarter) * 2 + (rocRow) );
+      if (frac == 2) return Value( (-ladder + quarter) * 2 + (rocRow) );
+      if (frac == 3) return Value( (-ladder  + 4*quarter + quarter + 1) * 2 + (rocRow) -1 );
       assert(!"Shell logic problem");
       return UNDEFINED;
+
+    }
+  );
+  addExtractor(intern("ROCinLayerCol"),
+    [pxmodule, maxmodule, roc, roc_cols] (InterestingQuantities const& iq) {
+      auto mod = pxmodule(iq);
+      if (mod == UNDEFINED) return UNDEFINED;
+
+      int rocCol = int(iq.col / roc_cols);
+
+      mod -= (maxmodule/2 + 1);
+      if (mod >= 0) return Value ( -(mod + 1) * 8 + rocCol );    // range -(max_module/2)..-1, 1..
+      else return Value ( -mod * 8 + rocCol -7 );    // range -(max_module/2)..-1, 0..
+
+      assert(!"Shell logic problem");
+      return UNDEFINED;
+
     }
   );
 
