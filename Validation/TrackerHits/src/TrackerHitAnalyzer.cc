@@ -18,7 +18,6 @@
 #include "Geometry/CommonDetUnit/interface/GeomDetUnit.h"
 #include "Geometry/CommonDetUnit/interface/TrackingGeometry.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
-#include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"
 #include "Geometry/CommonDetUnit/interface/GeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
@@ -41,10 +40,6 @@
 
 TrackerHitAnalyzer::TrackerHitAnalyzer(const edm::ParameterSet& ps)
   : verbose_( ps.getUntrackedParameter<bool>( "Verbosity",false ) )
-  , edmPSimHitContainer_pxlBrlLow_Token_( consumes<edm::PSimHitContainer>( ps.getParameter<edm::InputTag>( "PxlBrlLowSrc" ) ) )
-  , edmPSimHitContainer_pxlBrlHigh_Token_( consumes<edm::PSimHitContainer>( ps.getParameter<edm::InputTag>( "PxlBrlHighSrc" ) ) )
-  , edmPSimHitContainer_pxlFwdLow_Token_( consumes<edm::PSimHitContainer>( ps.getParameter<edm::InputTag>( "PxlFwdLowSrc" ) ) )
-  , edmPSimHitContainer_pxlFwdHigh_Token_( consumes<edm::PSimHitContainer>( ps.getParameter<edm::InputTag>( "PxlFwdHighSrc" ) ) )
   , edmPSimHitContainer_siTIBLow_Token_( consumes<edm::PSimHitContainer>( ps.getParameter<edm::InputTag>( "SiTIBLowSrc" ) ) )
   , edmPSimHitContainer_siTIBHigh_Token_( consumes<edm::PSimHitContainer>( ps.getParameter<edm::InputTag>( "SiTIBHighSrc" ) ) )
   , edmPSimHitContainer_siTOBLow_Token_( consumes<edm::PSimHitContainer>( ps.getParameter<edm::InputTag>( "SiTOBLowSrc" ) ) )
@@ -110,15 +105,11 @@ void TrackerHitAnalyzer::bookHistograms(DQMStore::IBooker & ibooker,const edm::R
     sprintf (htitle2,"Energy loss in TOB %s", Region[i]);
     sprintf (htitle3,"Energy loss in TID %s", Region[i]);
     sprintf (htitle4,"Energy loss in TEC %s", Region[i]);
-    sprintf (htitle5,"Energy loss in BPIX %s", Region[i]);
-    sprintf (htitle6,"Energy loss in FPIX %s", Region[i]);
     
     sprintf (hname1,"Eloss_TIB_%i",i+1);
     sprintf (hname2,"Eloss_TOB_%i",i+1);
     sprintf (hname3,"Eloss_TID_%i",i+1);
     sprintf (hname4,"Eloss_TEC_%i",i+1);
-    sprintf (hname5,"Eloss_BPIX_%i",i+1);
-    sprintf (hname6,"Eloss_FPIX_%i",i+1);
    
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TIBHit");
     h1e[i]  = ibooker.book1D (hname1, htitle1, nbin , 0.0 , 0.001*E2NEL);
@@ -128,16 +119,12 @@ void TrackerHitAnalyzer::bookHistograms(DQMStore::IBooker & ibooker,const edm::R
     h3e[i]  = ibooker.book1D (hname3, htitle3, nbin , 0.0 , 0.001*E2NEL);
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TECHit");
     h4e[i]  = ibooker.book1D (hname4, htitle4, nbin , 0.0 , 0.001*E2NEL);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/BPIXHit");
-    h5e[i]  = ibooker.book1D (hname5, htitle5, nbin , 0.0 , 0.001*E2NEL);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/FPIXHit");
-    h6e[i]  = ibooker.book1D (hname6, htitle6, nbin , 0.0 , 0.001*E2NEL);
    
    }
 
 // limits
-const float high[] = {0.03, 0.03, 0.02, 0.03, 0.03, 0.03};
-const float low[] = {-0.03, -0.03, -0.02, -0.03, -0.03, -0.03};
+const float high[] = {0.03, 0.03, 0.02, 0.03};
+const float low[] = {-0.03, -0.03, -0.02, -0.03};
    
    for(int i=0; i<12; i++) {
   
@@ -145,15 +132,11 @@ const float low[] = {-0.03, -0.03, -0.02, -0.03, -0.03, -0.03};
     sprintf (htitle2,"Entryx-Exitx in TOB %s", Region[i]);
     sprintf (htitle3,"Entryx-Exitx in TID %s", Region[i]);
     sprintf (htitle4,"Entryx-Exitx in TEC %s", Region[i]);
-    sprintf (htitle5,"Entryx-Exitx in BPIX %s", Region[i]);
-    sprintf (htitle6,"Entryx-Exitx in FPIX %s", Region[i]);
     
     sprintf (hname1,"Entryx-Exitx_TIB_%i",i+1);
     sprintf (hname2,"Entryx-Exitx_TOB_%i",i+1);
     sprintf (hname3,"Entryx-Exitx_TID_%i",i+1);
     sprintf (hname4,"Entryx-Exitx_TEC_%i",i+1);
-    sprintf (hname5,"Entryx-Exitx_BPIX_%i",i+1);
-    sprintf (hname6,"Entryx-Exitx_FPIX_%i",i+1);
    
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TIBHit");
     h1ex[i]  = ibooker.book1D (hname1, htitle1, nbin , low[0] , high[0]);
@@ -163,15 +146,11 @@ const float low[] = {-0.03, -0.03, -0.02, -0.03, -0.03, -0.03};
     h3ex[i]  = ibooker.book1D (hname3, htitle3, nbin , low[2] , high[2]);
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TECHit");
     h4ex[i]  = ibooker.book1D (hname4, htitle4, nbin , low[3] , high[3]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/BPIXHit");
-    h5ex[i]  = ibooker.book1D (hname5, htitle5, nbin , low[4] , high[4]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/FPIXHit");
-    h6ex[i]  = ibooker.book1D (hname6, htitle6, nbin , low[5] , high[5]);
    
    }
 
-const float high0[] = {0.05, 0.06, 0.03, 0.03, 0.03, 0.03};
-const float low0[] = {-0.05, -0.06, -0.03, -0.03, -0.03, -0.03};
+const float high0[] = {0.05, 0.06, 0.03, 0.03};
+const float low0[] = {-0.05, -0.06, -0.03, -0.03};
 
    for(int i=0; i<12; i++) {
   
@@ -179,15 +158,11 @@ const float low0[] = {-0.05, -0.06, -0.03, -0.03, -0.03, -0.03};
     sprintf (htitle2,"Entryy-Exity in TOB %s", Region[i]);
     sprintf (htitle3,"Entryy-Exity in TID %s", Region[i]);
     sprintf (htitle4,"Entryy-Exity in TEC %s", Region[i]);
-    sprintf (htitle5,"Entryy-Exity in BPIX %s", Region[i]);
-    sprintf (htitle6,"Entryy-Exity in FPIX %s", Region[i]);
     
     sprintf (hname1,"Entryy-Exity_TIB_%i",i+1);
     sprintf (hname2,"Entryy-Exity_TOB_%i",i+1);
     sprintf (hname3,"Entryy-Exity_TID_%i",i+1);
     sprintf (hname4,"Entryy-Exity_TEC_%i",i+1);
-    sprintf (hname5,"Entryy-Exity_BPIX_%i",i+1);
-    sprintf (hname6,"Entryy-Exity_FPIX_%i",i+1);
    
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TIBHit");
     h1ey[i]  = ibooker.book1D (hname1, htitle1, nbin , low0[0] , high0[0]);
@@ -197,15 +172,11 @@ const float low0[] = {-0.05, -0.06, -0.03, -0.03, -0.03, -0.03};
     h3ey[i]  = ibooker.book1D (hname3, htitle3, nbin , low0[2] , high0[2]);
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TECHit");
     h4ey[i]  = ibooker.book1D (hname4, htitle4, nbin , low0[3] , high0[3]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/BPIXHit");
-    h5ey[i]  = ibooker.book1D (hname5, htitle5, nbin , low0[4] , high0[4]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/FPIXHit");
-    h6ey[i]  = ibooker.book1D (hname6, htitle6, nbin , low0[5] , high0[5]);
    
    }
 
-const float high1[] = {0.05, 0.06, 0.05, 0.06, 0.05, 0.05};
-const float low1[]  = {0.,0.,0.,0.,0.,0.};
+const float high1[] = {0.05, 0.06, 0.05, 0.06};
+const float low1[]  = {0.,0.,0.,0.};
 
   for(int i=0; i<12; i++) {
   
@@ -213,15 +184,11 @@ const float low1[]  = {0.,0.,0.,0.,0.,0.};
     sprintf (htitle2,"abs(Entryz-Exitz) in TOB %s", Region[i]);
     sprintf (htitle3,"abs(Entryz-Exitz) in TID %s", Region[i]);
     sprintf (htitle4,"abs(Entryz-Exitz) in TEC %s", Region[i]);
-    sprintf (htitle5,"abs(Entryz-Exitz) in BPIX %s", Region[i]);
-    sprintf (htitle6,"abs(Entryz-Exitz) in FPIX %s", Region[i]);
     
     sprintf (hname1,"Entryz-Exitz_TIB_%i",i+1);
     sprintf (hname2,"Entryz-Exitz_TOB_%i",i+1);
     sprintf (hname3,"Entryz-Exitz_TID_%i",i+1);
     sprintf (hname4,"Entryz-Exitz_TEC_%i",i+1);
-    sprintf (hname5,"Entryz-Exitz_BPIX_%i",i+1);
-    sprintf (hname6,"Entryz-Exitz_FPIX_%i",i+1);
    
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TIBHit");
     h1ez[i]  = ibooker.book1D (hname1, htitle1, nbin , low1[0] , high1[0]);
@@ -231,16 +198,12 @@ const float low1[]  = {0.,0.,0.,0.,0.,0.};
     h3ez[i]  = ibooker.book1D (hname3, htitle3, nbin , low1[2] , high1[2]);
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TECHit");
     h4ez[i]  = ibooker.book1D (hname4, htitle4, nbin , low1[3] , high1[3]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/BPIXHit");
-    h5ez[i]  = ibooker.book1D (hname5, htitle5, nbin , low1[4] , high1[4]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/FPIXHit");
-    h6ez[i]  = ibooker.book1D (hname6, htitle6, nbin , low1[5] , high1[5]);
    
    }
 
 
-const float high2[] = {3.2, 5.0, 5.5, 6.2, 0.85, 0.5};   
-const float low2[] = {-3.2, -5.0, -5.5, -6.2, -0.85, -0.5};   
+const float high2[] = {3.2, 5.0, 5.5, 6.2};   
+const float low2[] = {-3.2, -5.0, -5.5, -6.2};   
 
    for(int i=0; i<12; i++) {
   
@@ -248,15 +211,11 @@ const float low2[] = {-3.2, -5.0, -5.5, -6.2, -0.85, -0.5};
     sprintf (htitle2,"Localx in TOB %s", Region[i]);
     sprintf (htitle3,"Localx in TID %s", Region[i]);
     sprintf (htitle4,"Localx in TEC %s", Region[i]);
-    sprintf (htitle5,"Localx in BPIX %s", Region[i]);
-    sprintf (htitle6,"Localx in FPIX %s", Region[i]);
     
     sprintf (hname1,"Localx_TIB_%i",i+1);
     sprintf (hname2,"Localx_TOB_%i",i+1);
     sprintf (hname3,"Localx_TID_%i",i+1);
     sprintf (hname4,"Localx_TEC_%i",i+1);
-    sprintf (hname5,"Localx_BPIX_%i",i+1);
-    sprintf (hname6,"Localx_FPIX_%i",i+1);
    
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TIBHit");
     h1lx[i]  = ibooker.book1D (hname1, htitle1, nbin , low2[0] , high2[0]);
@@ -266,16 +225,12 @@ const float low2[] = {-3.2, -5.0, -5.5, -6.2, -0.85, -0.5};
     h3lx[i]  = ibooker.book1D (hname3, htitle3, nbin , low2[2] , high2[2]);
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TECHit");
     h4lx[i]  = ibooker.book1D (hname4, htitle4, nbin , low2[3] , high2[3]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/BPIXHit");
-    h5lx[i]  = ibooker.book1D (hname5, htitle5, nbin , low2[4] , high2[4]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/FPIXHit");
-    h6lx[i]  = ibooker.book1D (hname6, htitle6, nbin , low2[5] , high2[5]);
    
    }
 
 
-const float high3[] = {6.0, 10., 5.6, 10.5, 3.4, 0.52};
-const float low3[] = {-6.0, -10., -5.6, -10.5, -3.4, -0.52};
+const float high3[] = {6.0, 10., 5.6, 10.5};
+const float low3[] = {-6.0, -10., -5.6, -10.5};
 
    for(int i=0; i<12; i++) {
   
@@ -283,15 +238,11 @@ const float low3[] = {-6.0, -10., -5.6, -10.5, -3.4, -0.52};
     sprintf (htitle2,"Localy in TOB %s", Region[i]);
     sprintf (htitle3,"Localy in TID %s", Region[i]);
     sprintf (htitle4,"Localy in TEC %s", Region[i]);
-    sprintf (htitle5,"Localy in BPIX %s", Region[i]);
-    sprintf (htitle6,"Localy in FPIX %s", Region[i]);
     
     sprintf (hname1,"Localy_TIB_%i",i+1);
     sprintf (hname2,"Localy_TOB_%i",i+1);
     sprintf (hname3,"Localy_TID_%i",i+1);
     sprintf (hname4,"Localy_TEC_%i",i+1);
-    sprintf (hname5,"Localy_BPIX_%i",i+1);
-    sprintf (hname6,"Localy_FPIX_%i",i+1);
    
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TIBHit");
     h1ly[i]  = ibooker.book1D (hname1, htitle1, nbin , low3[0] , high3[0]);
@@ -301,10 +252,6 @@ const float low3[] = {-6.0, -10., -5.6, -10.5, -3.4, -0.52};
     h3ly[i]  = ibooker.book1D (hname3, htitle3, nbin , low3[2] , high3[2]);
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/TECHit");
     h4ly[i]  = ibooker.book1D (hname4, htitle4, nbin , low3[3] , high3[3]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/BPIXHit");
-    h5ly[i]  = ibooker.book1D (hname5, htitle5, nbin , low3[4] , high3[4]);
-    ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/FPIXHit");
-    h6ly[i]  = ibooker.book1D (hname6, htitle6, nbin , low3[5] , high3[5]);
    
    }
    
@@ -338,45 +285,6 @@ void TrackerHitAnalyzer::analyze(const edm::Event& e, const edm::EventSetup& c)
   // iterator to access containers
   edm::PSimHitContainer::const_iterator itHit;
   /////////////////////////////////
-  // get Pixel Barrel information
-  ////////////////////////////////
-  // extract low container
-  edm::Handle<edm::PSimHitContainer> PxlBrlLowContainer;
-  e.getByToken( edmPSimHitContainer_pxlBrlLow_Token_, PxlBrlLowContainer );
-  if (!PxlBrlLowContainer.isValid()) {
-    edm::LogError("TrackerHitAnalyzer::analyze")
-      << "Unable to find TrackerHitsPixelBarrelLowTof in event!";
-    return;
-  }  
-  // extract high container
-  edm::Handle<edm::PSimHitContainer> PxlBrlHighContainer;
-  e.getByToken( edmPSimHitContainer_pxlBrlHigh_Token_, PxlBrlHighContainer );
-  if (!PxlBrlHighContainer.isValid()) {
-    edm::LogError("TrackerHitAnalyzer::analyze")
-      << "Unable to find TrackerHitsPixelBarrelHighTof in event!";
-    return;
-  }
-  /////////////////////////////////
-  // get Pixel Forward information
-  ////////////////////////////////
-  // extract low container
-  edm::Handle<edm::PSimHitContainer> PxlFwdLowContainer;
-  e.getByToken( edmPSimHitContainer_pxlFwdLow_Token_, PxlFwdLowContainer );
-  if (!PxlFwdLowContainer.isValid()) {
-    edm::LogError("TrackerHitAnalyzer::analyze")
-      << "Unable to find TrackerHitsPixelEndcapLowTof in event!";
-    return;
-  }
-  // extract high container
-  edm::Handle<edm::PSimHitContainer> PxlFwdHighContainer;
-  e.getByToken( edmPSimHitContainer_pxlFwdHigh_Token_, PxlFwdHighContainer );
-  if (!PxlFwdHighContainer.isValid()) {
-    edm::LogError("TrackerHitAnalyzer::analyze")
-      << "Unable to find TrackerHitsPixelEndcapHighTof in event!";
-    return;
-  }
-  
-  ///////////////////////////////////
   // get Silicon TIB information
   //////////////////////////////////
   // extract TIB low container
@@ -516,76 +424,6 @@ void TrackerHitAnalyzer::analyze(const edm::Event& e, const edm::EventSetup& c)
 //	  std::cout << " " << std::endl;
       }
   }	  
-  ///////////////////////////////
-  // get Pixel information
-  ///////////////////////////////
-  for (itHit = PxlBrlLowContainer->begin(); itHit != PxlBrlLowContainer->end(); ++itHit) {
-    DetId detid=DetId(itHit->detUnitId());
-    const GeomDetUnit * det=(const GeomDetUnit*)tracker->idToDetUnit( detid );
-    GlobalPoint gpos=det->toGlobal(itHit->localPosition());
-    htofeta->Fill(gpos.eta(), itHit->timeOfFlight());
-    htofphi->Fill(gpos.phi().degrees(), itHit->timeOfFlight());
-    htofr->Fill(gpos.mag(), itHit->timeOfFlight());
-    htofz->Fill(gpos.z(), itHit->timeOfFlight());
-
-    h5e[ir]->Fill(itHit->energyLoss());
-    h5ex[ir]->Fill(itHit->entryPoint().x()-itHit->exitPoint().x());
-    h5ey[ir]->Fill(itHit->entryPoint().y()-itHit->exitPoint().y());
-    h5ez[ir]->Fill(std::fabs(itHit->entryPoint().z()-itHit->exitPoint().z()));
-    h5lx[ir]->Fill(itHit->localPosition().x());
-    h5ly[ir]->Fill(itHit->localPosition().y());
-  }
-  for (itHit = PxlBrlHighContainer->begin(); itHit != PxlBrlHighContainer->end(); ++itHit) {
-    DetId detid=DetId(itHit->detUnitId());
-    const GeomDetUnit * det=(const GeomDetUnit*)tracker->idToDetUnit( detid );
-    GlobalPoint gpos=det->toGlobal(itHit->localPosition());
-    htofeta->Fill(gpos.eta(), itHit->timeOfFlight());
-    htofphi->Fill(gpos.phi().degrees(), itHit->timeOfFlight());
-    htofr->Fill(gpos.mag(), itHit->timeOfFlight());
-    htofz->Fill(gpos.z(), itHit->timeOfFlight());
-
-
-   h5e[ir]->Fill(itHit->energyLoss());
-   h5ex[ir]->Fill(itHit->entryPoint().x()-itHit->exitPoint().x());
-   h5ey[ir]->Fill(itHit->entryPoint().y()-itHit->exitPoint().y());
-   h5ez[ir]->Fill(std::fabs(itHit->entryPoint().z()-itHit->exitPoint().z()));
-   h5lx[ir]->Fill(itHit->localPosition().x());
-   h5ly[ir]->Fill(itHit->localPosition().y());
-  }
-  for (itHit = PxlFwdLowContainer->begin(); itHit != PxlFwdLowContainer->end(); ++itHit) {
-    DetId detid=DetId(itHit->detUnitId());
-    const GeomDetUnit * det=(const GeomDetUnit*)tracker->idToDetUnit( detid );
-    GlobalPoint gpos=det->toGlobal(itHit->localPosition());
-    htofeta->Fill(gpos.eta(), itHit->timeOfFlight());
-    htofphi->Fill(gpos.phi().degrees(), itHit->timeOfFlight());
-    htofr->Fill(gpos.mag(), itHit->timeOfFlight());
-    htofz->Fill(gpos.z(), itHit->timeOfFlight());
-
-
-   h6e[ir]->Fill(itHit->energyLoss());
-   h6ex[ir]->Fill(itHit->entryPoint().x()-itHit->exitPoint().x());
-   h6ey[ir]->Fill(itHit->entryPoint().y()-itHit->exitPoint().y());
-   h6ez[ir]->Fill(std::fabs(itHit->entryPoint().z()-itHit->exitPoint().z()));
-   h6lx[ir]->Fill(itHit->localPosition().x());
-   h6ly[ir]->Fill(itHit->localPosition().y());
-  }  
-  for (itHit = PxlFwdHighContainer->begin(); itHit != PxlFwdHighContainer->end(); ++itHit) {
-    DetId detid=DetId(itHit->detUnitId());
-    const GeomDetUnit * det=(const GeomDetUnit*)tracker->idToDetUnit( detid );
-    GlobalPoint gpos=det->toGlobal(itHit->localPosition());
-    htofeta->Fill(gpos.eta(), itHit->timeOfFlight());
-    htofphi->Fill(gpos.phi().degrees(), itHit->timeOfFlight());
-    htofr->Fill(gpos.mag(), itHit->timeOfFlight());
-    htofz->Fill(gpos.z(), itHit->timeOfFlight());
-
-
-   h6e[ir]->Fill(itHit->energyLoss());
-   h6ex[ir]->Fill(itHit->entryPoint().x()-itHit->exitPoint().x());
-   h6ey[ir]->Fill(itHit->entryPoint().y()-itHit->exitPoint().y());
-   h6ez[ir]->Fill(std::fabs(itHit->entryPoint().z()-itHit->exitPoint().z()));
-   h6lx[ir]->Fill(itHit->localPosition().x());
-   h6ly[ir]->Fill(itHit->localPosition().y());
-  }
   ///////////////////////////////
   // get TIB information
   ///////////////////////////////

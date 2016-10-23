@@ -31,17 +31,12 @@ source copyWWWall.csh
 cd ${DATADIR}/Validation/TrackerDigis/test 
 
 cp ${DATADIR}/Validation/TrackerRecHits/test/stripdigihisto.root .
-cp ${DATADIR}/Validation/TrackerRecHits/test/pixeldigihisto.root .
 
-root -b -p -q  SiPixelDigiCompare.C
-source copyWWWPixel.csh
 root -b -p -q  SiStripDigiCompare.C
 source copyWWWStrip.csh
 
 cd ${DATADIR}/Validation/TrackerRecHits/test
 
-root -b -p -q SiPixelRecHitsCompare.C
-source copyWWWPixel.csh
 root -b -p -q SiStripRecHitsCompare.C
 source copyWWWStrip.csh
 

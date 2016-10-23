@@ -17,11 +17,7 @@ process.load("SimGeneral.MixingModule.mixNoPU_cfi")
 
 #UNCOMMENTGAIN process.load("CalibTracker.Configuration.SiStripGain.SiStripGain_Fake_cff")
 
-#UNCOMMENTGAIN process.load("CalibTracker.Configuration.SiPixelGain.SiPixelGain_Fake_cff")
-
 #UNCOMMENTLA process.load("CalibTracker.Configuration.SiStripLorentzAngle.SiStripLorentzAngle_Fake_cff")
-
-#UNCOMMENTLA process.load("CalibTracker.Configuration.SiPixelLorentzAngle.SiPixelLorentzAngle_Fake_cff")
 
 #UNCOMMENTNOISE process.load("CalibTracker.Configuration.SiStripNoise.SiStripNoise_Fake_APVModePeak_cff")
 
@@ -42,9 +38,7 @@ process.Timing = cms.Service("Timing")
 
 process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck")
 
-#UNCOMMENTGAIN process.prefer("SiPixelFakeGainOfflineESSource")
 #UNCOMMENTGAIN process.prefer("SiStripGainFakeESSource")
-#UNCOMMENTLA process.prefer("SiPixelFakeLorentzAngleESSource")
 #UNCOMMENTLA process.prefer("SiStripLAFakeESSource")
 #UNCOMMENTNOISE process.prefer("SiStripNoiseFakeESSource")
 process.digis = cms.Sequence(process.trDigi*process.trackerDigisValidation)

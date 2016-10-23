@@ -34,7 +34,6 @@ cd ${DATADIR}/Validation/TrackerDigis/test
 
 #/// commentout if  reference are already there
 cmsRun trackerdigivalid_cfg.py >& ! digi.log
-mv pixeldigihisto.root $NEWREFDIR/Digis/Fake
 mv stripdigihisto.root $NEWREFDIR/Digis/Fake
 #//////
 
@@ -64,19 +63,14 @@ rm tmp*_cfg.py
 cmsRun Digi_ideal_cfg.py >& ! digi.log
 
 if($usefakegain == "" && $usefakela == "" && $usefakenoise== "") then
-mv pixeldigihisto.root $NEWREFDIR/Digis/Ideal
 mv stripdigihisto.root $NEWREFDIR/Digis/Ideal
 cp $NEWREFDIR/Digis/Ideal/*.root .
 endif
 
-root -b -p -q  SiPixelDigiCompare.C
-gzip *.eps
-source copyWWWPixel.csh Fake_vs_Ideal$usefakenoise$usefakegain$usefakela
 root -b -p -q  SiStripDigiCompare.C
 gzip *.eps
 source copyWWWStrip.csh Fake_vs_Ideal$usefakenoise$usefakegain$usefakela
 
-mv pixeldigihisto.root ../data/
 mv  stripdigihisto.root ../data/
 
 
@@ -106,14 +100,10 @@ rm tmp*_cfg.py
 cmsRun Digi_startup_cfg.py >& ! digi.log
 
 if($usefakegain == "" && $usefakela == "" && $usefakenoise== "") then
-cp pixeldigihisto.root $NEWREFDIR/Digis/Startup
 cp stripdigihisto.root $NEWREFDIR/Digis/Startup
 cp $NEWREFDIR/Digis/Startup/*.root . 
 endif
 
-root -b -p -q  SiPixelDigiCompare.C
-gzip *.eps
-source copyWWWPixel.csh dummy Ideal_vs_Startup$usefakenoise$usefakegain$usefakela
 root -b -p -q  SiStripDigiCompare.C
 gzip *.eps
 source copyWWWStrip.csh dummy Ideal_vs_Startup$usefakenoise$usefakegain$usefakela

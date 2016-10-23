@@ -112,13 +112,10 @@ void SiTrackerHitsComparePosition()
 
  
  TH1F * hsum_st = new TH1F("ks_st", "KS summary position STRIPS", 22 , -0.05 , 1.05);
- TH1F * hsum_px = new TH1F("ks_px", "KS summary position PIXELS", 22 , -0.05 , 1.05);
  TH1F * hsum_TIB = new TH1F("ks_TIB", "KS summary position TIB", 22 , -0.05 , 1.05);
  TH1F * hsum_TOB = new TH1F("ks_TOB", "KS summary position TOB", 22 , -0.05 , 1.05);
  TH1F * hsum_TID = new TH1F("ks_TID", "KS summary position TID", 22 , -0.05 , 1.05);
  TH1F * hsum_TEC = new TH1F("ks_TEC", "KS summary position TEC", 22 , -0.05 , 1.05);
- TH1F * hsum_BPIX = new TH1F("ks_BPIX", "KS summary position BPIX", 22 , -0.05 , 1.05);
- TH1F * hsum_FPIX = new TH1F("ks_FPIX", "KS summary position FPIX", 22 , -0.05 , 1.05);
 
 //=======================================================
    variable = "Entryx-Exitx";
@@ -262,71 +259,6 @@ void SiTrackerHitsComparePosition()
     c->Print(outname_eps.c_str());
     c->Print(outname_gif.c_str());
 
-// BPIX
-   system = "BPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_BPIX->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-   
-   system = "FPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_FPIX->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
 
 //=======================================================
    variable = "Entryy-Exity";
@@ -457,73 +389,6 @@ void SiTrackerHitsComparePosition()
        buf>>value;
        te->DrawTextNDC(0.5,0.7, value.c_str());
        hsum_TEC->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-
-// BPIX
-   system = "BPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_BPIX->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-   
-   system = "FPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]); 
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_FPIX->Fill(ks[i]);
        leg.Clear();
        leg.AddEntry(rh[i],rver , "l");
        leg.AddEntry(ch[i],cver , "l");
@@ -675,73 +540,6 @@ void SiTrackerHitsComparePosition()
     c->Print(outname_eps.c_str());
     c->Print(outname_gif.c_str());
 
-// BPIX
-   system = "BPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_BPIX->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-   
-   system = "FPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_FPIX->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-
 //=======================================================
    variable = "Localx";
 //=======================================================
@@ -871,73 +669,6 @@ void SiTrackerHitsComparePosition()
        buf>>value;
        te->DrawTextNDC(0.5,0.7, value.c_str());
        hsum_TEC->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-
-// BPIX
-   system = "BPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_BPIX->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-   
-   system = "FPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_FPIX->Fill(ks[i]);
        leg.Clear();
        leg.AddEntry(rh[i],rver , "l");
        leg.AddEntry(ch[i],cver , "l");
@@ -1088,74 +819,6 @@ void SiTrackerHitsComparePosition()
    } 
     c->Print(outname_eps.c_str());
     c->Print(outname_gif.c_str());
-
-// BPIX
-   system = "BPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_BPIX->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-   
-   system = "FPIX";
-   string outname_eps = "pos_"+variable+"_"+system+"_KS.eps";
-   string outname_gif = "pos_"+variable+"_"+system+"_KS.gif";
-   histogram = ""+system+"Hit/"+variable+"_"+system+"_";
-   
-   TCanvas * c = new TCanvas(system.c_str(),system.c_str(),600,800);
-   c->Divide(3,4);   
-   for (Int_t i=0; i<12; i++) {       
-     hn << histogram << i+1 <<std::endl; 
-     hn >> hname;
-     rh[i] = (TH1F*)rdir->Get(hname.c_str())->Clone();
-     ch[i] = (TH1F*)cdir->Get(hname.c_str())->Clone();      
-     c->cd(i+1);
-     if (PV->KSok(rh[i] , ch[i])) {
-       ks[i] = PV->KSCompute(rh[i] , ch[i] , te );
-       PV->KSdraw(rh[i] , ch[i]);
-       rh[i]->Draw("h");      
-       ch[i]->Draw("h same");             
-       buf<<"KS="<<ks[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_FPIX->Fill(ks[i]);
-       leg.Clear();
-       leg.AddEntry(rh[i],rver , "l");
-       leg.AddEntry(ch[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks[i] < 0.1) outfile << ch[i]->GetName() <<" KS probability = "<< ks[i] <<" "<<endl;
-   } 
-    c->Print(outname_eps.c_str());
-    c->Print(outname_gif.c_str());
-
 //===================================================
 // Summary plots
 //===================================================
@@ -1164,11 +827,9 @@ void SiTrackerHitsComparePosition()
  hsum_st -> Add (hsum_TOB);
  hsum_st -> Add (hsum_TID);
  hsum_st -> Add (hsum_TEC); 
- hsum_px -> Add (hsum_BPIX);
- hsum_px -> Add (hsum_FPIX);
  
  TCanvas * s = new TCanvas("s","s",600,800);
- s->Divide(2,4);
+ s->Divide(2,3);
  
  s->cd (1);
  hsum_TIB -> Draw();
@@ -1179,12 +840,8 @@ void SiTrackerHitsComparePosition()
  s->cd (4);
  hsum_TEC -> Draw();
  s->cd (5);
- hsum_BPIX -> Draw();
- s->cd (6);
- hsum_FPIX -> Draw();
- s->cd (7);
  hsum_st -> Draw();
- s->cd (8);
+ s->cd (6);
  hsum_px -> Draw();
  
  s->Print("pos_summary_KS.eps");  

@@ -90,13 +90,10 @@ void SiTrackerHitsCompareEnergy()
  std::string value;
  
  TH1F * hsum_st = new TH1F("ks_st", "KS summary eloss STRIPS", 22 , -0.05 , 1.05);
- TH1F * hsum_px = new TH1F("ks_px", "KS summary eloss PIXELS", 22 , -0.05 , 1.05);
  TH1F * hsum_TIB = new TH1F("ks_TIB", "KS summary eloss TIB", 22 , -0.05 , 1.05);
  TH1F * hsum_TOB = new TH1F("ks_TOB", "KS summary eloss TOB", 22 , -0.05 , 1.05);
  TH1F * hsum_TID = new TH1F("ks_TID", "KS summary eloss TID", 22 , -0.05 , 1.05);
  TH1F * hsum_TEC = new TH1F("ks_TEC", "KS summary eloss TEC", 22 , -0.05 , 1.05);
- TH1F * hsum_BPIX = new TH1F("ks_BPIX", "KS summary eloss BPIX", 22 , -0.05 , 1.05);
- TH1F * hsum_FPIX = new TH1F("ks_FPIX", "KS summary eloss FPIX", 22 , -0.05 , 1.05);
 
 
 // TIB
@@ -216,71 +213,13 @@ void SiTrackerHitsCompareEnergy()
      if (ks1e[i] < 0.1) outfile << ch1e[i]->GetName() <<" KS probability = "<< ks1e[i] <<" "<<endl;
    }
 
-// BPIX
-   TCanvas * BPIX = new TCanvas("BPIX","BPIX",600,800);
-   BPIX->Divide(3,4);
-   
-   for (Int_t i=0; i<12; i++) {        
-     sprintf(histo,"BPIXHit/Eloss_BPIX_%i",i+1);
-     rh1e[i] = (TH1F*)rdir->Get(histo)->Clone();
-     ch1e[i] = (TH1F*)cdir->Get(histo)->Clone();
-      
-     BPIX->cd(i+1);
-     if (PV->KSok(rh1e[i] , ch1e[i])) {
-       ks1e[i] = PV->KSCompute(rh1e[i] , ch1e[i] , te );
-       PV->KSdraw(rh1e[i] , ch1e[i]);
-       rh1e[i]->Draw("h");      
-       ch1e[i]->Draw("h same");             
-       buf<<"KS="<<ks1e[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_BPIX->Fill(ks1e[i]);
-       leg.Clear();
-       leg.AddEntry(rh1e[i],rver , "l");
-       leg.AddEntry(ch1e[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks1e[i] < 0.1) outfile << ch1e[i]->GetName() <<" KS probability = "<< ks1e[i] <<" "<<endl;
-   }
-
-// FPIX
-   TCanvas * FPIX = new TCanvas("FPIX","FPIX",600,800);
-   FPIX->Divide(3,4);
-   
-   for (Int_t i=0; i<12; i++) {        
-     sprintf(histo,"FPIXHit/Eloss_FPIX_%i",i+1);
-     rh1e[i] = (TH1F*)rdir->Get(histo)->Clone();
-     ch1e[i] = (TH1F*)cdir->Get(histo)->Clone();
-      
-     FPIX->cd(i+1);
-     if (PV->KSok(rh1e[i] , ch1e[i])) {
-       ks1e[i] = PV->KSCompute(rh1e[i] , ch1e[i] , te );
-       PV->KSdraw(rh1e[i] , ch1e[i]);
-       rh1e[i]->Draw("h");      
-       ch1e[i]->Draw("h same");             
-       buf<<"KS="<<ks1e[i]<<std::endl;
-       buf>>value;
-       te->DrawTextNDC(0.5,0.7, value.c_str());
-       hsum_FPIX->Fill(ks1e[i]);
-       leg.Clear();
-       leg.AddEntry(rh1e[i],rver , "l");
-       leg.AddEntry(ch1e[i],cver , "l");
-       leg.Draw();
-
-     }
-     if (ks1e[i] < 0.1) outfile << ch1e[i]->GetName() <<" KS probability = "<< ks1e[i] <<" "<<endl;
-   }
-
  hsum_st -> Add (hsum_TIB);
  hsum_st -> Add (hsum_TOB);
  hsum_st -> Add (hsum_TID);
  hsum_st -> Add (hsum_TEC); 
- hsum_px -> Add (hsum_BPIX);
- hsum_px -> Add (hsum_FPIX);
  
  TCanvas * s = new TCanvas("s","s",600,800);
- s->Divide(2,4);
+ s->Divide(2,3);
  
  s->cd (1);
  hsum_TIB -> Draw();
@@ -291,28 +230,20 @@ void SiTrackerHitsCompareEnergy()
  s->cd (4);
  hsum_TEC -> Draw();
  s->cd (5);
- hsum_BPIX -> Draw();
- s->cd (6);
- hsum_FPIX -> Draw();
- s->cd (7);
  hsum_st -> Draw();
- s->cd (8);
+ s->cd (6);
  hsum_px -> Draw();
  
  TIB->Print("eloss_TIB_KS.eps");
  TOB->Print("eloss_TOB_KS.eps");
  TID->Print("eloss_TID_KS.eps");
  TEC->Print("eloss_TEC_KS.eps");
- BPIX->Print("eloss_BPIX_KS.eps");
- FPIX->Print("eloss_FPIX_KS.eps");
  s->Print("eloss_summary_KS.eps");  
 
  TIB->Print("eloss_TIB_KS.gif");
  TOB->Print("eloss_TOB_KS.gif");
  TID->Print("eloss_TID_KS.gif");
  TEC->Print("eloss_TEC_KS.gif");
- BPIX->Print("eloss_BPIX_KS.gif");
- FPIX->Print("eloss_FPIX_KS.gif");
  s->Print("eloss_summary_KS.gif");  
 
 }

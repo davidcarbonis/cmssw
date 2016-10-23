@@ -20,7 +20,6 @@ process.GlobalTag.globaltag = 'IDEAL_30X::All'
 
 
 process.load("Validation.TrackerDigis.trackerDigisValidation_cff")
-process.pixelDigisValid.outputFile="pixeldigihisto.root"
 process.stripDigisValid.outputFile="stripdigihisto.root"
 
 process.maxEvents = cms.untracked.PSet(

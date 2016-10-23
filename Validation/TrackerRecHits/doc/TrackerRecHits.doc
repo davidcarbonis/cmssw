@@ -21,19 +21,15 @@ histograms for validating hits and clusters reconstructed in the silicon tracker
 \subsection interface Public interface
 <!-- List the classes that are provided for use in other packages (if any) -->
 
-- SiPixelRecHitsValid
 - SiStripRecHitsValid
 
 \subsection modules Modules
 <!-- Describe modules implemented in this package and their parameter set -->
 
 - SiStripRecHitsValid Strip tracker rechit validation class.
-- SiPixelRecHitsValid Pixel tracker rechit validation class.
 
 \subsection tests Unit tests and examples
 <!-- Describe cppunit tests and example configuration files -->
-
-To run the pixel rechit validation: cmsRun test/SiPixelRecHitsValid.cfg.
 
 To run the strip rechit validation: cmsRun test/SiStripRecHitsValid.cfg.
 

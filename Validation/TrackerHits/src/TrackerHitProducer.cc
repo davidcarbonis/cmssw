@@ -9,7 +9,6 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/Provenance/interface/Provenance.h"
-#include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
 
 // tracker info
@@ -47,10 +46,6 @@ TrackerHitProducer::TrackerHitProducer(const edm::ParameterSet& iPSet)
 			   )
   , edmSimVertexContainerToken_( consumes<edm::SimVertexContainer>( iPSet.getParameter<edm::InputTag>("G4VtxSrc") ) )
   , edmSimTrackContainerToken_( consumes<edm::SimTrackContainer>( iPSet.getParameter<edm::InputTag>( "G4TrkSrc" ) ) )
-  , edmPSimHitContainer_pxlBrlLow_Token_( consumes<edm::PSimHitContainer>( iPSet.getParameter<edm::InputTag>( "PxlBrlLowSrc" ) ) )
-  , edmPSimHitContainer_pxlBrlHigh_Token_( consumes<edm::PSimHitContainer>( iPSet.getParameter<edm::InputTag>( "PxlBrlHighSrc" ) ) )
-  , edmPSimHitContainer_pxlFwdLow_Token_( consumes<edm::PSimHitContainer>( iPSet.getParameter<edm::InputTag>( "PxlFwdLowSrc" ) ) )
-  , edmPSimHitContainer_pxlFwdHigh_Token_( consumes<edm::PSimHitContainer>( iPSet.getParameter<edm::InputTag>( "PxlFwdHighSrc" ) ) )
   , edmPSimHitContainer_siTIBLow_Token_( consumes<edm::PSimHitContainer>( iPSet.getParameter<edm::InputTag>( "SiTIBLowSrc" ) ) )
   , edmPSimHitContainer_siTIBHigh_Token_( consumes<edm::PSimHitContainer>( iPSet.getParameter<edm::InputTag>( "SiTIBHighSrc" ) ) )
   , edmPSimHitContainer_siTOBLow_Token_( consumes<edm::PSimHitContainer>( iPSet.getParameter<edm::InputTag>( "SiTOBLowSrc" ) ) )
@@ -79,14 +74,6 @@ TrackerHitProducer::TrackerHitProducer(const edm::ParameterSet& iPSet)
       << "    Label     =" << label << "\n"
       << "    GetProv   =" << getAllProvenances << "\n"
       << "    PrintProv =" << printProvenanceInfo << "\n"
-      << "    PxlBrlLowSrc  = " << iPSet.getParameter<edm::InputTag>("PxlBrlLowSrc").label() 
-      << ":" << iPSet.getParameter<edm::InputTag>("PxlBrlLowSrc").instance() << "\n"
-      << "    PxlBrlHighSrc = " << iPSet.getParameter<edm::InputTag>("PxlBrlHighSrc").label() 
-      << ":" << iPSet.getParameter<edm::InputTag>("PxlBrlHighSrc").instance() << "\n"
-      << "    PxlFwdLowSrc  = " << iPSet.getParameter<edm::InputTag>("PxlFwdLowSrc").label() 
-      << ":" << iPSet.getParameter<edm::InputTag>("PxlFwdLowSrc").instance() << "\n"
-      << "    PxlFwdHighSrc = " << iPSet.getParameter<edm::InputTag>("PxlFwdHighSrc").label() 
-      << ":" << iPSet.getParameter<edm::InputTag>("PxlFwdHighSrc").instance() << "\n"
       << "    SiTIBLowSrc   = " << iPSet.getParameter<edm::InputTag>("SiTIBLowSrc").label() 
       << ":" << iPSet.getParameter<edm::InputTag>("SiTIBLowSrc").instance() << "\n"
       << "    SiTIBHighSrc  = " << iPSet.getParameter<edm::InputTag>("SiTIBHighSrc").label() 
@@ -372,224 +359,6 @@ void TrackerHitProducer::fillTrk(edm::Event& iEvent,
 //  edm::PSimHitContainer theHits;
 
   ///////////////////////////////
-  // get Pixel Barrel information
-  ///////////////////////////////
-  
-  // extract low container
-  edm::Handle<edm::PSimHitContainer> PxlBrlLowContainer;
-  iEvent.getByToken( edmPSimHitContainer_pxlBrlLow_Token_, PxlBrlLowContainer );
-  if (!PxlBrlLowContainer.isValid()) {
-    edm::LogError("TrackerHitProducer::fillTrk")
-      << "Unable to find TrackerHitsPixelBarrelLowTof in event!";
-    return;
-  }
-    
-  // place both containers into new container
-//  theHits.insert(theHits.end(),PxlBrlLowContainer->begin(),
-//             PxlBrlLowContainer->end());
-               
-  sysID = 100;   // TrackerHitsPixelBarrelLowTof
-  int j = 0;               
-  for (itHit = PxlBrlLowContainer->begin(); itHit != PxlBrlLowContainer->end(); ++itHit) {
-//  for (itHit = theHits.begin(); itHit != theHits.end(); ++itHit) {
-
-      // gather necessary information
-      ++j;
-      HitsSysID.push_back(sysID);
-      HitsDuID.push_back(itHit->detUnitId());
-      HitsTkID.push_back(itHit->trackId());
-      HitsProT.push_back(itHit->processType());
-      HitsParT.push_back(itHit->particleType());
-      HitsP.push_back(itHit->pabs());
-      
-      HitsLpX.push_back(itHit->localPosition().x());
-      HitsLpY.push_back(itHit->localPosition().y());
-      HitsLpZ.push_back(itHit->localPosition().z());
-
-      HitsLdX.push_back(itHit->localDirection().x());
-      HitsLdY.push_back(itHit->localDirection().y());
-      HitsLdZ.push_back(itHit->localDirection().z());
-      HitsLdTheta.push_back(itHit->localDirection().theta());
-      HitsLdPhi.push_back(itHit->localDirection().phi());
-
-      HitsExPx.push_back(itHit->exitPoint().x());
-      HitsExPy.push_back(itHit->exitPoint().y());
-      HitsExPz.push_back(itHit->exitPoint().z());
-
-      HitsEnPx.push_back(itHit->entryPoint().x());
-      HitsEnPy.push_back(itHit->entryPoint().y());
-      HitsEnPz.push_back(itHit->entryPoint().z());
-
-      HitsEloss.push_back(itHit->energyLoss());
-      HitsToF.push_back(itHit->tof());
-      
-  } // end loop through PxlBrl Hits
-
-  if (verbosity > 1) {
-    eventout += "\n          Number of Pixel Barrel Low TOF Hits collected:     ";
-    eventout += j;
-  }  
-  
-//  theHits.clear();
-    
-  // extract high container
-  edm::Handle<edm::PSimHitContainer> PxlBrlHighContainer;
-  iEvent.getByToken( edmPSimHitContainer_pxlBrlHigh_Token_, PxlBrlHighContainer );
-  if (!PxlBrlHighContainer.isValid()) {
-    edm::LogError("TrackerHitProducer::fillTrk")
-      << "Unable to find TrackerHitsPixelBarrelHighTof in event!";
-    return;
-  }
-  
-  
-  sysID = 200;   // TrackerHitsPixelBarrelHighTof
-  j = 0;               
-  for (itHit = PxlBrlHighContainer->begin(); itHit != PxlBrlHighContainer->end(); ++itHit) {
-
-      // gather necessary information
-      ++j;
-      HitsSysID.push_back(sysID);
-      HitsDuID.push_back(itHit->detUnitId());
-      HitsTkID.push_back(itHit->trackId());
-      HitsProT.push_back(itHit->processType());
-      HitsParT.push_back(itHit->particleType());
-      HitsP.push_back(itHit->pabs());
-      
-      HitsLpX.push_back(itHit->localPosition().x());
-      HitsLpY.push_back(itHit->localPosition().y());
-      HitsLpZ.push_back(itHit->localPosition().z());
-
-      HitsLdX.push_back(itHit->localDirection().x());
-      HitsLdY.push_back(itHit->localDirection().y());
-      HitsLdZ.push_back(itHit->localDirection().z());
-      HitsLdTheta.push_back(itHit->localDirection().theta());
-      HitsLdPhi.push_back(itHit->localDirection().phi());
-
-      HitsExPx.push_back(itHit->exitPoint().x());
-      HitsExPy.push_back(itHit->exitPoint().y());
-      HitsExPz.push_back(itHit->exitPoint().z());
-
-      HitsEnPx.push_back(itHit->entryPoint().x());
-      HitsEnPy.push_back(itHit->entryPoint().y());
-      HitsEnPz.push_back(itHit->entryPoint().z());
-
-      HitsEloss.push_back(itHit->energyLoss());
-      HitsToF.push_back(itHit->tof());
-      
-  } // end loop through PxlBrl Hits
-
-  if (verbosity > 1) {
-    eventout += "\n          Number of Pixel Barrel High TOF Hits collected:     ";
-    eventout += j;
-  }  
-
-  
-  /////////////////////////////////
-  // get Pixel Forward information
-  ////////////////////////////////
-  // extract low container
-  edm::Handle<edm::PSimHitContainer> PxlFwdLowContainer;
-  iEvent.getByToken( edmPSimHitContainer_pxlFwdLow_Token_, PxlFwdLowContainer );
-  if (!PxlFwdLowContainer.isValid()) {
-    edm::LogError("TrackerHitProducer::fillTrk")
-      << "Unable to find TrackerHitsPixelEndcapLowTof in event!";
-    return;
-  }
-  
-  sysID = 300;   // TrackerHitsPixelEndcapLowTof
-  j = 0;               
-  for (itHit = PxlFwdLowContainer->begin(); itHit != PxlFwdLowContainer->end(); ++itHit) {
-
-      // gather necessary information
-      ++j;
-      HitsSysID.push_back(sysID);
-      HitsDuID.push_back(itHit->detUnitId());
-      HitsTkID.push_back(itHit->trackId());
-      HitsProT.push_back(itHit->processType());
-      HitsParT.push_back(itHit->particleType());
-      HitsP.push_back(itHit->pabs());
-      
-      HitsLpX.push_back(itHit->localPosition().x());
-      HitsLpY.push_back(itHit->localPosition().y());
-      HitsLpZ.push_back(itHit->localPosition().z());
-
-      HitsLdX.push_back(itHit->localDirection().x());
-      HitsLdY.push_back(itHit->localDirection().y());
-      HitsLdZ.push_back(itHit->localDirection().z());
-      HitsLdTheta.push_back(itHit->localDirection().theta());
-      HitsLdPhi.push_back(itHit->localDirection().phi());
-
-      HitsExPx.push_back(itHit->exitPoint().x());
-      HitsExPy.push_back(itHit->exitPoint().y());
-      HitsExPz.push_back(itHit->exitPoint().z());
-
-      HitsEnPx.push_back(itHit->entryPoint().x());
-      HitsEnPy.push_back(itHit->entryPoint().y());
-      HitsEnPz.push_back(itHit->entryPoint().z());
-
-      HitsEloss.push_back(itHit->energyLoss());
-      HitsToF.push_back(itHit->tof());
-      
-  } // end loop through PxlFwd Hits
-
-  if (verbosity > 1) {
-    eventout += "\n          Number of Pixel Forward Low TOF Hits collected:     ";
-    eventout += j;
-  }  
-  
-  
-  // extract high container
-  edm::Handle<edm::PSimHitContainer> PxlFwdHighContainer;
-  iEvent.getByToken( edmPSimHitContainer_pxlFwdHigh_Token_, PxlFwdHighContainer );
-  if (!PxlFwdHighContainer.isValid()) {
-    edm::LogError("TrackerHitProducer::fillTrk")
-      << "Unable to find TrackerHitsPixelEndcapHighTof in event!";
-    return;
-  }
-  
-  sysID = 400;   // TrackerHitsPixelEndcapHighTof
-  j = 0;               
-  for (itHit = PxlFwdHighContainer->begin(); itHit != PxlFwdHighContainer->end(); ++itHit) {
-
-      // gather necessary information
-      ++j;
-      HitsSysID.push_back(sysID);
-      HitsDuID.push_back(itHit->detUnitId());
-      HitsTkID.push_back(itHit->trackId());
-      HitsProT.push_back(itHit->processType());
-      HitsParT.push_back(itHit->particleType());
-      HitsP.push_back(itHit->pabs());
-      
-      HitsLpX.push_back(itHit->localPosition().x());
-      HitsLpY.push_back(itHit->localPosition().y());
-      HitsLpZ.push_back(itHit->localPosition().z());
-
-      HitsLdX.push_back(itHit->localDirection().x());
-      HitsLdY.push_back(itHit->localDirection().y());
-      HitsLdZ.push_back(itHit->localDirection().z());
-      HitsLdTheta.push_back(itHit->localDirection().theta());
-      HitsLdPhi.push_back(itHit->localDirection().phi());
-
-      HitsExPx.push_back(itHit->exitPoint().x());
-      HitsExPy.push_back(itHit->exitPoint().y());
-      HitsExPz.push_back(itHit->exitPoint().z());
-
-      HitsEnPx.push_back(itHit->entryPoint().x());
-      HitsEnPy.push_back(itHit->entryPoint().y());
-      HitsEnPz.push_back(itHit->entryPoint().z());
-
-      HitsEloss.push_back(itHit->energyLoss());
-      HitsToF.push_back(itHit->tof());
-      
-  } // end loop through PxlFwd Hits
-
-  if (verbosity > 1) {
-    eventout += "\n          Number of Pixel Forward High TOF Hits collected:     ";
-    eventout += j;
-  }  
-          
- 
-  ///////////////////////////////////
   // get Silicon TIB information
   //////////////////////////////////
   // extract TIB low container
@@ -602,7 +371,7 @@ void TrackerHitProducer::fillTrk(edm::Event& iEvent,
   }
   
   sysID = 10;   // TrackerHitsTIBLowTof
-  j = 0;               
+  int j = 0;               
   for (itHit = SiTIBLowContainer->begin(); itHit != SiTIBLowContainer->end(); ++itHit) {
 
       // gather necessary information
@@ -1013,32 +782,6 @@ void TrackerHitProducer::storeTrk(PTrackerSimHit& product)
 
 /*
   if (verbosity > 2) {
-    TString eventout("\nnPxlBrlHits        = ");
-    eventout += PxlBrlToF.size();
-    for (unsigned int i = 0; i < PxlBrlToF.size(); ++i) {
-      eventout += "\n          (tof,r,phi,eta) = (";
-      eventout += PxlBrlToF[i];
-      eventout += ", ";
-      eventout += PxlBrlR[i];
-      eventout += ", ";
-      eventout += PxlBrlPhi[i];
-      eventout += ", ";
-      eventout += PxlBrlEta[i];
-      eventout += ")";      
-    } // end PxlBrl output
-    eventout += "\n       nPxlFwdHits        = ";
-    eventout += PxlFwdToF.size();
-    for (unsigned int i = 0; i < PxlFwdToF.size(); ++i) {
-      eventout += "\n          (tof,z,phi,eta) = (";
-      eventout += PxlFwdToF[i];
-      eventout += ", ";
-      eventout += PxlFwdZ[i];
-      eventout += ", ";
-      eventout += PxlFwdPhi[i];
-      eventout += ", ";
-      eventout += PxlFwdEta[i];
-      eventout += ")";      
-    } // end PxlFwd output
     eventout += "\n       nSiBrlHits         = ";
     eventout += SiBrlToF.size();
     for (unsigned int i = 0; i < SiBrlToF.size(); ++i) {

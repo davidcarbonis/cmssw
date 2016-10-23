@@ -1,6 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-from Validation.TrackerRecHits.SiPixelRecHitsValid_cfi import *
 from Validation.TrackerRecHits.SiStripRecHitsValid_cfi import *
 import DQM.SiStripMonitorSummary.SiStripMonitorCondData_cfi 
 
@@ -46,5 +45,5 @@ condDataValidation = DQM.SiStripMonitorSummary.SiStripMonitorCondData_cfi.CondDa
 
 
 
-trackerRecHitsValidation = cms.Sequence(pixRecHitsValid+stripRecHitsValid+condDataValidation)
+trackerRecHitsValidation = cms.Sequence(stripRecHitsValid+condDataValidation)
 
