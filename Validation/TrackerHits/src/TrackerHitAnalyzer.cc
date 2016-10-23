@@ -63,8 +63,6 @@ void TrackerHitAnalyzer::bookHistograms(DQMStore::IBooker & ibooker,const edm::R
   Char_t  hname2[50], htitle2[80];
   Char_t  hname3[50], htitle3[80];
   Char_t  hname4[50], htitle4[80];
-  Char_t  hname5[50], htitle5[80];
-  Char_t  hname6[50], htitle6[80];
    
   if ( fDBE ) {
      if ( verbose_ ) {
