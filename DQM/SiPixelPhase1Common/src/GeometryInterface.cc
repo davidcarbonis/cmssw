@@ -170,6 +170,7 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
       // blade 1 and 56 are at 3 o'clock. This is a mess.
       auto inring  = blade > innerring ? (innerring+outerring+1) - blade : blade;
       auto perring = blade > innerring ? outerring : innerring;
+
       // inring is now 1-based, 1 at 3 o'clock, upto perring.
       int frac = (int) ((inring-1) / float(perring) * 4); // floor semantics here
       if (frac == 0 || frac == 3) return 10*ec + 1; // inner half
@@ -279,6 +280,11 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
   auto pxladder = extractors[intern("PXLadder")];
   auto pxlayer  = extractors[intern("PXLayer")];
 
+  auto pxendcap = extractors[intern("PXEndcap")];
+  auto pxblade  = extractors[intern("PXBlade")];
+  Value innerring = iConfig.getParameter<int>("n_inner_ring_blades");
+  Value outerring = 0;
+
   Value maxmodule = 0;
   std::vector<Value> maxladders;
 
@@ -288,6 +294,9 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     auto module = pxmodule(iq);
     if (module != UNDEFINED && module > maxmodule) maxmodule = module;
 
+    auto blade = pxblade(iq);
+    if (blade != UNDEFINED && blade > outerring) outerring = blade;
+
     if (id.subdetId() != PixelSubdetector::PixelBarrel && id.subdetId() != PixelSubdetector::PixelEndcap) continue;
     auto layer = pxlayer(iq);
     if (layer != UNDEFINED) {
@@ -296,6 +305,8 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
       if (ladder > maxladders[layer]) maxladders[layer] = ladder;
     }
   }
+
+  outerring = outerring - innerring;
 
   addExtractor(intern("ROC"),
     [n_rocs, roc_cols, roc_rows] (InterestingQuantities const& iq) {
@@ -361,6 +372,27 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     }
   );
 
+  addExtractor(intern("ROCinDiskRow"),
+    [pxendcap, pxblade, innerring, outerring, roc, roc_rows] (InterestingQuantities const& iq) {
+      auto ec = pxendcap(iq);
+      if (ec == UNDEFINED) return UNDEFINED;
+      auto blade = pxblade(iq);
+      if (blade == UNDEFINED) return UNDEFINED;
+
+      int rocRow = int(iq.row / roc_rows);
+
+      // blade 1 and 56 are at 3 o'clock. This is a mess.
+      auto inring  = blade > innerring ? (innerring+outerring+1) - blade : blade;
+      auto perring = blade > innerring ? outerring : innerring;
+
+      // inring is now 1-based, 1 at 3 o'clock, upto perring.
+      int frac = (int) ((inring-1) / float(perring) * 4); // floor semantics here
+      if (frac == 0 || frac == 3) return (10*ec + 1) * 2 + rocRow; // inner half
+      if (frac == 1 || frac == 2) return (10*ec + 2) * 2 + rocRow; // outer half
+      assert(!"HalfCylinder logic problem");
+      return UNDEFINED;
+    }
+  );
 
   addExtractor(intern("DetId"),
     [] (InterestingQuantities const& iq) {
