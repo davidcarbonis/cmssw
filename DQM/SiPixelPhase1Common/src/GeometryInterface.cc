@@ -170,6 +170,7 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
       // blade 1 and 56 are at 3 o'clock. This is a mess.
       auto inring  = blade > innerring ? (innerring+outerring+1) - blade : blade;
       auto perring = blade > innerring ? outerring : innerring;
+
       // inring is now 1-based, 1 at 3 o'clock, upto perring.
       int frac = (int) ((inring-1) / float(perring) * 4); // floor semantics here
       if (frac == 0 || frac == 3) return 10*ec + 1; // inner half
@@ -267,11 +268,46 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     0, iConfig.getParameter<int>("module_cols") - 1
   );
 
+  edm::ESHandle<TrackerGeometry> trackerGeometryHandle;
+  iSetup.get<TrackerDigiGeometryRecord>().get(trackerGeometryHandle);
+  assert(trackerGeometryHandle.isValid());
+
   int   n_rocs     = iConfig.getParameter<int>("n_rocs");
   float roc_cols   = iConfig.getParameter<int>("roc_cols");
   float roc_rows   = iConfig.getParameter<int>("roc_rows");
   auto  pxmodule   = extractors[intern("PXBModule")];
   auto  pxpanel    = extractors[intern("PXPanel")];
+  auto pxladder = extractors[intern("PXLadder")];
+  auto pxlayer  = extractors[intern("PXLayer")];
+
+  auto pxendcap = extractors[intern("PXEndcap")];
+  auto pxblade  = extractors[intern("PXBlade")];
+  Value innerring = iConfig.getParameter<int>("n_inner_ring_blades");
+  Value outerring = 0;
+
+  Value maxmodule = 0;
+  std::vector<Value> maxladders;
+
+  auto detids = trackerGeometryHandle->detIds();
+  for (DetId id : detids) {
+    auto iq = InterestingQuantities{.sourceModule = id };
+    auto module = pxmodule(iq);
+    if (module != UNDEFINED && module > maxmodule) maxmodule = module;
+
+    auto blade = pxblade(iq);
+    if (blade != UNDEFINED && blade > outerring) outerring = blade;
+
+    if (id.subdetId() != PixelSubdetector::PixelBarrel && id.subdetId() != PixelSubdetector::PixelEndcap) continue;
+    auto layer = pxlayer(iq);
+    if (layer != UNDEFINED) {
+      if (layer >= Value(maxladders.size())) maxladders.resize(layer+1);
+      auto ladder = pxladder(iq);
+      if (ladder > maxladders[layer]) maxladders[layer] = ladder;
+    }
+  }
+
+  outerring = outerring - innerring;
+
   addExtractor(intern("ROC"),
     [n_rocs, roc_cols, roc_rows] (InterestingQuantities const& iq) {
       int fedrow = int(iq.row / roc_rows);
@@ -298,13 +334,90 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
       return Value(roc(iq) + n_rocs * (mod-1));
     }
   );
+  addExtractor(intern("ROCinLayerRow"),
+    [pxladder, pxlayer, maxladders, roc, roc_rows] (InterestingQuantities const& iq) {
+
+      auto ladder = pxladder(iq);
+      if (ladder == UNDEFINED) return UNDEFINED;
+
+      int rocRow = int(iq.row / roc_rows);
+
+      auto layer  = pxlayer(iq);
+      int frac = (int) ((ladder-1) / float(maxladders[layer]) * 4); // floor semantics
+      Value quarter = maxladders[layer] / 4;
+
+      if (frac == 0) return Value( (-ladder + quarter + 1) * 2 + (rocRow) -1 );
+      if (frac == 1) return Value( (-ladder + quarter) * 2 + (rocRow) );
+      if (frac == 2) return Value( (-ladder + quarter) * 2 + (rocRow) );
+      if (frac == 3) return Value( (-ladder  + 4*quarter + quarter + 1) * 2 + (rocRow) -1 );
+      assert(!"Shell logic problem");
+      return UNDEFINED;
+
+    }
+  );
+  addExtractor(intern("ROCinLayerCol"),
+    [pxmodule, maxmodule, roc, roc_cols] (InterestingQuantities const& iq) {
+      auto mod = pxmodule(iq);
+      if (mod == UNDEFINED) return UNDEFINED;
+
+      int rocCol = int(iq.col / roc_cols);
+
+      mod -= (maxmodule/2 + 1);
+      if (mod >= 0) return Value ( -(mod + 1) * 8 + rocCol );    // range -(max_module/2)..-1, 1..
+      else return Value ( -mod * 8 + rocCol -7 );    // range -(max_module/2)..-1, 0..
+
+      assert(!"Shell logic problem");
+      return UNDEFINED;
+    }
+  );
+/*
+  addExtractor(intern("ROCinDiskRow"),
+    [pxendcap, pxblade, pxpanel, innerring, outerring, roc, roc_rows] (InterestingQuantities const& iq) {
+      auto ec = pxendcap(iq);
+      if (ec == UNDEFINED) return UNDEFINED;
+      auto blade = pxblade(iq);
+      if (blade == UNDEFINED) return UNDEFINED;
+      auto panel = pxpanel(iq);
+      if (panel == UNDEFINED) return UNDEFINED;
+
+      int rocCol = int(iq.col / roc_cols);
+
+      // blade 1 and 56 are at 3 o'clock. This is a mess.
+      auto inring  = blade > innerring ? (innerring+outerring+1) - blade : blade;
+      auto perring = blade > innerring ? outerring : innerring;
+
+      mod -= (maxmodule/2 + 1);
+      if (mod >= 0) return Value ( -(mod + 1) * 8 + rocCol );    // range -(max_module/2)..-1, 1..
+      else return Value ( -mod * 8 + rocCol -7 );    // range -(max_module/2)..-1, 0..
+
+      assert(!"Shell logic problem");
+      return UNDEFINED;
+    }
+  );
+*/
+
+  addExtractor(intern("ROCinDiskCol"),
+    [pxendcap, pxblade, roc, roc_cols] (InterestingQuantities const& iq) {
+      auto ec = pxendcap(iq);
+      if (ec == UNDEFINED) return UNDEFINED;
+      auto blade = pxblade(iq);
+      if (blade == UNDEFINED) return UNDEFINED;
+
+      int rocCol = int(iq.col / roc_cols);
+
+      return Value ( blade * 8 + rocCol );
+
+      assert(!"Blade logic problem.");
+      return UNDEFINED;
+    }
+  );
 
   addExtractor(intern("DetId"),
     [] (InterestingQuantities const& iq) {
       uint32_t id = iq.sourceModule.rawId();
       return Value(id);
-    },
-    0, 0 // No sane value possible here.
+    }//,
+//    0, 0 // No sane value possible here.
   );
 }
 
