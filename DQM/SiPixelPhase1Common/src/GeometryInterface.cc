@@ -372,28 +372,46 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
 
       assert(!"Shell logic problem");
       return UNDEFINED;
-
     }
   );
-
+/*
   addExtractor(intern("ROCinDiskRow"),
-    [pxendcap, pxblade, innerring, outerring, roc, roc_rows] (InterestingQuantities const& iq) {
+    [pxendcap, pxblade, pxpanel, innerring, outerring, roc, roc_rows] (InterestingQuantities const& iq) {
       auto ec = pxendcap(iq);
       if (ec == UNDEFINED) return UNDEFINED;
       auto blade = pxblade(iq);
       if (blade == UNDEFINED) return UNDEFINED;
+      auto panel = pxpanel(iq);
+      if (panel == UNDEFINED) return UNDEFINED;
 
-      int rocRow = int(iq.row / roc_rows);
+      int rocCol = int(iq.col / roc_cols);
 
       // blade 1 and 56 are at 3 o'clock. This is a mess.
       auto inring  = blade > innerring ? (innerring+outerring+1) - blade : blade;
       auto perring = blade > innerring ? outerring : innerring;
 
-      // inring is now 1-based, 1 at 3 o'clock, upto perring.
-      int frac = (int) ((inring-1) / float(perring) * 4); // floor semantics here
-      if (frac == 0 || frac == 3) return (10*ec + 1) * 2 + rocRow; // inner half
-      if (frac == 1 || frac == 2) return (10*ec + 2) * 2 + rocRow; // outer half
-      assert(!"HalfCylinder logic problem");
+      mod -= (maxmodule/2 + 1);
+      if (mod >= 0) return Value ( -(mod + 1) * 8 + rocCol );    // range -(max_module/2)..-1, 1..
+      else return Value ( -mod * 8 + rocCol -7 );    // range -(max_module/2)..-1, 0..
+
+      assert(!"Shell logic problem");
+      return UNDEFINED;
+    }
+  );
+*/
+
+  addExtractor(intern("ROCinDiskCol"),
+    [pxendcap, pxblade, roc, roc_cols] (InterestingQuantities const& iq) {
+      auto ec = pxendcap(iq);
+      if (ec == UNDEFINED) return UNDEFINED;
+      auto blade = pxblade(iq);
+      if (blade == UNDEFINED) return UNDEFINED;
+
+      int rocCol = int(iq.col / roc_cols);
+
+      return Value ( blade * 8 + rocCol );
+
+      assert(!"Blade logic problem.");
       return UNDEFINED;
     }
   );
@@ -402,8 +420,8 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     [] (InterestingQuantities const& iq) {
       uint32_t id = iq.sourceModule.rawId();
       return Value(id);
-    },
-    0, 0 // No sane value possible here.
+    }//,
+//    0, 0 // No sane value possible here.
   );
 }
 

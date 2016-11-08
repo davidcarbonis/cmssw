@@ -39,14 +39,19 @@ SiPixelPhase1TrackEfficiencyValid = DefaultHisto.clone(
                    .groupBy("PXBarrel/PXLayer", "EXTEND_Y")
                    .save(),
 
-
     Specification().groupBy("PXBarrel/PXLayer/signedModule/ROCinLayerRow")
                    .groupBy("PXBarrel/PXLayer/signedModule", "EXTEND_X")
                    .groupBy("PXBarrel/PXLayer", "EXTEND_Y")
                    .save(),
-    Specification().groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/ROCinDiskRow")
-                   .groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade", "EXTEND_X")
-                   .groupBy("PXForward/HalfCylinder/PXDisk/PXRing", "EXTEND_Y")
+    
+#    Specification().groupBy("PXForward/PXDisk/PXRing/PXPanel/ROCinDiskCol")
+#                   .groupBy("PXForward/PXDisk/PXRing/PXPanel", "EXTEND_X")
+#                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
+#                   .save(),
+
+    Specification().groupBy("PXForward/PXDisk/PXRing/PXBlade/ROCinDiskCol")
+                   .groupBy("PXForward/PXDisk/PXRing/PXBlade", "EXTEND_X")
+                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
                    .save(),
 
     Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
