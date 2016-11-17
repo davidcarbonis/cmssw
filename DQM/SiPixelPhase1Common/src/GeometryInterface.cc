@@ -181,10 +181,10 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
     }, 0, 0 // N/A
   );
 
-  // For the '+-shape' (ladder vs. module) plots, we need signed numbers with
+  // For the '+-shape' (ladder vs. module) plots, we need online numbers with
   // (unused) 0-ladder/module at x=0/z=0. This means a lot of messing with the
   // ladder/shell numbering...
-  addExtractor(intern("signedLadder"),
+  addExtractor(intern("onlineLadder"),
     [pxbarrel, pxladder, pxlayer, maxladders, maxmodule] (InterestingQuantities const& iq) {
       if(pxbarrel(iq) == UNDEFINED) return UNDEFINED;
       auto layer  = pxlayer(iq);
@@ -200,7 +200,7 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
     }
   );
 
-  addExtractor(intern("signedModule"),
+  addExtractor(intern("onlineModule"),
     [pxmodule, maxmodule] (InterestingQuantities const& iq) {
       Value mod = pxmodule(iq);  // range 1..maxmodule
       if (mod == UNDEFINED) return UNDEFINED;
@@ -210,12 +210,12 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
     }
   );
 
-  auto signedladder = extractors[intern("signedLadder")];
-  auto signedmodule = extractors[intern("signedModule")];
+  auto onlineladder = extractors[intern("onlineLadder")];
+  auto onlinemodule = extractors[intern("onlineModule")];
   addExtractor(intern("Shell"),
-    [signedladder, signedmodule] (InterestingQuantities const& iq) {
-      auto sl = signedladder(iq);
-      auto sm = signedmodule(iq);
+    [onlineladder, onlinemodule] (InterestingQuantities const& iq) {
+      auto sl = onlineladder(iq);
+      auto sm = onlinemodule(iq);
       if (sl == UNDEFINED) return UNDEFINED;
       return Value((sm < 0 ? 10 : 20) + (sl < 0 ? 2 : 1)); // negative means outer shell!?
     }, 0, 0 // N/A
@@ -374,31 +374,23 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
       return UNDEFINED;
     }
   );
-/*
+
   addExtractor(intern("ROCinDiskRow"),
-    [pxendcap, pxblade, pxpanel, innerring, outerring, roc, roc_rows] (InterestingQuantities const& iq) {
+    [pxendcap, pxpanel, roc, roc_rows] (InterestingQuantities const& iq) {
       auto ec = pxendcap(iq);
       if (ec == UNDEFINED) return UNDEFINED;
-      auto blade = pxblade(iq);
-      if (blade == UNDEFINED) return UNDEFINED;
       auto panel = pxpanel(iq);
       if (panel == UNDEFINED) return UNDEFINED;
 
-      int rocCol = int(iq.col / roc_cols);
+      int rocRow = int(iq.row / roc_rows);
 
-      // blade 1 and 56 are at 3 o'clock. This is a mess.
-      auto inring  = blade > innerring ? (innerring+outerring+1) - blade : blade;
-      auto perring = blade > innerring ? outerring : innerring;
-
-      mod -= (maxmodule/2 + 1);
-      if (mod >= 0) return Value ( -(mod + 1) * 8 + rocCol );    // range -(max_module/2)..-1, 1..
-      else return Value ( -mod * 8 + rocCol -7 );    // range -(max_module/2)..-1, 0..
+       return Value ( panel * 2 + rocRow );
 
       assert(!"Shell logic problem");
       return UNDEFINED;
     }
   );
-*/
+
 
   addExtractor(intern("ROCinDiskCol"),
     [pxendcap, pxblade, roc, roc_cols] (InterestingQuantities const& iq) {
