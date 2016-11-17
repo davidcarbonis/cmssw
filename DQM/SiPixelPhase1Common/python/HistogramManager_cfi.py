@@ -109,9 +109,9 @@ StandardSpecificationTrend = ( # the () are only for syntax reasons
 
 StandardSpecification2DProfile = (
     Specification(PerLayer2D)
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade/signedModule|PXPanel")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade/onlineModule|PXPanel")
        .reduce("MEAN")
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade", "EXTEND_X")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade", "EXTEND_X")
        .groupBy("PXBarrel|PXForward/PXLayer|PXDisk", "EXTEND_Y")
        .save()
 )
@@ -142,11 +142,11 @@ StandardSpecificationTrend_Num = (
 
 StandardSpecification2DProfile_Num = (
     Specification(PerLayer2D)
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade/signedModule|PXPanel" + "/DetId/Event")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade/onlineModule|PXPanel" + "/DetId/Event")
        .reduce("COUNT")
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade/signedModule|PXPanel")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade/onlineModule|PXPanel")
        .reduce("MEAN") 
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade", "EXTEND_X")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade", "EXTEND_X")
        .groupBy("PXBarrel|PXForward/PXLayer|PXDisk", "EXTEND_Y")
        .save()
 )
