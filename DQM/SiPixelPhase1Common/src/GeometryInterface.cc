@@ -184,7 +184,7 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
   // (unused) 0-ladder/module at x=0/z=0. This means a lot of messing with the
   // ladder/shell numbering...
   addExtractor(intern("onlineLadder"),
-    [pxbarrel, pxladder, pxlayer, maxladders, maxmodule] (InterestingQuantities const& iq) {
+    [pxbarrel, pxladder, pxlayer, maxladders] (InterestingQuantities const& iq) {
       if(pxbarrel(iq) == UNDEFINED) return UNDEFINED;
       auto layer  = pxlayer(iq);
       auto ladder = pxladder(iq);
@@ -206,6 +206,24 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
       mod -= (maxmodule/2 + 1); // range -(max_module/2)..-1, 0..
       if (mod >= 0) mod += 1;    // range -(max_module/2)..-1, 1..
       return mod;
+    }
+  );
+
+  addExtractor(intern("onlineBlade"),
+    [pxendcap, pxblade] (InterestingQuantities const& iq) {
+      if(pxendcap(iq) == UNDEFINED) return UNDEFINED;
+      auto blade = pxblade(iq);
+      // Ring 1
+      if ( 1 <= blade && blade < 6 ) return 6 - blade; // 5 on 1st quarter
+      if ( 6 <= blade && blade < 17 ) return 5 - blade; // 11 on 2nd half
+      if ( 17 <= blade && blade < 23 ) return 28 - blade; // 6 on 4th quarter
+      // Ring 2
+      if ( 23 <= blade && blade < 31 ) return 31 - blade; // 8 on 1st quarter
+      if ( 31 <= blade && blade < 48 ) return 30 - blade; // 17 on 2nd half
+      if ( 48 <= blade && blade < 57 ) return 65 - blade; // 9 on 4th quarter
+
+      assert(!"Shell logic problem");
+      return UNDEFINED;
     }
   );
 
@@ -397,8 +415,16 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
 
       int rocCol = int(iq.col / roc_cols);
 
-      return Value ( blade * 8 + rocCol );
+      // Ring 1
+      if ( 1 <= blade && blade < 6 ) return (6 - blade)*12 + rocCol -11; // 5 on 1st quarter
+      if ( 6 <= blade && blade < 17 ) return (5 - blade)*12 + rocCol; // 11 on 2nd half
+      if ( 17 <= blade && blade < 23 ) return (28 - blade)*12 + rocCol -11; // 6 on 4th quarter
+      // Ring 2 
+      if ( 23 <= blade && blade < 31 ) return (31 - blade)*12 + rocCol -11; // 8 on 1st quarter
+      if ( 31 <= blade && blade < 48 ) return (30 - blade)*12 + rocCol; // 17 on 2nd half
+      if ( 48 <= blade && blade < 57 ) return (65 - blade)*12 + rocCol -11; // 9 on 4th quarter
 
+//      return Value ( blade * 8 + rocCol );
       assert(!"Blade logic problem.");
       return UNDEFINED;
     }
