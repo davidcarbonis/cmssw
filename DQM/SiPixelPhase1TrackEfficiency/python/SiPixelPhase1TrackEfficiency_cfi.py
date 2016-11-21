@@ -32,34 +32,7 @@ SiPixelPhase1TrackEfficiencyValid = DefaultHisto.clone(
                    .groupBy("PXBarrel|PXForward/PXLayer|PXDisk", "EXTEND_Y")
                    .save()
                    .custom("perroc"),
-    Specification().groupBy("PXBarrel/PXLayer/onlineLadder/ROCinLayerCol")
-                   .groupBy("PXBarrel/PXLayer/onlineLadder", "EXTEND_X")
-                   .groupBy("PXBarrel/PXLayer", "EXTEND_Y")
-                   .save(),
-
-    Specification().groupBy("PXBarrel/PXLayer/onlineModule/ROCinLayerRow")
-                   .groupBy("PXBarrel/PXLayer/onlineModule", "EXTEND_X")
-                   .groupBy("PXBarrel/PXLayer", "EXTEND_Y")
-                   .save(),
-    
-    Specification().groupBy("PXForward/PXDisk/PXRing/PXBlade/ROCinDiskRow")
-                   .groupBy("PXForward/PXDisk/PXRing/PXBlade", "EXTEND_X")
-                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
-                   .save(),
-
-    Specification().groupBy("PXForward/PXDisk/PXRing/PXPanel/ROCinDiskCol")
-                   .groupBy("PXForward/PXDisk/PXRing/PXPanel", "EXTEND_X")
-                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
-                   .save(),
-
-    Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
-                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow", "EXTEND_X")
-                   .groupBy("PXBarrel/PXLayer/PXLayer", "EXTEND_Y")
-                   .save(),
-    Specification().groupBy("PXForward/PXDisk/PXRing/ROCinDiskRow/ROCinDiskCol")
-                   .groupBy("PXForward/PXDisk/PXRing/ROCinDiskRow", "EXTEND_X")
-                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
-                   .save()
+   StandardSpecification_ROCS
   )
 )
 
