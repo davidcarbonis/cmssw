@@ -72,6 +72,8 @@ void DQMStreamerReader::reset_() {
     }
   }
 
+  int timeout = 600;
+
   for (;;) {
     bool next = prepareNextFile();
 
@@ -90,6 +92,8 @@ void DQMStreamerReader::reset_() {
 
     // wait
     fiterator_.delay();
+    --timeout;
+    if (timeout == 0) return;
   }
 
   fiterator_.logFileAction("DQMStreamerReader initialised.");
@@ -257,6 +261,8 @@ EventMsgView const* DQMStreamerReader::prepareNextEvent() {
   EventMsgView const* eview = nullptr;
   typedef DQMFileIterator::State State;
 
+  int timeout = 600;
+
   // wait for the next event
   for (;;) {
     // edm::LogAbsolute("DQMStreamerReader")
@@ -268,6 +274,10 @@ EventMsgView const* DQMStreamerReader::prepareNextEvent() {
     if (!file_.open()) {
       // the reader does not exist
       fiterator_.delay();
+      if (timeout-- == 0)  {
+        closeFile_("eor timeout");
+        return nullptr;
+      }
     } else {
       // our reader exists, try to read out an event
       eview = getEventMsg();

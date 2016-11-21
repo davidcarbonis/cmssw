@@ -213,7 +213,7 @@ void SiPixelRawToDigi::produce( edm::Event& ev,
   for (auto aFed = fedIds.begin(); aFed != fedIds.end(); ++aFed) {
     int fedId = *aFed;
 
-    if(!usePilotBlade && (fedId==40) ) continue; // skip pilot blade data
+    if(!usePilotBlade && (fedId==40 || fedId==1240) ) continue; // skip pilot blade data
 
     if (regions_ && !regions_->mayUnpackFED(fedId)) continue;
 

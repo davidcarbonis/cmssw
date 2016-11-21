@@ -9,6 +9,8 @@
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
+#include "DataFormats/SiPixelDetId/interface/PXFDetId.h"
+
 #include <bitset>
 #include <sstream>
 #include <iostream>
@@ -241,7 +243,7 @@ cms_uint32_t ErrorChecker::errorDetId(const SiPixelFrameConverter* converter,
       DetectorIndex detIdx;
       int status = converter->toDetector(cabling, detIdx);
       if (status) break;
-      if(DetId(detIdx.rawId).subdetId() == static_cast<int>(PixelSubdetector::PixelBarrel)) return detIdx.rawId;
+      if(DetId(detIdx.rawId).subdetId() == static_cast<int>(PixelSubdetector::PixelBarrel) || PXFDetId(detIdx.rawId).disk()==3 ) return detIdx.rawId;
       break;
     }
     case  29 : {
@@ -275,7 +277,7 @@ cms_uint32_t ErrorChecker::errorDetId(const SiPixelFrameConverter* converter,
       DetectorIndex detIdx;
       int status = converter->toDetector(cabling, detIdx);
       if (status) break;
-      if(DetId(detIdx.rawId).subdetId() == static_cast<int>(PixelSubdetector::PixelBarrel)) return detIdx.rawId;
+      if(DetId(detIdx.rawId).subdetId() == static_cast<int>(PixelSubdetector::PixelBarrel) || PXFDetId(detIdx.rawId).disk()==3 ) return detIdx.rawId;
       break;
     }
     case  37 : case  38: {

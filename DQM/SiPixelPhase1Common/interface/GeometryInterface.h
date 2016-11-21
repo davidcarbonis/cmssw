@@ -90,10 +90,11 @@ class GeometryInterface {
   void load(edm::EventSetup const& iSetup);
 
   struct InterestingQuantities {
-    DetId sourceModule;
+    // in this order the struct should fit 2 64bit words and is cheap to copy.
     const edm::Event* sourceEvent;
-    int col;
-    int row;
+    DetId sourceModule;
+    int16_t col;
+    int16_t row;
   };
 
   // This has to be fast, _should_ not malloc.
@@ -101,32 +102,35 @@ class GeometryInterface {
                       InterestingQuantities const& iq, Values& out) {
     out.clear();
     for (Column const& col : names) {
-      assert(col[0] != 0 || !"Extracting invalid column.");
-      bool ok = false;
-      for (ID id : col) {
-        if (id == 0) break;  // all set columns failed
-        assert(ID(extractors.size()) > id || !"extractors vector too small!");
-        auto& ex = extractors[id];
-        if (!ex) {  // we have never heard about this. This is a typo for sure.
-          edm::LogError("GeometryInterface")
-              << "Undefined column used: " << unintern(id)
-              << ". Check your spelling.\n";
-        } else {
-          auto val = ex(iq);
-          if (val != UNDEFINED) {
-            out.put(Column{{id, 0}}, val);  // double braces for g++
-            ok = true;
-            break;
-          }
-        }
-      }
-      if (!ok) out.put(col, UNDEFINED);
+      auto val = extract(col, iq);
+      out.put(val.first, val.second);
     }
   };
 
-  Value extract(ID id, DetId did, edm::Event* ev = nullptr, int col = 0,
-                int row = 0) {
-    InterestingQuantities iq = {did, ev, col, row};
+  std::pair<Column, Value> extract(Column const& col, InterestingQuantities const& iq) {
+    assert(col[0] != 0 || !"Extracting invalid column.");
+    for (ID id : col) {
+      if (id == 0) break;  // all set columns failed
+      assert(ID(extractors.size()) > id || !"extractors vector too small!");
+      auto& ex = extractors[id];
+      if (!ex) {  // we have never heard about this. This is a typo for sure.
+        edm::LogError("GeometryInterface")
+            << "Undefined column used: " << unintern(id)
+            << ". Check your spelling.\n";
+      } else {
+        auto val = ex(iq);
+        if (val != UNDEFINED) {
+          return std::make_pair(Column{{id, 0}}, val);  // double braces for g++
+          break;
+        }
+      }
+    }
+    return std::make_pair(col, UNDEFINED);
+  }
+
+  Value extract(ID id, DetId did, edm::Event* ev = nullptr, int16_t col = 0,
+                int16_t row = 0) {
+    InterestingQuantities iq = {ev, did, col, row};
     return extractors[id](iq);
   }
 
@@ -184,15 +188,15 @@ class GeometryInterface {
   // This holds closures that compute the column values in step1.
   // can be a Vector since ids are dense.
   std::vector<std::function<Value(InterestingQuantities const& iq)>> extractors;
-  // An estimate of the max value for a column. Used for step1 EXTEND (but not
-  // step2)
+  // quantity range if it is known. Can be UNDEFINED, in this case booking will
+  // determine the range.
   // map for ease of use.
   std::map<ID, Value> max_value;
   std::map<ID, Value> min_value;
 
   void addExtractor(ID id,
                     std::function<Value(InterestingQuantities const& iq)> func,
-                    Value min, Value max) {
+                    Value min = UNDEFINED, Value max = UNDEFINED) {
     max_value[id] = max;
     min_value[id] = min;
     extractors[id] = func;

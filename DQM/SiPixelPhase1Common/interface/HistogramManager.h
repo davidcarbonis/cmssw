@@ -28,7 +28,6 @@
 #include "DQM/SiPixelPhase1Common/interface/GeometryInterface.h"
 #include "DQM/SiPixelPhase1Common/interface/AbstractHistogram.h"
 
-// TODO: Should we use a namespace, and if yes, which?
 class HistogramManager {
 public:
   explicit HistogramManager(const edm::ParameterSet& iConfig, GeometryInterface& geo);
@@ -41,15 +40,16 @@ public:
   void fill(double x, double y, DetId sourceModule, const edm::Event *sourceEvent = nullptr, int col = 0, int row = 0); 
 
   // This needs to be called after each event (in the analyzer) for per-event counting, like ndigis.
-  void executePerEventHarvesting();
+  void executePerEventHarvesting(edm::Event const* ev);
   
   // Initiate the geometry extraction and book all required frames. Requires the specs to be set.
   void book(DQMStore::IBooker& iBooker, edm::EventSetup const& iSetup);
 
   // These functions perform step2, for online (per lumisection) or offline (endRun) respectively.
-  // TODO: we need a EventSetup in offline as well. we'll see.
-  void executeHarvestingOnline(DQMStore::IBooker& iBooker, DQMStore::IGetter& iGetter, edm::EventSetup const& iSetup);
-  void executeHarvestingOffline(DQMStore::IBooker& iBooker, DQMStore::IGetter& iGetter);
+  // Note that the EventSetup from PerLumi is used in offline as well, so PerLumi always has to be called first.
+  void executePerLumiHarvesting(DQMStore::IBooker& iBooker, DQMStore::IGetter& iGetter,
+                                edm::LuminosityBlock const& lumiBlock, edm::EventSetup const& iSetup);
+  void executeHarvesting(DQMStore::IBooker& iBooker, DQMStore::IGetter& iGetter);
 
   typedef std::map<GeometryInterface::Values, AbstractHistogram> Table;
   // Set a handler to be called when a custom() step is hit. This can do 
@@ -66,39 +66,42 @@ private:
 
   std::vector<SummationSpecification> specs;
   std::vector<Table> tables;
+  std::vector<Table> counters;
 
   std::string makePath(GeometryInterface::Values const&);
+  std::string makeName(SummationSpecification const& s,
+      GeometryInterface::InterestingQuantities const& iq);
 
-  void executeStep1Spec(double x, double y,
-                        GeometryInterface::Values& significantvalues, 
-                        SummationSpecification& s, 
-                        Table& t,
-                        SummationStep::Stage stage,
-                        AbstractHistogram*& fastpath);
+  void fillInternal(double x, double y, int n_parameters,
+    GeometryInterface::InterestingQuantities const& iq,
+    std::vector<SummationStep>::iterator first,
+    std::vector<SummationStep>::iterator last,
+    AbstractHistogram& dest);
  
   void loadFromDQMStore(SummationSpecification& s, Table& t, DQMStore::IGetter& iGetter);
-  void executeSave(SummationStep& step, Table& t, DQMStore::IBooker& iBooker);
-  void executeGroupBy(SummationStep& step, Table& t);
-  void executeReduce(SummationStep& step, Table& t);
-  void executeExtend(SummationStep& step, Table& t, bool isX);
+  void executeGroupBy(SummationStep& step, Table& t, DQMStore::IBooker& iBooker);
+  void executeExtend(SummationStep& step, Table& t, std::string const& reduction, DQMStore::IBooker& iBooker);
 
 public: // these are available in config as is, and may be used in harvesting.
   bool enabled;
+  bool perLumiHarvesting;
   bool bookUndefined;
   std::string top_folder_name;
-  std::string default_grouping;
 
   std::string name;
   std::string title;
   std::string xlabel;
   std::string ylabel;
   int dimensions;
-  int range_nbins;
-  double range_min;
-  double range_max;
+  int range_x_nbins;
+  double range_x_min;
+  double range_x_max;
   int range_y_nbins;
   double range_y_min;
   double range_y_max;
+
+  // can be used in "custom" harvesting in online.
+  edm::LuminosityBlock const* lumisection = nullptr; 
 
 private:
   // These are actually more like local variables, and they might be shadowed
@@ -107,8 +110,8 @@ private:
   // iq/significantvalues are also used to cache the last set of columns 
   // per-spec, to avoid unnecessary extractions.
   GeometryInterface::InterestingQuantities iq;
+  // "immutable" cache
   std::vector<GeometryInterface::Values> significantvalues;
-  GeometryInterface::Values new_vals;
   // Direct links to the Histogram if the caching above succeeds.
   std::vector<AbstractHistogram*> fastpath;
 };

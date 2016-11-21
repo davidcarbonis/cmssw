@@ -13,37 +13,17 @@
 //
 
 #include "DQMServices/Core/interface/MonitorElement.h"
+#include "DQM/SiPixelPhase1Common/interface/GeometryInterface.h"
 #include <vector>
 #include <utility>
 #include <cassert>
 
 struct AbstractHistogram {
 
-  void fill(double x, double y) {
-    if (me) {
-      me->Fill(x, y);
-      return;
-    } else if (th1) {
-      th1->Fill(x, y);
-    } else {
-      assert(!"Invalid histogram. This is a problem in the HistogramManager.");
-    } 
-  }; 
-  
-  void fill(double x) {
-    if (me) {
-      me->Fill(x);
-      return;
-    } else if (th1) {
-      th1->Fill(x);
-    } else {
-      assert(!"Invalid histogram. This is a problem in the HistogramManager.");
-    }
-  };
-  
   int count = 0; // how many things where inserted already. For concat.
   MonitorElement* me = nullptr;
   TH1* th1 = nullptr;
+  GeometryInterface::InterestingQuantities iq_sample;
 
   ~AbstractHistogram() {
     // if both are set the ME should own the TH1

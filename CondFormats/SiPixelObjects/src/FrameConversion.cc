@@ -237,6 +237,22 @@ FrameConversion::FrameConversion( const PixelEndcapName & name, int rocIdInDetUn
     }
   }
 
+  if (name.diskName()==3) {
+    if (rocIdInDetUnit <8) {
+      slopeRow = 1;
+      slopeCol = -1;  
+
+      rowOffset = 0;
+      colOffset = (8-rocIdInDetUnit)*LocalPixel::numColsInRoc-1;
+    } else {
+      slopeRow = -1;
+      slopeCol = 1;
+   
+      rowOffset = 2*LocalPixel::numRowsInRoc-1;
+      colOffset = (rocIdInDetUnit-8)*LocalPixel::numColsInRoc;
+    }
+  }
+
   theRowConversion =  LinearConversion(rowOffset,slopeRow);
   theCollumnConversion =  LinearConversion(colOffset, slopeCol);
 }
