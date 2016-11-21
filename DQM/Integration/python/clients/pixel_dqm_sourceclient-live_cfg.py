@@ -32,8 +32,8 @@ process.load("DQMServices.Components.DQMEnvironment_cfi")
 # DQM Live Environment
 #-----------------------------
 process.load("DQM.Integration.config.environment_cfi")
-process.dqmEnv.subSystemFolder    = "Pixel"
-process.dqmSaver.tag = "Pixel"
+process.dqmEnv.subSystemFolder    = "AlexPixels"
+process.dqmSaver.tag = "AlexPixels"
 
 process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/pixel_reference_pp.root'
 if (process.runType.getRunType() == process.runType.hi_run):
@@ -98,6 +98,23 @@ if (process.runType.getRunType() == process.runType.hi_run):
 #--------------------------
 process.load("DQM.SiPixelCommon.SiPixelP5DQM_source_cff")
 process.load("DQM.SiPixelCommon.SiPixelP5DQM_client_cff")
+
+# Phase1 DQM
+
+# first, we load the global  defaults and overwrite what needs to be changed
+from DQM.SiPixelPhase1Common.HistogramManager_cfi import *
+DefaultHisto.enabled = True
+# Caution: this disables a lot of safety checks.
+# But it is reasonable here, bc we don't want to see Barrel etc.
+DefaultHisto.bookUndefined = False
+DefaultHisto.topFolderName = "AlexPixels"
+
+# maximum Lumisection number for trends. This is a hard limit, higher ends up in overflow.
+SiPixelPhase1Geometry.max_lumisection = 5000
+# #LS per line in the "overlaid curves"
+SiPixelPhase1Geometry.onlineblock = 10
+# number of lines
+SiPixelPhase1Geometry.n_onlineblocks = SiPixelPhase1Geometry.max_lumisection.value()/SiPixelPhase1Geometry.onlineblock.value()
 
 process.load("DQM.SiPixelPhase1Config.SiPixelPhase1OnlineDQM_cff")
 
