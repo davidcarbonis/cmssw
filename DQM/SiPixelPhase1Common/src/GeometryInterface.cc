@@ -291,13 +291,21 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     0, iConfig.getParameter<int>("module_cols") - 1
   );
 
+  edm::ESHandle<TrackerGeometry> trackerGeometryHandle;
+  iSetup.get<TrackerDigiGeometryRecord>().get(trackerGeometryHandle);
+  assert(trackerGeometryHandle.isValid());
+
   int   n_rocs     = iConfig.getParameter<int>("n_rocs");
   float roc_cols   = iConfig.getParameter<int>("roc_cols");
   float roc_rows   = iConfig.getParameter<int>("roc_rows");
+
+  // some parameters to record the ROCs here
+  auto module_rows = iConfig.getParameter<int>("module_rows") - 1;
+  auto module_cols = iConfig.getParameter<int>("module_cols") - 1;
+
   auto  pxmodule   = extractors[intern("PXBModule")];
   auto  pxpanel    = extractors[intern("PXPanel")];
-<<<<<<< HEAD
-=======
+
   auto pxladder = extractors[intern("PXLadder")];
   auto pxlayer  = extractors[intern("PXLayer")];
 
@@ -311,20 +319,29 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
 
   auto detids = trackerGeometryHandle->detIds();
   for (DetId id : detids) {
-    auto iq = InterestingQuantities{.sourceModule = id };
-    auto module = pxmodule(iq);
-    if (module != UNDEFINED && module > maxmodule) maxmodule = module;
-
-    auto blade = pxblade(iq);
-    if (blade != UNDEFINED && blade > outerring) outerring = blade;
-
     if (id.subdetId() != PixelSubdetector::PixelBarrel && id.subdetId() != PixelSubdetector::PixelEndcap) continue;
+    auto iq = InterestingQuantities{nullptr, id, 0, 0};
     auto layer = pxlayer(iq);
     if (layer != UNDEFINED) {
       if (layer >= Value(maxladders.size())) maxladders.resize(layer+1);
       auto ladder = pxladder(iq);
       if (ladder > maxladders[layer]) maxladders[layer] = ladder;
     }
+    auto module = pxmodule(iq);
+    if (module != UNDEFINED && module > maxmodule) maxmodule = module;
+    auto blade = pxblade(iq);
+    if (blade != UNDEFINED && blade > outerring) outerring = blade;
+
+    // we record each module 4 times, one for each corner, so we also get ROCs
+    // in booking (at least for the ranges)
+    iq.row = 0; iq.col = 0;
+    all_modules.push_back(iq);
+    iq.row = module_rows; iq.col = 0;
+    all_modules.push_back(iq);
+    iq.row = 0; iq.col = module_cols;
+    all_modules.push_back(iq);
+    iq.row = module_rows; iq.col = module_cols;
+    all_modules.push_back(iq);
   }
 
   outerring = outerring - innerring;
