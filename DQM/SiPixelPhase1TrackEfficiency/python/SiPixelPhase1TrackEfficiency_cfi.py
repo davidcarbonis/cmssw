@@ -32,7 +32,8 @@ SiPixelPhase1TrackEfficiencyValid = DefaultHisto.clone(
                    .groupBy("PXBarrel|PXForward/PXLayer|PXDisk", "EXTEND_Y")
                    .save()
                    .custom("perroc"),
-   StandardSpecification_ROCS
+   StandardSpecification_BarrelROCS,
+   StandardSpecification_ForwardROCS
   )
 )
 

@@ -151,22 +151,16 @@ StandardSpecification2DProfile_Num = (
        .save()
 )
 
-StandardSpecification_ROCS = (
-    Specification().groupBy("PXForward/PXDisk/PXRing/PXBlade/ROCinDiskRow")
-                   .groupBy("PXForward/PXDisk/PXRing/PXBlade", "EXTEND_X")
-                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
-                   .save(),
-    Specification().groupBy("PXForward/PXDisk/PXRing/PXPanel/ROCinDiskCol")
-                   .groupBy("PXForward/PXDisk/PXRing/PXPanel", "EXTEND_X")
-                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
-                   .save(),
+StandardSpecification_BarrelROCS = (
     Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
                    .groupBy("PXBarrel/PXLayer/ROCinLayerRow", "EXTEND_X")
                    .groupBy("PXBarrel/PXLayer/PXLayer", "EXTEND_Y")
-                   .save(),
+                   .save()
+)
+
+StandardSpecification_ForwardROCS = (
     Specification().groupBy("PXForward/PXDisk/PXRing/ROCinDiskRow/ROCinDiskCol")
                    .groupBy("PXForward/PXDisk/PXRing/ROCinDiskRow", "EXTEND_X")
                    .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
                    .save()
-
 )
