@@ -80,6 +80,8 @@ SiPixelPhase1DigisHitmap = DefaultHisto.clone(
   ylabel = "#digis",
   dimensions = 0,
   specs = cms.VPSet(
+    StandardSpecification_ROCS,
+
     Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId/row/col")
                    .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId/row", "EXTEND_Y")
                    .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId", "EXTEND_X")

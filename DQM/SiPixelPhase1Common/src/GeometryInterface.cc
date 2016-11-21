@@ -411,15 +411,21 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
   );
 
   addExtractor(intern("ROCinDiskRow"),
-    [pxendcap, pxpanel, roc, roc_rows] (InterestingQuantities const& iq) {
+    [pxendcap, pxpanel, pxblade, innerring, roc, roc_rows] (InterestingQuantities const& iq) {
       auto ec = pxendcap(iq);
       if (ec == UNDEFINED) return UNDEFINED;
       auto panel = pxpanel(iq);
       if (panel == UNDEFINED) return UNDEFINED;
+      auto blade = pxblade(iq);
+      if (blade == UNDEFINED) return UNDEFINED;
+
+      int ring = 0;
+      if (blade <= innerring) ring = 1;
+      else ring = 2;
 
       int rocRow = int(iq.row / roc_rows);
 
-       return Value ( panel * 2 + rocRow );
+      return Value ( ( panel * 2 + rocRow ) * ring );
 
       assert(!"Shell logic problem");
       return UNDEFINED;
