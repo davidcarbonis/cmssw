@@ -159,8 +159,11 @@ StandardSpecification_BarrelROCS = (
 )
 
 StandardSpecification_ForwardROCS = (
-    Specification().groupBy("PXForward/PXDisk/PXRing/ROCinDiskRow/ROCinDiskCol")
-                   .groupBy("PXForward/PXDisk/PXRing/ROCinDiskRow", "EXTEND_X")
-                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
+#    Specification().groupBy("PXForward/PXDisk/PXRing/ROCinDiskRow/ROCinDiskCol")
+#                   .groupBy("PXForward/PXDisk/PXRing/ROCinDiskRow", "EXTEND_X")
+#                   .groupBy("PXForward/PXDisk/PXRing", "EXTEND_Y")
+    Specification().groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow", "EXTEND_X")
+                   .groupBy("PXForward/PXDisk/", "EXTEND_Y")
                    .save()
 )

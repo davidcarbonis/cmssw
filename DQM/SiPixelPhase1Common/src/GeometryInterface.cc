@@ -398,13 +398,17 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
       auto blade = pxblade(iq);
       if (blade == UNDEFINED) return UNDEFINED;
 
-      int ring = 0;
-      if (blade <= innerring) ring = 1;
-      else ring = 2;
+      // For plots where we display both the inner and outer disks/rings, an offset is needed
+      // With two rows for each panel, this means that the outer disks/rings need to be moved 4 y coordinates
+      // above the origin.
+
+      int ringOffset = 0;
+      if (blade <= innerring) ringOffset = 0;
+      else ringOffset = 4;
 
       int rocRow = int(iq.row / roc_rows);
 
-      return Value ( ( panel * 2 + rocRow ) * ring );
+      return Value ( ( panel * 2 + rocRow ) + ringOffset );
 
       assert(!"Shell logic problem");
       return UNDEFINED;
@@ -422,13 +426,13 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
       int rocCol = int(iq.col / roc_cols);
 
       // Ring 1
-      if ( 1 <= blade && blade < 6 ) return (6 - blade)*12 + rocCol -11; // 5 on 1st quarter
-      if ( 6 <= blade && blade < 17 ) return (5 - blade)*12 + rocCol; // 11 on 2nd half
-      if ( 17 <= blade && blade < 23 ) return (28 - blade)*12 + rocCol -11; // 6 on 4th quarter
+      if ( 1 <= blade && blade < 6 ) return (6 - blade)*8 + rocCol -11; // 5 on 1st quarter
+      if ( 6 <= blade && blade < 17 ) return (5 - blade)*8 + rocCol; // 11 on 2nd half
+      if ( 17 <= blade && blade < 23 ) return (28 - blade)*8 + rocCol -11; // 6 on 4th quarter
       // Ring 2 
-      if ( 23 <= blade && blade < 31 ) return (31 - blade)*12 + rocCol -11; // 8 on 1st quarter
-      if ( 31 <= blade && blade < 48 ) return (30 - blade)*12 + rocCol; // 17 on 2nd half
-      if ( 48 <= blade && blade < 57 ) return (65 - blade)*12 + rocCol -11; // 9 on 4th quarter
+      if ( 23 <= blade && blade < 31 ) return (31 - blade)*8 + rocCol -11; // 8 on 1st quarter
+      if ( 31 <= blade && blade < 48 ) return (30 - blade)*8 + rocCol; // 17 on 2nd half
+      if ( 48 <= blade && blade < 57 ) return (65 - blade)*8 + rocCol -11; // 9 on 4th quarter
 
       assert(!"Blade logic problem.");
       return UNDEFINED;
