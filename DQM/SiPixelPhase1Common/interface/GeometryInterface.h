@@ -35,8 +35,8 @@ class GeometryInterface {
   // normalized column when a multicolumn is given and vice versa.
   // Increasing the max number of columns needs fixing some todos.
   typedef std::array<ID, 2> Column;
-  typedef int Value;
-  static const Value UNDEFINED = 0x0FFFFFFF;
+  typedef float Value;
+  static const Value UNDEFINED;
 
   // Essentially a map backed by a vector (for the small counts here
   // this should always be faster), with special handling for multi-colums.
@@ -90,10 +90,11 @@ class GeometryInterface {
   void load(edm::EventSetup const& iSetup);
 
   struct InterestingQuantities {
-    DetId sourceModule;
+    // in this order the struct should fit 2 64bit words and is cheap to copy.
     const edm::Event* sourceEvent;
-    int col;
-    int row;
+    DetId sourceModule;
+    int16_t col;
+    int16_t row;
   };
 
   // This has to be fast, _should_ not malloc.
@@ -101,40 +102,45 @@ class GeometryInterface {
                       InterestingQuantities const& iq, Values& out) {
     out.clear();
     for (Column const& col : names) {
-      assert(col[0] != 0 || !"Extracting invalid column.");
-      bool ok = false;
-      for (ID id : col) {
-        if (id == 0) break;  // all set columns failed
-        assert(ID(extractors.size()) > id || !"extractors vector too small!");
-        auto& ex = extractors[id];
-        if (!ex) {  // we have never heard about this. This is a typo for sure.
-          edm::LogError("GeometryInterface")
-              << "Undefined column used: " << unintern(id)
-              << ". Check your spelling.\n";
-        } else {
-          auto val = ex(iq);
-          if (val != UNDEFINED) {
-            out.put(Column{{id, 0}}, val);  // double braces for g++
-            ok = true;
-            break;
-          }
+      auto val = extract(col, iq);
+      out.put(val.first, val.second);
+    }
+  }
+
+  std::pair<Column, Value> extract(Column const& col, InterestingQuantities const& iq) {
+    assert(col[0] != 0 || !"Extracting invalid column.");
+    for (ID id : col) {
+      if (id == 0) break;  // all set columns failed
+      assert(ID(extractors.size()) > id || !"extractors vector too small!");
+      auto& ex = extractors[id];
+      if (!ex) {  // we have never heard about this. This is a typo for sure.
+        edm::LogError("GeometryInterface")
+            << "Undefined column used: " << unintern(id)
+            << ". Check your spelling.\n";
+      } else {
+        auto val = ex(iq);
+        if (val != UNDEFINED) {
+          return std::make_pair(Column{{id, 0}}, val);  // double braces for g++
+          break;
         }
       }
-      if (!ok) out.put(col, UNDEFINED);
     }
-  };
+    return std::make_pair(col, UNDEFINED);
+  }
 
-  Value extract(ID id, DetId did, edm::Event* ev = nullptr, int col = 0,
-                int row = 0) {
-    InterestingQuantities iq = {did, ev, col, row};
+  Value extract(ID id, DetId did, edm::Event* ev = nullptr, int16_t col = 0,
+                int16_t row = 0) {
+    InterestingQuantities iq = {ev, did, col, row};
     return extractors[id](iq);
   }
 
   std::vector<InterestingQuantities> const& allModules() {
     return all_modules;
-  };
+  }
+
   Value maxValue(ID id) { return max_value[id]; };
   Value minValue(ID id) { return min_value[id]; };
+  Value binWidth(ID id) { return bin_width[id]; };
 
   // turn string into an ID, adding it if needed.
   // needs the lock since this will be called from the spec builder, which will
@@ -189,12 +195,14 @@ class GeometryInterface {
   // map for ease of use.
   std::map<ID, Value> max_value;
   std::map<ID, Value> min_value;
+  std::map<ID, Value> bin_width;
 
   void addExtractor(ID id,
                     std::function<Value(InterestingQuantities const& iq)> func,
-                    Value min = UNDEFINED, Value max = UNDEFINED) {
+                    Value min = UNDEFINED, Value max = UNDEFINED, Value binwidth = 1) {
     max_value[id] = max;
     min_value[id] = min;
+    bin_width[id] = binwidth;
     extractors[id] = func;
   }
 
