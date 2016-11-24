@@ -11,6 +11,8 @@ SiPixelPhase1DigisADC = DefaultHisto.clone(
   range_max = 300,
   range_nbins = 300,
   specs = cms.VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile,
     StandardSpecificationTrend,
     StandardSpecification2DProfile,
     *StandardSpecifications1D
@@ -26,6 +28,8 @@ SiPixelPhase1DigisNdigis = DefaultHisto.clone(
   range_nbins = 30,
   dimensions = 0, # this is a count
   specs = cms.VPSet(
+    StandardSpecification_BarrelROCS_Profile_Num,
+    StandardSpecification_ForwardROCS_Profile_Num,
     StandardSpecificationTrend_Num,
     StandardSpecification2DProfile_Num,
     *StandardSpecifications1D_Num

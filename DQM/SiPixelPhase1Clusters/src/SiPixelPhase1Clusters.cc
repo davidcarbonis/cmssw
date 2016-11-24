@@ -43,12 +43,21 @@ void SiPixelPhase1Clusters::analyze(const edm::Event& iEvent, const edm::EventSe
     const PixelGeomDetUnit* theGeomDet = dynamic_cast<const PixelGeomDetUnit*> ( tracker->idToDet(id) );
     const PixelTopology& topol = theGeomDet->specificTopology();
 
+    int row (0), col (0);
+
     for(SiPixelCluster const& cluster : *it) {
-      histo[CHARGE].fill(double(cluster.charge()), id, &iEvent);
-      histo[SIZE  ].fill(double(cluster.size()  ), id, &iEvent);
-      histo[NCLUSTERS].fill(id, &iEvent);
 
       LocalPoint clustlp = topol.localPosition(MeasurementPoint(cluster.x(), cluster.y()));
+
+      MeasurementPoint mp = topol.measurementPosition (clustlp);
+      row = (int) mp.x();
+      col = (int) mp.y();
+      histo[CHARGE].fill(double(cluster.charge()), id, &iEvent, col, row);
+      histo[SIZE  ].fill(double(cluster.size()  ), id, &iEvent, col, row);
+      histo[SIZE_X].fill(double(cluster.sizeX()  ), id, &iEvent, col, row);
+      histo[SIZE_Y].fill(double(cluster.sizeY()  ), id, &iEvent, col, row);
+      histo[NCLUSTERS].fill(id, &iEvent, col, row);
+
       GlobalPoint clustgp = theGeomDet->surface().toGlobal(clustlp);
       histo[POSITION_B ].fill(clustgp.z(),   clustgp.phi(),   id, &iEvent);
       histo[POSITION_F ].fill(clustgp.x(),   clustgp.y(),     id, &iEvent);

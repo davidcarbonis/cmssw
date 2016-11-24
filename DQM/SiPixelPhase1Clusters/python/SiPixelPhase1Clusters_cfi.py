@@ -8,6 +8,8 @@ SiPixelPhase1ClustersCharge = DefaultHisto.clone(
   xlabel = "Charge (electrons)",
   
   specs = cms.VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile,
     StandardSpecification2DProfile,
     StandardSpecificationTrend,
     *StandardSpecifications1D
@@ -20,10 +22,32 @@ SiPixelPhase1ClustersSize = DefaultHisto.clone(
   range_min = 0, range_max = 30, range_nbins = 30,
   xlabel = "size[pixels]",
   specs = cms.VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile,
     StandardSpecification2DProfile,
     StandardSpecificationTrend,
     *StandardSpecifications1D
   )
+)
+
+SiPixelPhase1ClustersSizeX = DefaultHisto.clone(
+  name = "sizeX",
+  title = "Total Cluster SizeX",
+  range_min = 0, range_max = 30, range_nbins = 30,
+  xlabel = "sizeX[pixels]",
+  specs = cms.VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile  )
+)
+
+SiPixelPhase1ClustersSizeY = DefaultHisto.clone(
+  name = "sizeY",
+  title = "Total Cluster SizeY",
+  range_min = 0, range_max = 30, range_nbins = 30,
+  xlabel = "sizeY[pixels]",
+  specs = cms.VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile  )
 )
 
 SiPixelPhase1ClustersNClusters = DefaultHisto.clone(
@@ -33,6 +57,8 @@ SiPixelPhase1ClustersNClusters = DefaultHisto.clone(
   xlabel = "clusters",
   dimensions = 0,
   specs = cms.VPSet(
+    StandardSpecification_BarrelROCS_Profile_Num,
+    StandardSpecification_ForwardROCS_Profile_Num,
     StandardSpecification2DProfile_Num,
     StandardSpecificationTrend_Num
   )
@@ -124,6 +150,8 @@ SiPixelPhase1ClustersSizeVsEta = DefaultHisto.clone(
 SiPixelPhase1ClustersConf = cms.VPSet(
   SiPixelPhase1ClustersCharge,
   SiPixelPhase1ClustersSize,
+  SiPixelPhase1ClustersSizeX,
+  SiPixelPhase1ClustersSizeY,
   SiPixelPhase1ClustersNClusters,
   SiPixelPhase1ClustersEventrate,
   SiPixelPhase1ClustersPositionB,
