@@ -28,7 +28,9 @@ SiPixelPhase1GeometryDebugROC = DefaultHisto.clone(
   dimensions = 1,
   specs = cms.VPSet(
     # TODO: make this per ROC!
-    StandardSpecification2DProfile
+    StandardSpecification2DProfile,
+    StandardSpecification_BarrelROCS,
+    StandardSpecification_ForwardROCS
   )
 )
 
