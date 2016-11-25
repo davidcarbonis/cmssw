@@ -114,9 +114,9 @@ StandardSpecificationTrend = ( # the () are only for syntax reasons
 
 StandardSpecification2DProfile = (
     Specification(PerLayer2D)
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade/signedModule|PXPanel")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade/onlineModule|PXPanel")
        .reduce("MEAN")
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade", "EXTEND_X")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade", "EXTEND_X")
        .groupBy("PXBarrel|PXForward/PXLayer|PXDisk", "EXTEND_Y")
        .save()
 )
@@ -147,11 +147,62 @@ StandardSpecificationTrend_Num = (
 
 StandardSpecification2DProfile_Num = (
     Specification(PerLayer2D)
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade/signedModule|PXPanel" + "/DetId/Event")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade/onlineModule|PXPanel" + "/DetId/Event")
        .reduce("COUNT")
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade/signedModule|PXPanel")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade/onlineModule|PXPanel")
        .reduce("MEAN") 
-       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade", "EXTEND_X")
+       .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade", "EXTEND_X")
        .groupBy("PXBarrel|PXForward/PXLayer|PXDisk", "EXTEND_Y")
        .save()
 )
+
+StandardSpecification_BarrelROCS = (
+    Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
+                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow", "EXTEND_X")
+                   .groupBy("PXBarrel/PXLayer/PXLayer", "EXTEND_Y")
+                   .save()
+)
+
+StandardSpecification_ForwardROCS = (
+    Specification().groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow", "EXTEND_X")
+                   .groupBy("PXForward/PXDisk/", "EXTEND_Y")
+                   .save()
+)
+
+StandardSpecification_BarrelROCS_Profile = (
+    Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
+                   .reduce("MEAN")
+                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow", "EXTEND_X")
+                   .groupBy("PXBarrel/PXLayer/PXLayer", "EXTEND_Y")
+                   .save()
+)
+
+StandardSpecification_ForwardROCS_Profile = (
+    Specification().groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol")
+                   .reduce("MEAN")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow", "EXTEND_X")
+                   .groupBy("PXForward/PXDisk/", "EXTEND_Y")
+                   .save()
+)
+
+StandardSpecification_BarrelROCS_Profile_Num = (
+    Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol"+"/DetId/Event")
+                   .reduce("COUNT")
+                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
+                   .reduce("MEAN")
+                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow", "EXTEND_X")
+                   .groupBy("PXBarrel/PXLayer/PXLayer", "EXTEND_Y")
+                   .save()
+)
+
+StandardSpecification_ForwardROCS_Profile_Num = (
+    Specification().groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol"+"/DetId/Event")
+                   .reduce("COUNT")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol")
+                   .reduce("MEAN")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow", "EXTEND_X")
+                   .groupBy("PXForward/PXDisk/", "EXTEND_Y")
+                   .save()
+)
+

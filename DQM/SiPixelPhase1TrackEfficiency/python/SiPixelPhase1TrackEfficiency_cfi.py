@@ -22,16 +22,18 @@ SiPixelPhase1TrackEfficiencyValid = DefaultHisto.clone(
     # custom() is called here after every save to export the histos for the
     # efficiency harvesting. The parameter is just a tag that we don't confuse 
     # the histos of different specs.
-    Specification().groupBy("PXBarrel/PXLayer/signedLadder/signedModule")
-                   .groupBy("PXBarrel/PXLayer/signedLadder", "EXTEND_X")
+    Specification().groupBy("PXBarrel/PXLayer/onlineLadder/onlineModule")
+                   .groupBy("PXBarrel/PXLayer/onlineLadder", "EXTEND_X")
                    .groupBy("PXBarrel/PXLayer", "EXTEND_Y")
                    .save()
-                   .custom("signedmodule"),
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade" + "/ROCinLadder|ROCinBlade")
-                   .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/signedLadder|PXBlade", "EXTEND_X")
+                   .custom("onlinemodule"),
+    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade" + "/ROCinLadder|ROCinBlade")
+                   .groupBy("PXBarrel|PXForward/PXLayer|PXDisk/onlineLadder|PXBlade", "EXTEND_X")
                    .groupBy("PXBarrel|PXForward/PXLayer|PXDisk", "EXTEND_Y")
                    .save()
-                   .custom("perroc")
+                   .custom("perroc"),
+    StandardSpecification_BarrelROCS,
+    StandardSpecification_ForwardROCS
   )
 )
 
