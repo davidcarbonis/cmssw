@@ -58,6 +58,27 @@ SiPixelPhase1HitsPosY = SiPixelPhase1HitsPosX.clone(
   range_min = -3.5, range_max = 3.5, range_nbins = 10000,
 )
 
+SiPixelPhase1HitsPosZ = SiPixelPhase1HitsPosX.clone(
+  name = "local_z",
+  title = "Z position of Hits",
+  xlabel = "Hit position Z dimension",
+  range_min = -0.05, range_max = 0.05, range_nbins = 500,
+)
+
+SiPixelPhase1HitsPosPhi = SiPixelPhase1HitsPosX.clone(
+  name = "local_phi",
+  title = "Phi position of Hits",
+  xlabel = "Hit position phi dimension",
+  range_min = -3.5, range_max = 3.5, range_nbins = 10000,
+)
+
+SiPixelPhase1HitsPosEta = SiPixelPhase1HitsPosX.clone(
+  name = "local_eta",
+  title = "Eta position of Hits",
+  xlabel = "Hit position Eta dimension",
+  range_min = -0.1, range_max = 0.1, range_nbins = 1000,
+)
+
 SiPixelPhase1HitsConf = cms.VPSet(
   SiPixelPhase1HitsEnergyLoss,
   SiPixelPhase1HitsEntryExitX,
@@ -65,6 +86,9 @@ SiPixelPhase1HitsConf = cms.VPSet(
   SiPixelPhase1HitsEntryExitZ,
   SiPixelPhase1HitsPosX,
   SiPixelPhase1HitsPosY,
+  SiPixelPhase1HitsPosZ,
+  SiPixelPhase1HitsPosPhi,
+  SiPixelPhase1HitsPosEta,
 )
 
 SiPixelPhase1HitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1HitsV",

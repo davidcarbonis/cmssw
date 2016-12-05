@@ -21,6 +21,9 @@ class SiPixelPhase1HitsV : public SiPixelPhase1Base {
     ENTRY_EXIT_Z,
     LOCAL_X,
     LOCAL_Y,
+    LOCAL_Z,
+    LOCAL_PHI,
+    LOCAL_ETA
   };
 
   public:

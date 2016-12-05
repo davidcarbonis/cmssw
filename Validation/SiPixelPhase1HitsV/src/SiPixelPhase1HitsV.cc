@@ -56,6 +56,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     float localX = it->localPosition().x();
     float localY = it->localPosition().y();
+    float localZ = it->localPosition().z();
+    float localPhi = it->localPosition().phi();
+    float localEta = it->localPosition().eta();
 
     histo[ELOSS].fill(energyLoss, id, &iEvent);
     histo[ENTRY_EXIT_X].fill(entryExitX, id, &iEvent);
@@ -63,7 +66,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     histo[ENTRY_EXIT_Z].fill(entryExitZ, id, &iEvent);
     histo[LOCAL_X].fill(localX, id, &iEvent);
     histo[LOCAL_Y].fill(localY,  id, &iEvent);
-
+    histo[LOCAL_Z].fill(localZ,  id, &iEvent);
+    histo[LOCAL_PHI].fill(localPhi,  id, &iEvent);
+    histo[LOCAL_ETA].fill(localEta,  id, &iEvent);
   } 
   // get high barrel info
   for (it = barrelHighInput->begin(); it != barrelHighInput->end(); ++it) {
@@ -77,6 +82,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     float localX = it->localPosition().x();
     float localY = it->localPosition().y();
+    float localZ = it->localPosition().z();
+    float localPhi = it->localPosition().phi();
+    float localEta = it->localPosition().eta();
 
     histo[ELOSS].fill(energyLoss, id, &iEvent);
     histo[ENTRY_EXIT_X].fill(entryExitX, id, &iEvent);
@@ -84,7 +92,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     histo[ENTRY_EXIT_Z].fill(entryExitZ, id, &iEvent);
     histo[LOCAL_X].fill(localX, id, &iEvent);
     histo[LOCAL_Y].fill(localY, id, &iEvent);
-
+    histo[LOCAL_Z].fill(localZ,  id, &iEvent);
+    histo[LOCAL_PHI].fill(localPhi,  id, &iEvent);
+    histo[LOCAL_ETA].fill(localEta,  id, &iEvent);
   }
 
   // get low forward info
@@ -99,6 +109,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     float localX = it->localPosition().x();
     float localY = it->localPosition().y();
+    float localZ = it->localPosition().z();
+    float localPhi = it->localPosition().phi();
+    float localEta = it->localPosition().eta();
 
     histo[ELOSS].fill(energyLoss, id, &iEvent);
     histo[ENTRY_EXIT_X].fill(entryExitX, id, &iEvent);
@@ -106,7 +119,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     histo[ENTRY_EXIT_Z].fill(entryExitZ, id, &iEvent);
     histo[LOCAL_X].fill(localX, id, &iEvent);
     histo[LOCAL_Y].fill(localY, id, &iEvent);
-
+    histo[LOCAL_Z].fill(localZ,  id, &iEvent);
+    histo[LOCAL_PHI].fill(localPhi,  id, &iEvent);
+    histo[LOCAL_ETA].fill(localEta,  id, &iEvent);
   }
 
   // get high forward info
@@ -121,6 +136,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     float localX = it->localPosition().x();
     float localY = it->localPosition().y();
+    float localZ = it->localPosition().z();
+    float localPhi = it->localPosition().phi();
+    float localEta = it->localPosition().eta();
 
     histo[ELOSS].fill(energyLoss, id, &iEvent);
     histo[ENTRY_EXIT_X].fill(entryExitX, id, &iEvent);
@@ -128,7 +146,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     histo[ENTRY_EXIT_Z].fill(entryExitZ, id, &iEvent);
     histo[LOCAL_X].fill(localX, id, &iEvent);
     histo[LOCAL_Y].fill(localY, id, &iEvent);
-
+    histo[LOCAL_Z].fill(localZ,  id, &iEvent);
+    histo[LOCAL_PHI].fill(localPhi,  id, &iEvent);
+    histo[LOCAL_ETA].fill(localEta,  id, &iEvent);
   }
 
 }
