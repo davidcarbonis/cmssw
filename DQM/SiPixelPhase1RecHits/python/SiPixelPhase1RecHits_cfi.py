@@ -1,25 +1,25 @@
 import FWCore.ParameterSet.Config as cms
 from DQM.SiPixelPhase1Common.HistogramManager_cfi import *
 
-SiPixelPhase1RecHitsNRecHits = DefaultHisto.clone(
+SiPixelPhase1RecHitsNRecHits = DefaultHistoTrack.clone(
   name = "rechits",
   title = "RecHits",
   range_min = 0, range_max = 10, range_nbins = 10,
   xlabel = "rechits",
   dimensions = 0,
-  specs = cms.VPSet(
+  specs = VPSet(
     StandardSpecificationTrend_Num,
     StandardSpecification2DProfile_Num
   )
 )
 
-SiPixelPhase1RecHitsClustX = DefaultHisto.clone(
+SiPixelPhase1RecHitsClustX = DefaultHistoTrack.clone(
   name = "rechitsize_x",
   title = "X size of RecHit clusters",
   range_min = 0, range_max = 10, range_nbins = 10,
   xlabel = "RecHit X-Size",
   dimensions = 1,
-  specs = cms.VPSet(
+  specs = VPSet(
     StandardSpecification2DProfile
   )
 )
@@ -30,13 +30,13 @@ SiPixelPhase1RecHitsClustY = SiPixelPhase1RecHitsClustX.clone(
   xlabel = "RecHit Y-Size"
 )
 
-SiPixelPhase1RecHitsErrorX = DefaultHisto.clone(
+SiPixelPhase1RecHitsErrorX = DefaultHistoTrack.clone(
   name = "rechiterror_x",
   title = "RecHit Error in X-direction",
   range_min = 0, range_max = 0.02, range_nbins = 100,
   xlabel = "X error",
   dimensions = 1,
-  specs = cms.VPSet(
+  specs = VPSet(
     StandardSpecification2DProfile
   )
 )
@@ -47,7 +47,7 @@ SiPixelPhase1RecHitsErrorY = SiPixelPhase1RecHitsErrorX.clone(
   xlabel = "Y error"
 )
 
-SiPixelPhase1RecHitsPosition = DefaultHisto.clone(
+SiPixelPhase1RecHitsPosition = DefaultHistoTrack.clone(
   enabled = False,
   name = "rechit_pos",
   title = "Position of RecHits on Module",
@@ -56,8 +56,9 @@ SiPixelPhase1RecHitsPosition = DefaultHisto.clone(
   xlabel = "x offset",
   ylabel = "y offset",
   dimensions = 2,
-  specs = cms.VPSet(
-    Specification(PerModule).groupBy("PXBarrel|PXForward/PXLayer|PXDisk/DetId").save(),
+  specs = VPSet(
+    Specification(PerModule).groupBy("PXBarrel/PXLayer/DetId").save(),
+    Specification(PerModule).groupBy("PXForward/PXDisk/DetId").save(),
   )
 )
 
