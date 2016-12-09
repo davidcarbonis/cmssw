@@ -8,8 +8,9 @@ SiPixelPhase1HitsEnergyLoss = DefaultHisto.clone(
   xlabel = "Energy Loss",
   dimensions = 1,
   topFolderName = "PixelPhase1V/Hits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 
@@ -20,8 +21,9 @@ SiPixelPhase1HitsEntryExitX = DefaultHisto.clone(
   xlabel = "",
   dimensions = 1,
   topFolderName = "PixelPhase1V/Hits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 
@@ -46,8 +48,9 @@ SiPixelPhase1HitsPosX = DefaultHisto.clone(
   xlabel = "Hit position X dimension",
   dimensions = 1,
   topFolderName = "PixelPhase1V/Hits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 

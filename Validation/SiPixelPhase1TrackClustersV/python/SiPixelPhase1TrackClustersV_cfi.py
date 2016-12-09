@@ -7,8 +7,9 @@ SiPixelPhase1TrackClustersCharge = DefaultHisto.clone(
   range_min = 0, range_max = 100, range_nbins = 200,
   xlabel = "Charge size (in ke)",
   topFolderName = "PixelPhase1V/Clusters",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 
@@ -18,8 +19,9 @@ SiPixelPhase1TrackClustersSizeX = DefaultHisto.clone(
   range_min = 0, range_max = 30, range_nbins = 30,
   xlabel = "Cluster size (in pixels)",
   topFolderName = "PixelPhase1V/Clusters",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 
@@ -29,8 +31,9 @@ SiPixelPhase1TrackClustersSizeY = DefaultHisto.clone(
   range_min = 0, range_max = 30, range_nbins = 30,
   xlabel = "Cluster size (in pixels)",
   topFolderName = "PixelPhase1V/Clusters",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 

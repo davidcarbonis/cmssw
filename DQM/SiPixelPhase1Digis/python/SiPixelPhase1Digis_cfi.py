@@ -1,4 +1,4 @@
- import FWCore.ParameterSet.Config as cms
+import FWCore.ParameterSet.Config as cms
 
 # this might also go into te Common config,as we do not reference it
 from DQM.SiPixelPhase1Common.HistogramManager_cfi import *

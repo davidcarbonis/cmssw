@@ -18,7 +18,7 @@ SiPixelPhase1ClustersSize = DefaultHistoDigiCluster.clone(
   title = "Total Cluster Size",
   range_min = 0, range_max = 30, range_nbins = 30,
   xlabel = "Cluster size (in pixels)",
-  specs = cms.VPSet(
+  specs = VPSet(
     StandardSpecification2DProfile,
     StandardSpecificationTrend,
     StandardSpecifications1D

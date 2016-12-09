@@ -11,12 +11,13 @@ SiPixelPhase1DigisADC = DefaultHisto.clone(
   range_max = 300,
   range_nbins = 300,
   topFolderName = "PixelPhase1V/Digis",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save()
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save()
   )
 )
 
-SiPixelPhase1DigisNdigis = DefaultHisto.clone(
+SiPixelPhase1DigisNdigis = DefaultHistoDigiCluster.clone(
   name = "digis", # 'Count of' added automatically
   title = "Digis",
   xlabel = "Number of Digis",
@@ -25,8 +26,12 @@ SiPixelPhase1DigisNdigis = DefaultHisto.clone(
   range_nbins = 30,
   dimensions = 0, # this is a count
   topFolderName = "PixelPhase1V/Digis",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save()
+  specs = VPSet(
+#    StandardSpecificationTrend_Num,
+#    StandardSpecification2DProfile_Num,
+#    StandardSpecifications1D_Num
+#    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+#    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save()
   )
 )
 
@@ -38,8 +43,9 @@ SiPixelPhase1DigisRows = DefaultHisto.clone(
   range_max = 200,
   range_nbins = 200,
   topFolderName = "PixelPhase1V/Digis",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save()
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+   Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save()
   )
 )
 
@@ -51,26 +57,10 @@ SiPixelPhase1DigisColumns = DefaultHisto.clone(
   range_max = 300,
   range_nbins = 300,
   topFolderName = "PixelPhase1V/Digis",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save()
-  )
-)
-
-SiPixelPhase1DigisDebug = DefaultHisto.clone(
-  enabled = False,
-  name = "debug",
-  xlabel = "Ladder #",
-  range_min = 1,
-  range_max = 64,
-  range_nbins = 64,
-  topFolderName = "PixelPhase1V/Debug",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade") 
-                   .save()
-                   .reduce("MEAN")
-                   .groupBy(parent("PXBarrel|PXForward/Shell|HalfCylinder/PXLayer|PXDisk/PXRing|/PXLadder|PXBlade"), "EXTEND_X")
-                   .saveAll(),
-  )
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save()
+ )
 )
 
 # This has to match the order of the names in the C++ enum.
@@ -79,7 +69,6 @@ SiPixelPhase1DigisConf = cms.VPSet(
   SiPixelPhase1DigisNdigis,
   SiPixelPhase1DigisRows,
   SiPixelPhase1DigisColumns,
-  SiPixelPhase1DigisDebug
 )
 
 SiPixelPhase1DigisAnalyzerV = cms.EDAnalyzer("SiPixelPhase1DigisV",
@@ -92,3 +81,4 @@ SiPixelPhase1DigisHarvesterV = cms.EDAnalyzer("SiPixelPhase1DigisHarvesterV",
         histograms = SiPixelPhase1DigisConf,
         geometry = SiPixelPhase1Geometry
 )
+

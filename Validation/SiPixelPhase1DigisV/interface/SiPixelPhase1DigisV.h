@@ -23,7 +23,6 @@ class SiPixelPhase1DigisV : public SiPixelPhase1Base {
     NDIGIS, // number of digis per event and module
     ROW, // number of digis per row
     COLUMN, // number of digis per column
-    DEBUG, // geometry debugging
 
     MAX_HIST // a sentinel that gives the number of quantities (not a plot).
   };
@@ -43,7 +42,6 @@ class SiPixelPhase1DigisHarvesterV : public SiPixelPhase1Harvester {
     NDIGIS, // number of digis per event and module
     ROW, // number of digis per row
     COLUMN, // number of digis per column
-    DEBUG, // geometry debugging
 
     MAX_HIST
   };

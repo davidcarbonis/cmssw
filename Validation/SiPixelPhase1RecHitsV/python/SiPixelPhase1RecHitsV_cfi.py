@@ -8,8 +8,9 @@ SiPixelPhase1RecHitsInTimeEvents = DefaultHisto.clone(
   xlabel = "number of in-time rechits events",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel").save(),
+    Specification().groupBy("PXForward").save(),
   )
 )
 
@@ -20,8 +21,9 @@ SiPixelPhase1RecHitsOutTimeEvents = DefaultHisto.clone(
   xlabel = "number of out-time rechit events",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel").save(),
+    Specification().groupBy("PXForward").save(),
   )
 )
 
@@ -33,8 +35,9 @@ SiPixelPhase1RecHitsNSimHits = DefaultHisto.clone(
   xlabel = "sim hit event number in event",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer").save(),
+    Specification().groupBy("PXForward/PXDisk").save(),
   )
 )
 
@@ -45,9 +48,11 @@ SiPixelPhase1RecHitsPosX = DefaultHisto.clone(
   xlabel = "RecHit position X dimension",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward").save(),
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel").save(),
+    Specification().groupBy("PXForward").save(),
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 
@@ -65,9 +70,11 @@ SiPixelPhase1RecHitsResX = DefaultHisto.clone(
   xlabel = "RecHit resolution X dimension",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward").save(),
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel").save(),
+    Specification().groupBy("PXForward").save(),
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 
@@ -84,9 +91,10 @@ SiPixelPhase1RecHitsErrorX = DefaultHisto.clone(
   xlabel = "X error",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
-  specs = cms.VPSet(
+  specs = VPSet(
     Specification().groupBy("").save(),
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk").save(),
+    Specification().groupBy("PXBarrel/PXLayer").save(),
+    Specification().groupBy("PXForward/PXDisk").save(),
   )
 )
 
@@ -103,9 +111,11 @@ SiPixelPhase1RecHitsPullX = DefaultHisto.clone(
   xlabel = "X Pull",
   dimensions = 1,
   topFolderName = "PixelPhase1V/RecHits",
-  specs = cms.VPSet(
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk").save(),
-    Specification().groupBy("PXBarrel|PXForward/PXLayer|PXDisk/PXBModule|PXFModule").save(),
+  specs = VPSet(
+    Specification().groupBy("PXBarrel/PXLayer").save(),
+    Specification().groupBy("PXForward/PXDisk").save(),
+    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save(),
   )
 )
 
