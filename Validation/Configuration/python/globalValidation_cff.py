@@ -37,6 +37,7 @@ from Validation.RPCRecHits.rpcRecHitValidation_cfi import *
 from Validation.DTRecHits.DTRecHitQuality_cfi import *
 from Validation.RecoTau.DQMMCValidation_cfi import *
 from Validation.L1T.L1Validator_cfi import *
+from Validation.SiPixelPhase1ConfigV.SiPixelPhase1OfflineDQM_sourceV_cff import *
 from DQMOffline.RecoB.dqmAnalyzer_cff import *
 
 # filter/producer "pre-" sequence for globalValidation
@@ -175,3 +176,10 @@ from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
 run3_GEM.toReplaceWith( globalValidation, _run3_globalValidation )
 from Configuration.Eras.Modifier_phase2_muon_cff import phase2_muon
 phase2_muon.toReplaceWith( globalValidation, _phase2_globalValidation )
+_phase_1_globalValidation = globalValidation.copy()
+_phase_1_globalValidation += siPixelPhase1OfflineDQM_sourceV
+
+from Configuration.StandardSequences.Eras import eras
+eras.run3_GEM.toReplaceWith( globalValidation, _run3_globalValidation )
+eras.phase2_muon.toReplaceWith( globalValidation, _phase2_globalValidation )
+eras.phase1Pixel.toReplaceWith( globalValidation, _phase_1_globalValidation )
