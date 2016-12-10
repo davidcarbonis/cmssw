@@ -27,11 +27,14 @@ SiPixelPhase1DigisNdigis = DefaultHistoDigiCluster.clone(
   dimensions = 0, # this is a count
   topFolderName = "PixelPhase1V/Digis",
   specs = VPSet(
-#    StandardSpecificationTrend_Num,
-#    StandardSpecification2DProfile_Num,
-#    StandardSpecifications1D_Num
-#    Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
-#    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save()
+    Specification(PerModule).groupBy("PXBarrel/Shell/PXLayer/PXLadder/P1PXModuleName/Event")
+                            .reduce("COUNT")
+                            .groupBy("PXBarrel/Shell/PXLayer/PXLadder/P1PXModuleName")
+                            .save(),
+    Specification(PerModule).groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/P1PXModuleName/Event")
+                            .reduce("COUNT")
+                            .groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/P1PXModuleName")
+                            .save(),
   )
 )
 
@@ -45,7 +48,7 @@ SiPixelPhase1DigisRows = DefaultHisto.clone(
   topFolderName = "PixelPhase1V/Digis",
   specs = VPSet(
     Specification().groupBy("PXBarrel/PXLayer/P1PXModuleName").save(),
-   Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save()
+    Specification().groupBy("PXForward/PXDisk/P1PXModuleName").save()
   )
 )
 
