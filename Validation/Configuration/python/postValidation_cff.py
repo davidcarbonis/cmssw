@@ -60,6 +60,7 @@ from Validation.MuonGEMHits.PostProcessor_cff import *
 from Validation.MuonGEMDigis.PostProcessor_cff import *
 from Validation.MuonGEMRecHits.PostProcessor_cff import *
 from Validation.HGCalValidation.HGCalPostProcessor_cff import *
+from Validation.SiPixelPhase1ConfigV.SiPixelPhase1OfflineDQM_harvestingV_cff import *
 
 postValidation_common = cms.Sequence()
 
@@ -111,3 +112,11 @@ from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
 run3_GEM.toReplaceWith( postValidation, _run3_postValidation )
 from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
 phase2_hgcal.toReplaceWith( postValidation, _phase2_postValidation )
+_phase1_postValidation = postValidation.copy()
+_phase1_postValidation += siPixelPhase1OfflineDQM_harvestingV
+
+from Configuration.StandardSequences.Eras import eras
+eras.run3_GEM.toReplaceWith( postValidation, _run3_postValidation )
+eras.phase2_hgcal.toReplaceWith( postValidation, _phase2_postValidation )
+eras.phase1Pixel.toReplaceWith( postValidation, _phase1_postValidation )
+

@@ -44,8 +44,8 @@ void SiPixelPhase1Clusters::analyze(const edm::Event& iEvent, const edm::EventSe
 
     for(SiPixelCluster const& cluster : *it) {
       int row = cluster.x()-0.5, col = cluster.y()-0.5;
-      histo[READOUT_CHARGE].fill(double(cluster.charge()), id, &iEvent, col, row);
-      histo[CHARGE].fill(double(cluster.charge()), id, &iEvent, col, row);
+      histo[READOUT_CHARGE].fill(double(cluster.charge() / 1000. ), id, &iEvent, col, row);
+      histo[CHARGE].fill(double(cluster.charge() /1000. ), id, &iEvent, col, row);
       histo[SIZE  ].fill(double(cluster.size()  ), id, &iEvent);
       if (cluster.size() > 1){
         histo[NCLUSTERS].fill(id, &iEvent);

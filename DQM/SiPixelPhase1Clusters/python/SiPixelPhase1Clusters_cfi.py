@@ -4,9 +4,8 @@ from DQM.SiPixelPhase1Common.HistogramManager_cfi import *
 SiPixelPhase1ClustersCharge = DefaultHistoDigiCluster.clone(
   name = "charge",
   title = "Cluster Charge",
-  range_min = 0, range_max = 200e3, range_nbins = 200,
-  xlabel = "Charge (electrons)",
-  
+  range_min = 0, range_max = 200, range_nbins = 200,
+  xlabel = "Charge size (in ke)",
   specs = VPSet(
     StandardSpecification2DProfile,
     StandardSpecificationPixelmapProfile,
@@ -20,7 +19,7 @@ SiPixelPhase1ClustersSize = DefaultHistoDigiCluster.clone(
   name = "size",
   title = "Total Cluster Size",
   range_min = 0, range_max = 30, range_nbins = 30,
-  xlabel = "size[pixels]",
+  xlabel = "Cluster size (in pixels)",
   specs = VPSet(
     StandardSpecification2DProfile,
     StandardSpecificationTrend,
@@ -33,7 +32,7 @@ SiPixelPhase1ClustersNClusters = DefaultHistoDigiCluster.clone(
   name = "clusters",
   title = "Clusters",
   range_min = 0, range_max = 10, range_nbins = 10,
-  xlabel = "clusters",
+  xlabel = "Number of Clusters",
   dimensions = 0,
   specs = VPSet(
     StandardSpecification2DProfile_Num,
@@ -75,7 +74,7 @@ SiPixelPhase1ClustersPositionB = DefaultHistoDigiCluster.clone(
   title = "Cluster Positions",
   range_min   =  -60, range_max   =  60, range_nbins   = 600,
   range_y_min = -3.2, range_y_max = 3.2, range_y_nbins = 200,
-  xlabel = "Global Z", ylabel = "Global \phi",
+  xlabel = "Global Z (cm)", ylabel = "Global \phi",
   dimensions = 2,
   specs = VPSet(
     Specification().groupBy("PXBarrel/PXLayer").save(),
@@ -86,7 +85,7 @@ SiPixelPhase1ClustersPositionB = DefaultHistoDigiCluster.clone(
 SiPixelPhase1ClustersPositionF = DefaultHistoDigiCluster.clone(
   name = "clusterposition_xy",
   title = "Cluster Positions",
-  xlabel = "Global X", ylabel = "Global Y",
+  xlabel = "Global X (cm)", ylabel = "Global Y (cm)",
   range_min   = -20, range_max   = 20, range_nbins   = 200,
   range_y_min = -20, range_y_max = 20, range_y_nbins = 200,
   dimensions = 2,
@@ -101,7 +100,7 @@ SiPixelPhase1ClustersPositionXZ = DefaultHistoDigiCluster.clone(
   enabled = False, # only for debugging geometry
   name = "clusterposition_xz",
   title = "Cluster Positions",
-  xlabel = "Global X", ylabel = "Global Z",
+  xlabel = "Global X (cm)", ylabel = "Global Z (cm)",
   range_min   = -20, range_max   = 20, range_nbins   = 200,
   range_y_min = -60, range_y_max = 60, range_y_nbins = 1200,
   dimensions = 2,
@@ -113,7 +112,7 @@ SiPixelPhase1ClustersPositionYZ = DefaultHistoDigiCluster.clone(
   enabled = False, # only for debugging geometry
   name = "clusterposition_yz",
   title = "Cluster Positions",
-  xlabel = "Global Y", ylabel = "Global Z",
+  xlabel = "Global Y (cm)", ylabel = "Global Z(cm)",
   range_min   = -20, range_max   = 20, range_nbins   = 200,
   range_y_min = -60, range_y_max = 60, range_y_nbins = 1200,
   dimensions = 2,
@@ -125,7 +124,7 @@ SiPixelPhase1ClustersSizeVsEta = DefaultHistoDigiCluster.clone(
   name = "sizeyvseta",
   title = "Cluster Size along Beamline vs. Cluster position #eta",
   xlabel = "Cluster #eta",
-  ylabel = "length [pixels]",
+  ylabel = "Cluster length (in pixels)",
   range_min = -3.2, range_max  = 3.2, range_nbins   = 40,
   range_y_min =  0, range_y_max = 40, range_y_nbins = 40,
   dimensions = 2,
