@@ -36,10 +36,10 @@ void SiPixelPhase1Digis::analyze(const edm::Event& iEvent, const edm::EventSetup
   for (it = input->begin(); it != input->end(); ++it) {
     for(PixelDigi const& digi : *it) {
       hasDigis=true;
-      histo[ADC].fill((double) digi.adc(), DetId(it->detId()), &iEvent);
+      histo[ADC].fill((double) digi.adc(), DetId(it->detId()), &iEvent, digi.column(), digi.row());
       histo[MAP].fill(DetId(it->detId()), &iEvent, digi.column(), digi.row()); 
       histo[OCCUPANCY].fill(DetId(it->detId()), &iEvent, digi.column(), digi.row()); 
-      histo[NDIGIS    ].fill(DetId(it->detId()), &iEvent); // count
+      histo[NDIGIS    ].fill(DetId(it->detId()), &iEvent, digi.column(), digi.row()); // count
       histo[NDIGISINCLUSIVE].fill(DetId(it->detId()), &iEvent); // count
       histo[NDIGIS_FED].fill(DetId(it->detId()), &iEvent); 
       histo[NDIGIS_FEDtrend].fill(DetId(it->detId()), &iEvent);  

@@ -8,6 +8,8 @@ SiPixelPhase1ClustersCharge = DefaultHistoDigiCluster.clone(
   xlabel = "Charge (electrons)",
   
   specs = VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile,
     StandardSpecification2DProfile,
     StandardSpecificationPixelmapProfile,
     StandardSpecificationTrend,
@@ -22,6 +24,36 @@ SiPixelPhase1ClustersSize = DefaultHistoDigiCluster.clone(
   range_min = 0, range_max = 30, range_nbins = 30,
   xlabel = "size[pixels]",
   specs = VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile,
+    StandardSpecification2DProfile,
+    StandardSpecificationTrend,
+    *StandardSpecifications1D
+  )
+)
+
+SiPixelPhase1ClustersSizeX = DefaultHisto.clone(
+  name = "sizeX",
+  title = "Total Cluster SizeX",
+  range_min = 0, range_max = 30, range_nbins = 30,
+  xlabel = "sizeX[pixels]",
+  specs = VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile,
+    StandardSpecification2DProfile,
+    StandardSpecificationTrend,
+    *StandardSpecifications1D
+  )
+)
+
+SiPixelPhase1ClustersSizeY = DefaultHisto.clone(
+  name = "sizeY",
+  title = "Total Cluster SizeY",
+  range_min = 0, range_max = 30, range_nbins = 30,
+  xlabel = "sizeY[pixels]",
+  specs = VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile,  
     StandardSpecification2DProfile,
     StandardSpecificationTrend,
     StandardSpecifications1D,
@@ -36,6 +68,8 @@ SiPixelPhase1ClustersNClusters = DefaultHistoDigiCluster.clone(
   xlabel = "clusters",
   dimensions = 0,
   specs = VPSet(
+    StandardSpecification_BarrelROCS_Profile_Num,
+    StandardSpecification_ForwardROCS_Profile_Num,
     StandardSpecification2DProfile_Num,
     StandardSpecificationTrend_Num,
     StandardSpecifications1D_Num,
@@ -174,6 +208,8 @@ SiPixelPhase1ClustersReadoutNClusters = DefaultHistoReadout.clone(
 SiPixelPhase1ClustersConf = cms.VPSet(
   SiPixelPhase1ClustersCharge,
   SiPixelPhase1ClustersSize,
+  SiPixelPhase1ClustersSizeX,
+  SiPixelPhase1ClustersSizeY,
   SiPixelPhase1ClustersNClusters,
   SiPixelPhase1ClustersNClustersInclusive,
   SiPixelPhase1ClustersEventrate,

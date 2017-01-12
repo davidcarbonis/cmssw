@@ -310,6 +310,56 @@ StandardSpecification2DProfile_Num = [
        .save(),
 ]
 
+StandardSpecification_BarrelROCS = [
+    Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
+                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow", "EXTEND_X")
+                   .groupBy("PXBarrel/PXLayer/PXLayer", "EXTEND_Y")
+                   .save()
+]
+
+StandardSpecification_ForwardROCS = [
+    Specification().groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow", "EXTEND_X")
+                   .groupBy("PXForward/PXDisk/", "EXTEND_Y")
+                   .save()
+]
+
+StandardSpecification_BarrelROCS_Profile = [
+    Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
+                   .reduce("MEAN")
+                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow", "EXTEND_X")
+                   .groupBy("PXBarrel/PXLayer/PXLayer", "EXTEND_Y")
+                   .save()
+]
+
+StandardSpecification_ForwardROCS_Profile = [
+    Specification().groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol")
+                   .reduce("MEAN")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow", "EXTEND_X")
+                   .groupBy("PXForward/PXDisk/", "EXTEND_Y")
+                   .save()
+]
+
+StandardSpecification_BarrelROCS_Profile_Num = [
+    Specification().groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol"+"/DetId/Event")
+                   .reduce("COUNT")
+                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow/ROCinLayerCol")
+                   .reduce("MEAN")
+                   .groupBy("PXBarrel/PXLayer/ROCinLayerRow", "EXTEND_X")
+                   .groupBy("PXBarrel/PXLayer/PXLayer", "EXTEND_Y")
+                   .save()
+]
+
+StandardSpecification_ForwardROCS_Profile_Num = [
+    Specification().groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol"+"/DetId/Event")
+                   .reduce("COUNT")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow/ROCinDiskCol")
+                   .reduce("MEAN")
+                   .groupBy("PXForward/PXDisk/ROCinDiskRow", "EXTEND_X")
+                   .groupBy("PXForward/PXDisk/", "EXTEND_Y")
+                   .save()
+]
+
 # function that makes a VPSet but flattens the argument list if needed
 def VPSet(*args):
     l = []
@@ -320,4 +370,5 @@ def VPSet(*args):
             e = list(a)
         l = l+e
     return cms.VPSet(l)
+
 

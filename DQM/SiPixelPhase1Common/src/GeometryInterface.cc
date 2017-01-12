@@ -130,8 +130,8 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
   assert(trackerGeometryHandle.isValid());
 
   // some parameters to record the ROCs here
-  auto module_rows = iConfig.getParameter<int>("module_rows") - 1;
-  auto module_cols = iConfig.getParameter<int>("module_cols") - 1;
+  auto roc_rows = iConfig.getParameter<int>("roc_rows") - 1;
+  auto roc_cols = iConfig.getParameter<int>("roc_cols") - 1;
 
   // We need to track some extra stuff here for the Shells later.
   auto pxlayer  = extractors[intern("PXLayer")];
@@ -161,11 +161,11 @@ void GeometryInterface::loadFromTopology(edm::EventSetup const& iSetup, const ed
     // SiPixelCoordinates, so we should support it here too.
     iq.row = 1; iq.col = 1;
     all_modules.push_back(iq);
-    iq.row = module_rows-1; iq.col = 1;
+    iq.row = roc_rows; iq.col = 0;
     all_modules.push_back(iq);
-    iq.row = 1; iq.col = module_cols-1;
+    iq.row = 0; iq.col = roc_cols;
     all_modules.push_back(iq);
-    iq.row = module_rows-1; iq.col = module_cols-1;
+    iq.row = roc_rows; iq.col = roc_cols;
     all_modules.push_back(iq);
   }
 }
@@ -317,13 +317,13 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     [] (InterestingQuantities const& iq) {
       return Value(iq.row);
     },
-    0, iConfig.getParameter<int>("module_rows") - 1
+    0, iConfig.getParameter<int>("roc_rows") - 1
   );
   addExtractor(intern("col"),
     [] (InterestingQuantities const& iq) {
       return Value(iq.col);
     },
-    0, iConfig.getParameter<int>("module_cols") - 1
+    0, iConfig.getParameter<int>("roc_cols") - 1
   );
 
 }

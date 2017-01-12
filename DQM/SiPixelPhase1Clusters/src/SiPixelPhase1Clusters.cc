@@ -43,10 +43,13 @@ void SiPixelPhase1Clusters::analyze(const edm::Event& iEvent, const edm::EventSe
     const PixelTopology& topol = theGeomDet->specificTopology();
 
     for(SiPixelCluster const& cluster : *it) {
+
       int row = cluster.x()-0.5, col = cluster.y()-0.5;
       histo[READOUT_CHARGE].fill(double(cluster.charge()), id, &iEvent, col, row);
       histo[CHARGE].fill(double(cluster.charge()), id, &iEvent, col, row);
       histo[SIZE  ].fill(double(cluster.size()  ), id, &iEvent);
+      histo[SIZE_X].fill(double(cluster.sizeX() ), id, &iEvent, col, row);
+      histo[SIZE_Y].fill(double(cluster.sizeY() ), id, &iEvent, col, row);
       if (cluster.size() > 1){
         histo[NCLUSTERS].fill(id, &iEvent);
         histo[NCLUSTERSINCLUSIVE].fill(id, &iEvent);
@@ -54,8 +57,7 @@ void SiPixelPhase1Clusters::analyze(const edm::Event& iEvent, const edm::EventSe
         hasClusters=true;
       }
 
-      LocalPoint clustlp = topol.localPosition(MeasurementPoint(cluster.x(), cluster.y()));
-      GlobalPoint clustgp = theGeomDet->surface().toGlobal(clustlp);
+      GlobalPoint clustgp = theGeomDet->surface().toGlobal( topol.localPosition(MeasurementPoint(cluster.x(), cluster.y())) );
       histo[POSITION_B ].fill(clustgp.z(),   clustgp.phi(),   id, &iEvent);
       histo[POSITION_F ].fill(clustgp.x(),   clustgp.y(),     id, &iEvent);
       histo[POSITION_XZ].fill(clustgp.x(),   clustgp.z(),     id, &iEvent);

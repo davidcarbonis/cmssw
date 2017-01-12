@@ -15,6 +15,8 @@ class SiPixelPhase1Clusters : public SiPixelPhase1Base {
   enum {
     CHARGE,
     SIZE,
+    SIZE_X,
+    SIZE_Y,
     NCLUSTERS,
     NCLUSTERSINCLUSIVE,
     EVENTRATE,

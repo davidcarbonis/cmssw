@@ -9,6 +9,8 @@ SiPixelPhase1TrackEfficiencyValid = DefaultHistoTrack.clone(
   specs = VPSet(
     StandardSpecifications1D_Num,
     StandardSpecificationOccupancy,
+    StandardSpecification_BarrelROCS,
+    StandardSpecification_ForwardROCS
   )
 )
 

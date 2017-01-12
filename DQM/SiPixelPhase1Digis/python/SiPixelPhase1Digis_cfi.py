@@ -11,6 +11,8 @@ SiPixelPhase1DigisADC = DefaultHistoDigiCluster.clone(
   range_max = 300,
   range_nbins = 300,
   specs = VPSet(
+    StandardSpecification_BarrelROCS_Profile,
+    StandardSpecification_ForwardROCS_Profile,
     StandardSpecificationTrend,
     StandardSpecificationTrend2D,
     StandardSpecification2DProfile,
@@ -27,6 +29,8 @@ SiPixelPhase1DigisNdigis = DefaultHistoDigiCluster.clone(
   range_nbins = 30,
   dimensions = 0, # this is a count
   specs = VPSet(
+    StandardSpecification_BarrelROCS_Profile_Num,
+    StandardSpecification_ForwardROCS_Profile_Num,
     StandardSpecificationTrend_Num,
     StandardSpecification2DProfile_Num,
     StandardSpecifications1D_Num
@@ -63,10 +67,10 @@ SiPixelPhase1DigisNdigisPerFED = DefaultHisto.clone( #to be removed?
   )
 )
 
-SiPixelPhase1DigisNdigisPerFEDtrend = DefaultHisto.clone(                                                                                                                                                   
-  name = "feddigistrend", # This is the same as above up to the ranges. maybe we                                                                                                                                            
-  title = "Digis",   # should allow setting the range per spec, but OTOH a                                                                                                                                             
-  xlabel = "digis",  # HistogramManager is almost free.                                                                                                                                                                
+SiPixelPhase1DigisNdigisPerFEDtrend = DefaultHisto.clone(
+  name = "feddigistrend", # This is the same as above up to the ranges. maybe we
+  title = "Digis",   # should allow setting the range per spec, but OTOH a
+  xlabel = "digis",  # HistogramManager is almost free.
   range_min = 0,
   range_max = 1000,
   range_nbins = 200,
