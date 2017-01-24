@@ -1,4 +1,4 @@
-y#ifndef SiPixel_GeometryInterface_h
+#ifndef SiPixel_GeometryInterface_h
 #define SiPixel_GeometryInterface_h
 // -*- C++ -*-
 //
