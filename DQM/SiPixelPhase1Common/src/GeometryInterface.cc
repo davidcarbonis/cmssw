@@ -326,6 +326,137 @@ void GeometryInterface::loadModuleLevel(edm::EventSetup const& iSetup, const edm
     0, iConfig.getParameter<int>("roc_cols") - 1
   );
 
+  edm::ESHandle<TrackerGeometry> trackerGeometryHandle;
+  iSetup.get<TrackerDigiGeometryRecord>().get(trackerGeometryHandle);
+  assert(trackerGeometryHandle.isValid());
+
+//  int   n_rocs     = iConfig.getParameter<int>("n_rocs");
+  float roc_cols   = iConfig.getParameter<int>("roc_cols");
+  float roc_rows   = iConfig.getParameter<int>("roc_rows");
+  auto  pxmodule   = extractors[intern("PXBModule")];
+  auto  pxpanel    = extractors[intern("PXPanel")];
+  auto pxladder = extractors[intern("PXLadder")];
+  auto pxlayer  = extractors[intern("PXLayer")];
+  auto pxendcap = extractors[intern("PXEndcap")];
+  auto pxblade  = extractors[intern("PXBlade")];
+  Value innerring = iConfig.getParameter<int>("n_inner_ring_blades");
+  Value outerring = 0;
+  Value maxmodule = 0;
+  std::vector<Value> maxladders;
+
+  // Now travrse the detector and collect whatever we need.
+  auto detids = trackerGeometryHandle->detIds();
+  for (DetId id : detids) {
+    if (id.subdetId() != PixelSubdetector::PixelBarrel && id.subdetId() != PixelSubdetector::PixelEndcap) continue;
+    auto iq = InterestingQuantities{nullptr, id, 0, 0};
+    auto layer = pxlayer(iq);
+    if (layer != UNDEFINED) {
+      if (layer >= Value(maxladders.size())) maxladders.resize(layer+1);
+      auto ladder = pxladder(iq);
+      if (ladder > maxladders[layer]) maxladders[layer] = ladder;
+    }
+    auto module = pxmodule(iq);
+    if (module != UNDEFINED && module > maxmodule) maxmodule = module;
+    auto blade = pxblade(iq);
+    if (blade != UNDEFINED && blade > outerring) outerring = blade;
+
+    // we record each module 4 times, one for each corner, so we also get ROCs
+    // in booking (at least for the ranges)
+    iq.row = 0; iq.col = 0;
+    all_modules.push_back(iq);
+    iq.row = roc_rows; iq.col = 0;
+    all_modules.push_back(iq);
+    iq.row = 0; iq.col = roc_cols;
+    all_modules.push_back(iq);
+    iq.row = roc_rows; iq.col = roc_cols;
+    all_modules.push_back(iq);
+  }
+
+  outerring = outerring - innerring;
+  addExtractor(intern("ROCinLayerRow"),
+    [pxladder, pxlayer, maxladders, roc_rows] (InterestingQuantities const& iq) {
+
+      auto ladder = pxladder(iq);
+      if (ladder == UNDEFINED) return UNDEFINED;
+      auto layer  = pxlayer(iq);
+      if (layer == UNDEFINED) return UNDEFINED;
+
+      int rocRow = int(iq.row / roc_rows);
+
+      int frac = (int) ((ladder-1) / float(maxladders[layer]) * 4); // floor semantics
+      Value quarter = maxladders[layer] / 4;
+
+      if (frac == 0) return Value( (-ladder + quarter + 1) * 2 + (rocRow) -1 );
+      if (frac == 1) return Value( (-ladder + quarter) * 2 + (rocRow) );
+      if (frac == 2) return Value( (-ladder + quarter) * 2 + (rocRow) );
+      if (frac == 3) return Value( (-ladder  + 4*quarter + quarter + 1) * 2 + (rocRow) -1 );
+      assert(!"Shell logic problem");
+      return UNDEFINED;
+
+    }
+  );
+  addExtractor(intern("ROCinLayerCol"),
+    [pxmodule, maxmodule, roc_cols] (InterestingQuantities const& iq) {
+      auto mod = pxmodule(iq);
+      if (mod == UNDEFINED) return UNDEFINED;
+
+      int rocCol = int(iq.col / roc_cols);
+
+      mod -= (maxmodule/2 + 1);
+      if (mod >= 0) return Value ( -(mod + 1) * 8 + rocCol );    // range -(max_module/2)..-1, 1..
+      else return Value ( -mod * 8 + rocCol -7 );    // range -(max_module/2)..-1, 0..
+
+      assert(!"Shell logic problem");
+      return UNDEFINED;
+    }
+  );
+  addExtractor(intern("ROCinDiskRow"),
+    [pxendcap, pxpanel, pxblade, innerring, roc_rows] (InterestingQuantities const& iq) {
+      auto ec = pxendcap(iq);
+      if (ec == UNDEFINED) return UNDEFINED;
+      auto panel = pxpanel(iq);
+      if (panel == UNDEFINED) return UNDEFINED;
+      auto blade = pxblade(iq);
+      if (blade == UNDEFINED) return UNDEFINED;
+
+      // For plots where we display both the inner and outer disks/rings, an offset is needed
+      // With two rows for each panel, this means that the outer disks/rings need to be moved 4 y coordinates
+      // above the origin.
+
+      int ringOffset = 0;
+      if (blade <= innerring) ringOffset = 0;
+      else ringOffset = 4;
+
+      int rocRow = int(iq.row / roc_rows);
+
+      return Value ( ( panel * 2 + rocRow ) + ringOffset );
+
+      assert(!"Shell logic problem");
+      return UNDEFINED;
+    }
+  );
+  addExtractor(intern("ROCinDiskCol"),
+    [pxendcap, pxblade, roc_cols] (InterestingQuantities const& iq) {
+      auto ec = pxendcap(iq);
+      if (ec == UNDEFINED) return UNDEFINED;
+      auto blade = pxblade(iq);
+      if (blade == UNDEFINED) return UNDEFINED;
+
+      int rocCol = int(iq.col / roc_cols);
+
+      // Ring 1
+      if ( 1 <= blade && blade < 6 ) return (6 - blade)*8 + rocCol -11; // 5 on 1st quarter
+      if ( 6 <= blade && blade < 17 ) return (5 - blade)*8 + rocCol; // 11 on 2nd half
+      if ( 17 <= blade && blade < 23 ) return (28 - blade)*8 + rocCol -11; // 6 on 4th quarter
+      // Ring 2 
+      if ( 23 <= blade && blade < 31 ) return (31 - blade)*8 + rocCol -11; // 8 on 1st quarter
+      if ( 31 <= blade && blade < 48 ) return (30 - blade)*8 + rocCol; // 17 on 2nd half
+      if ( 48 <= blade && blade < 57 ) return (65 - blade)*8 + rocCol -11; // 9 on 4th quarter
+
+      assert(!"Blade logic problem.");
+      return UNDEFINED;
+    }
+  );
 }
 
 void GeometryInterface::loadFEDCabling(edm::EventSetup const& iSetup, const edm::ParameterSet& iConfig) {
