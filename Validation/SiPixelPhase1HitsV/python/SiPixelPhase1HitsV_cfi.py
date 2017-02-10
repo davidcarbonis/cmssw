@@ -99,6 +99,28 @@ SiPixelPhase1HitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1HitsV",
         pixBarrelHighSrc = cms.InputTag("g4SimHits","TrackerHitsPixelBarrelHighTof"),
         pixForwardLowSrc = cms.InputTag("g4SimHits","TrackerHitsPixelEndcapLowTof"),
         pixForwardHighSrc = cms.InputTag("g4SimHits","TrackerHitsPixelEndcapHighTof"),
+
+	# Hit Efficiency stuff
+        associateRecoTracks = cms.bool(True),
+        tracksTag = cms.InputTag("generalTracks"),
+	tpTag = cms.InputTag("mix","MergedTrackTruth"),
+        simTracksTag = cms.InputTag("g4SimHits",""),
+        trackAssociatorByHitsTag = cms.InputTag("trackAssociatorByHits"),
+        associateStrip = cms.bool(True),
+        associatePixel = cms.bool(True),
+        ROUList = cms.vstring('g4SimHitsTrackerHitsPixelBarrelLowTof', 
+          'g4SimHitsTrackerHitsPixelBarrelHighTof', 
+          'g4SimHitsTrackerHitsPixelEndcapLowTof', 
+          'g4SimHitsTrackerHitsPixelEndcapHighTof'),
+
+#        ROUList = cms.vstring(
+           #"TrackerHitsTIBLowTof","TrackerHitsTIBHighTof", 
+           #"TrackerHitsTIDLowTof","TrackerHitsTIDHighTof",
+           #"TrackerHitsTOBLowTof","TrackerHitsTOBHighTof",
+           #"TrackerHitsTECLowTof","TrackerHitsTECHighTof",
+#           "TrackerHitsPixelBarrelLowTof","TrackerHitsPixelBarrelHighTof",
+#           "TrackerHitsPixelEndcapLowTof","TrackerHitsPixelEndcapHighTof"),
+
         # Track assoc. parameters
         histograms = SiPixelPhase1HitsConf,
         geometry = SiPixelPhase1Geometry

@@ -16,12 +16,19 @@
 #include "SimDataFormats/TrackingHit/interface/PSimHit.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 
+class TrackAssociatorByHits; 
+
 SiPixelPhase1HitsV::SiPixelPhase1HitsV(const edm::ParameterSet& iConfig) :
   SiPixelPhase1Base(iConfig),
   pixelBarrelLowToken_ ( consumes<edm::PSimHitContainer>(iConfig.getParameter<edm::InputTag>("pixBarrelLowSrc")) ),
   pixelBarrelHighToken_ ( consumes<edm::PSimHitContainer>(iConfig.getParameter<edm::InputTag>("pixBarrelHighSrc")) ),
   pixelForwardLowToken_ ( consumes<edm::PSimHitContainer>(iConfig.getParameter<edm::InputTag>("pixForwardLowSrc")) ),
-  pixelForwardHighToken_ ( consumes<edm::PSimHitContainer>(iConfig.getParameter<edm::InputTag>("pixForwardHighSrc")) )
+  pixelForwardHighToken_ ( consumes<edm::PSimHitContainer>(iConfig.getParameter<edm::InputTag>("pixForwardHighSrc")) ),
+
+  tracksToken_ ( consumes< edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracksTag")) ),
+  tpToken_ ( consumes< TrackingParticleCollection >(iConfig.getParameter<edm::InputTag>("tpTag")) ),
+  simTracksToken_ ( consumes< edm::SimTrackContainer >(iConfig.getParameter<edm::InputTag>("simTracksTag")) ),
+  trackAssociatorByHitsToken_ ( consumes< reco::TrackToTrackingParticleAssociator >(iConfig.getParameter<edm::InputTag>("trackAssociatorByHitsTag")) )
 {}
 
 void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -149,6 +156,39 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     histo[LOCAL_Z].fill(localZ,  id, &iEvent);
     histo[LOCAL_PHI].fill(localPhi,  id, &iEvent);
     histo[LOCAL_ETA].fill(localEta,  id, &iEvent);
+  }
+
+  // Sim Hit efficiency info
+  edm::Handle< edm::View<reco::Track> > trackCollectionH;
+  iEvent.getByToken(tracksToken_, trackCollectionH);
+
+  edm::Handle<TrackingParticleCollection> TPCollectionH;
+  iEvent.getByToken(tpToken_,TPCollectionH);
+
+  edm::Handle<reco::TrackToTrackingParticleAssociator> theHitsAssociator;
+  iEvent.getByToken(trackAssociatorByHitsToken_,theHitsAssociator);
+  if ( theHitsAssociator.isValid() ) {
+    associatorByHits = theHitsAssociator.product();
+  }
+
+  edm::Handle<edm::SimTrackContainer> simTrackCollection;
+  iEvent.getByToken(simTracksToken_, simTrackCollection);
+  if ( simTrackCollection.isValid() ) {
+    simTC = simTrackCollection.product();
+  }  
+
+    if ( TPCollectionH.isValid() && trackCollectionH.isValid() ) {
+    reco::SimToRecoCollection q = associatorByHits->associateSimToReco(trackCollectionH,TPCollectionH);
+    for( unsigned int i=0; i<simTC->size(); ++i ) {
+      TrackingParticleRef tp (TPCollectionH,i);
+      try { 
+        std::vector<std::pair<edm::RefToBase<reco::Track>, double> > trackV = q[tp]; // Causes the crash
+//        std::cout << "Sim hit has matched to " << trackV.size() << " reco::Tracks!" << std::endl; 
+      } 
+      catch (edm::Exception event) {
+//        std::cout << "Sim hit has not matched to at least one reco::Tracks!" << std::endl;
+      }
+    }
   }
 
 }

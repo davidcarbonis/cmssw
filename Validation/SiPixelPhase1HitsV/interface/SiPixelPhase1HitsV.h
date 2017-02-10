@@ -12,6 +12,11 @@
 #include "DQM/SiPixelPhase1Common/interface/SiPixelPhase1Base.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHitCollection.h"
 #include "SimTracker/TrackerHitAssociation/interface/TrackerHitAssociator.h"
+#include "SimDataFormats/Associations/interface/TrackToTrackingParticleAssociator.h"
+
+namespace reco {
+  class TrackToTrackingParticleAssociator;
+}
 
 class SiPixelPhase1HitsV : public SiPixelPhase1Base {
   enum {
@@ -35,6 +40,14 @@ class SiPixelPhase1HitsV : public SiPixelPhase1Base {
   edm::EDGetTokenT<edm::PSimHitContainer> pixelBarrelHighToken_;
   edm::EDGetTokenT<edm::PSimHitContainer> pixelForwardLowToken_;
   edm::EDGetTokenT<edm::PSimHitContainer> pixelForwardHighToken_;
+
+  edm::EDGetTokenT< edm::View<reco::Track> > tracksToken_;
+  edm::EDGetTokenT< TrackingParticleCollection > tpToken_;
+  edm::EDGetTokenT< edm::SimTrackContainer > simTracksToken_;
+  edm::EDGetTokenT< reco::TrackToTrackingParticleAssociator > trackAssociatorByHitsToken_;
+  reco::TrackToTrackingParticleAssociator const * associatorByHits;
+  edm::SimTrackContainer const * simTC;
+
 };
 
 #endif
