@@ -6,7 +6,7 @@ from DQM.SiPixelPhase1Common.HistogramManager_cfi import *
 SiPixelPhase1DigisADC = DefaultHistoDigiCluster.clone(
   name = "adc",
   title = "Digi ADC values",
-  xlabel = "adc readout",
+  xlabel = "ADC counts",
   range_min = 0,
   range_max = 300,
   range_nbins = 300,
@@ -22,7 +22,7 @@ SiPixelPhase1DigisADC = DefaultHistoDigiCluster.clone(
 SiPixelPhase1DigisNdigis = DefaultHistoDigiCluster.clone(
   name = "digis", # 'Count of' added automatically
   title = "Digis",
-  xlabel = "digis",
+  xlabel = "Number of Digis",
   range_min = 0,
   range_max = 30,
   range_nbins = 30,
@@ -49,8 +49,8 @@ SiPixelPhase1ClustersNdigisInclusive = DefaultHistoDigiCluster.clone(
 
 SiPixelPhase1DigisNdigisPerFED = DefaultHisto.clone( #to be removed?
   name = "feddigis", # This is the same as above up to the ranges. maybe we 
-  title = "Digis",   # should allow setting the range per spec, but OTOH a 
-  xlabel = "digis",  # HistogramManager is almost free.
+  title = "Digis per FED", # should allow setting the range per spec, but OTOH a 
+  xlabel = "Number of Digis",# HistogramManager is almost free.
   range_min = 0,
   range_max = 1000,
   range_nbins = 200,
@@ -64,10 +64,10 @@ SiPixelPhase1DigisNdigisPerFED = DefaultHisto.clone( #to be removed?
   )
 )
 
-SiPixelPhase1DigisNdigisPerFEDtrend = DefaultHisto.clone(                                                                                                                                                   
-  name = "feddigistrend", # This is the same as above up to the ranges. maybe we                                                                                                                                            
-  title = "Digis",   # should allow setting the range per spec, but OTOH a                                                                                                                                             
-  xlabel = "digis",  # HistogramManager is almost free.                                                                                                                                                                
+SiPixelPhase1DigisNdigisPerFEDtrend = DefaultHisto.clone(
+  name = "feddigistrend", # This is the same as above up to the ranges. maybe we
+  title = "Digis",   # should allow setting the range per spec, but OTOH a
+  xlabel = "digis",  # HistogramManager is almost free.
   range_min = 0,
   range_max = 1000,
   range_nbins = 200,
@@ -100,7 +100,7 @@ SiPixelPhase1DigisEvents = DefaultHistoDigiCluster.clone(
 SiPixelPhase1DigisHitmap = DefaultHistoDigiCluster.clone(
   name = "digi_occupancy",
   title = "Digi Occupancy",
-  ylabel = "#digis",
+  ylabel = "Number of Digis",
   dimensions = 0,
   specs = VPSet(
     Specification(PerModule).groupBy("PXBarrel/Shell/PXLayer/PXLadder/PXModuleName/row/col")
@@ -113,17 +113,6 @@ SiPixelPhase1DigisHitmap = DefaultHistoDigiCluster.clone(
     Specification(PerModule).groupBy("PXBarrel/Shell/PXLayer/PXLadder/PXModuleName/row")
                    .groupBy("PXBarrel/Shell/PXLayer/PXLadder/PXModuleName", "EXTEND_X")
                    .save(),
-    Specification(PerModule).groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/PXModuleName/row/col")
-                   .groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/PXModuleName/row", "EXTEND_Y")
-                   .groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/PXModuleName", "EXTEND_X")
-                   .save(),
-    Specification(PerModule).groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/PXModuleName/col")
-                   .groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/PXModuleName", "EXTEND_X")
-                   .save(),
-    Specification(PerModule).groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/PXModuleName/row")
-                   .groupBy("PXForward/HalfCylinder/PXDisk/PXRing/PXBlade/PXModuleName", "EXTEND_X")
-                   .save(),
-    StandardSpecificationOccupancy,
   )
 )
 

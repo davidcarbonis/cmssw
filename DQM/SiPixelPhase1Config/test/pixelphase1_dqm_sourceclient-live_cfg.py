@@ -193,6 +193,49 @@ SiPixelPhase1Geometry.upgradePhase = 1
 # Hit Efficiencies
 #from DQM.SiPixelPhase1TrackEfficiency.SiPixelPhase1TrackEfficiency_cfi import *
 
+
+#process.load('RecoTracker.Configuration.RecoTracker_cff')
+#    
+#    #process.newCombinedSeeds.seedCollections = cms.VInputTag(
+#    #    cms.InputTag('initialStepSeeds'),
+#    #    )
+#    
+#process.load('RecoTracker.FinalTrackSelectors.MergeTrackCollections_cff')
+#
+##import RecoTracker.FinalTrackSelectors.earlyGeneralTracks_cfi
+#
+#process.load('RecoTracker.FinalTrackSelectors.earlyGeneralTracks_cfi')
+#
+#
+#
+#process.earlyGeneralTracks.hasSelector=cms.vint32(1)
+#process.earlyGeneralTracks.selectedTrackQuals = cms.VInputTag(
+#    #        cms.InputTag("initialStepSelector","initialStep"),
+#    cms.InputTag("initialStep"),
+#    )
+#process.earlyGeneralTracks.setsToMerge = cms.VPSet( cms.PSet( tLists=cms.vint32(0), pQual=cms.bool(True) ) )
+#
+#process.load("RecoTracker.IterativeTracking.iterativeTk_cff")
+#
+#process.iterTracking_FirstStep =cms.Sequence(
+#    process.InitialStep
+#    *process.earlyGeneralTracks
+#    )
+#
+#
+##process.earlyGeneralTracks.TrackProducers = (
+##    cms.InputTag('initialStepTracks'),
+##    )
+#
+#process.RecoForDQM_LocalReco = cms.Sequence(process.siPixelDigis*process.siStripDigis*process.gtDigis*process.trackerlocalreco)#*process.gtEvmDigis)
+#
+
+#from DQM.SiPixelPhase1TrackResiduals.SiPixelPhase1TrackResiduals_cfi import *
+# Clusters ontrack/offtrack (also general tracks)
+#from DQM.SiPixelPhase1TrackClusters.SiPixelPhase1TrackClusters_cfi import *
+# Hit Efficiencies
+#from DQM.SiPixelPhase1TrackEfficiency.SiPixelPhase1TrackEfficiency_cfi import *
+
 process.siPixelDigis.InputLabel = cms.InputTag("rawDataCollector")
 process.SiPixelPhase1DigisAnalyzer.src = "siPixelDigis"
 process.SiPixelPhase1RawDataAnalyzer.src = "siPixelDigis"

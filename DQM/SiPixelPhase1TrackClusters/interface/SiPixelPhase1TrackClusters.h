@@ -27,7 +27,8 @@ class SiPixelPhase1TrackClusters : public SiPixelPhase1Base {
     OFFTRACK_POSITION_F,
 
     NTRACKS,
-    NTRACKS_VOLUME
+    NTRACKS_VOLUME,
+    CLUSTER_PROB
   };
 
   public:
