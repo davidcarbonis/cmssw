@@ -26,7 +26,7 @@ class SiPixelPhase1TrackClustersV : public SiPixelPhase1Base {
 
   private:
   edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster> > clustersToken_;
-  edm::EDGetTokenT<TrajTrackAssociationCollection> trackAssociationToken_;
+  edm::EDGetTokenT<reco::TrackCollection> tracksToken_;
 };
 
 #endif
