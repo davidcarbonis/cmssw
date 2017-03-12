@@ -82,6 +82,17 @@ SiPixelPhase1HitsPosEta = SiPixelPhase1HitsPosX.clone(
   range_min = -0.1, range_max = 0.1, range_nbins = 1000,
 )
 
+SiPixelPhase1HitsEfficiency = DefaultHistoTrack.clone(
+  name = "hitefficiency",
+  title = "Hit Efficiency",
+  xlabel = "#valid/(#valid+#missing)",
+  dimensions = 1,
+  specs = VPSet(
+    StandardSpecification2DProfile,
+    StandardSpecificationPixelmapProfile
+  )
+)
+
 SiPixelPhase1HitsConf = cms.VPSet(
   SiPixelPhase1HitsEnergyLoss,
   SiPixelPhase1HitsEntryExitX,
@@ -92,6 +103,7 @@ SiPixelPhase1HitsConf = cms.VPSet(
   SiPixelPhase1HitsPosZ,
   SiPixelPhase1HitsPosPhi,
   SiPixelPhase1HitsPosEta,
+#  SiPixelPhase1HitsEfficiency,
 )
 
 SiPixelPhase1HitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1HitsV",
