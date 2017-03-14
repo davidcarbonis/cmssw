@@ -87,6 +87,7 @@ SiPixelPhase1HitsEfficiency = DefaultHistoTrack.clone(
   title = "Hit Efficiency",
   xlabel = "#valid/(#valid+#missing)",
   dimensions = 1,
+  topFolderName = "PixelPhase1V/Hits",
   specs = VPSet(
     StandardSpecification2DProfile,
     StandardSpecificationPixelmapProfile
@@ -103,7 +104,7 @@ SiPixelPhase1HitsConf = cms.VPSet(
   SiPixelPhase1HitsPosZ,
   SiPixelPhase1HitsPosPhi,
   SiPixelPhase1HitsPosEta,
-#  SiPixelPhase1HitsEfficiency,
+  SiPixelPhase1HitsEfficiency,
 )
 
 SiPixelPhase1HitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1HitsV",

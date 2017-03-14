@@ -158,10 +158,11 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     histo[LOCAL_ETA].fill(localEta,  id, &iEvent);
   }
 
-/*
+
   // Sim Hit efficiency info
   edm::Handle< edm::View<reco::Track> > trackCollectionH;
   iEvent.getByToken(tracksToken_, trackCollectionH);
+  const edm::View<reco::Track>&  tC = *(trackCollectionH.product()); 
 
   edm::Handle<TrackingParticleCollection> TPCollectionH;
   iEvent.getByToken(tpToken_,TPCollectionH);
@@ -178,27 +179,28 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     simTC = simTrackCollection.product();
   }  
 
-    if ( TPCollectionH.isValid() && trackCollectionH.isValid() ) {
-    reco::SimToRecoCollection q = associatorByHits->associateSimToReco(trackCollectionH,TPCollectionH);
+  if ( TPCollectionH.isValid() && trackCollectionH.isValid() ) {
+  reco::RecoToSimCollection p = associatorByHits->associateRecoToSim(trackCollectionH,TPCollectionH);
 
-    edm::SimTrackContainer::const_iterator it;
-    for( it = simTC->begin(); it != simTC->end(); ++it ) {
-//    for( unsigned int i=0; i<simTC->size(); ++i ) {
-      TrackingParticleRef tp (TPCollectionH, *it);
+//    edm::View<reco::Track>::const_iterator it;
+//      for( it = tC.begin(); it != tC.end(); it++ ) {
+    for(edm::View<reco::Track>::size_type i=0; i<tC.size(); ++i) {
+      edm::RefToBase<reco::Track> track(trackCollectionH, i);
+
+      auto id = DetId(track->innerDetId());
 
       try { 
-        std::vector<std::pair<edm::RefToBase<reco::Track>, double> > trackV = q[tp];
-//        auto id = DetId(tp->detId());
-//        histo[EFFICIENCY].fill(1, id, &iEvent);
-//        std::cout << "Sim hit has matched to " << trackV.size() << " reco::Tracks!" << std::endl; 
+        std::vector<std::pair<TrackingParticleRef, double> > tp = p[track];
+//        std::cout << "Reco track matched to " << tp.size() << " MC tracks." << std::endl;
+        histo[EFFICIENCY].fill(1, id, &iEvent);
       } 
       catch (edm::Exception event) {
-//        histo[EFFICIENCY].fill(0, id, &iEvent);
-//        std::cout << "Sim hit has not matched to at least one reco::Tracks!" << std::endl;
+        histo[EFFICIENCY].fill(0, id, &iEvent);
+//        std::cout << "Reco track has not matched to at least one sim hit" << std::endl;
       }
     }
   }
-*/
+
 }
 
 DEFINE_FWK_MODULE(SiPixelPhase1HitsV);
