@@ -9,8 +9,8 @@ SiPixelPhase1HitsEnergyLoss = DefaultHisto.clone(
   dimensions = 1,
   topFolderName = "PixelPhase1V/Hits",
   specs = VPSet(
-    Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
-    Specification().groupBy("PXForward/PXDisk/PXModuleName").save(),
+   Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
+   Specification().groupBy("PXForward/PXDisk/PXModuleName").save(),
   )
 )
 

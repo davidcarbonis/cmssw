@@ -11,6 +11,8 @@ SiPixelPhase1RecHitsInTimeEvents = DefaultHisto.clone(
   specs = VPSet(
     Specification().groupBy("PXBarrel").save(),
     Specification().groupBy("PXForward").save(),
+    Specification().groupBy("PXBarrel/PXLayer").save(),
+    Specification().groupBy("PXForward/PXDisk").save(),
   )
 )
 
@@ -24,6 +26,8 @@ SiPixelPhase1RecHitsOutTimeEvents = DefaultHisto.clone(
   specs = VPSet(
     Specification().groupBy("PXBarrel").save(),
     Specification().groupBy("PXForward").save(),
+    Specification().groupBy("PXBarrel/PXLayer").save(),
+    Specification().groupBy("PXForward/PXDisk").save(),
   )
 )
 
@@ -51,6 +55,8 @@ SiPixelPhase1RecHitsPosX = DefaultHisto.clone(
   specs = VPSet(
     Specification().groupBy("PXBarrel").save(),
     Specification().groupBy("PXForward").save(),
+    Specification().groupBy("PXBarrel/PXLayer").save(),
+    Specification().groupBy("PXForward/PXDisk").save(),
     Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
     Specification().groupBy("PXForward/PXDisk/PXModuleName").save(),
   )
