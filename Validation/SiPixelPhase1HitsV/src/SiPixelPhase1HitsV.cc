@@ -180,8 +180,23 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
   }  
 
   if ( TPCollectionH.isValid() && trackCollectionH.isValid() ) {
-  reco::RecoToSimCollection p = associatorByHits->associateRecoToSim(trackCollectionH,TPCollectionH);
+    reco::SimToRecoCollection q = associatorByHits->associateSimToReco(trackCollectionH,TPCollectionH);
+//    reco::RecoToSimCollection p = associatorByHits->associateRecoToSim(trackCollectionH,TPCollectionH);
 
+    for( unsigned int i=0; i<simTC->size(); ++i ) {
+      TrackingParticleRef tp (TPCollectionH,i);
+      std::vector<PSimHit> simHits = tp->trackPSimHit();
+      try { 
+        std::vector<std::pair<edm::RefToBase<reco::Track>, double> > trackV = q[tp]; // Causes the crash
+//        std::cout << "Sim hit has matched to " << trackV.size() << " reco::Tracks!" << std::endl; 
+      } 
+      catch (edm::Exception event) {
+//        std::cout << "Sim hit has not matched to at least one reco::Tracks!" << std::endl;
+      }
+    }
+
+
+/*
 //    edm::View<reco::Track>::const_iterator it;
 //      for( it = tC.begin(); it != tC.end(); it++ ) {
     for(edm::View<reco::Track>::size_type i=0; i<tC.size(); ++i) {
@@ -199,6 +214,7 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
 //        std::cout << "Reco track has not matched to at least one sim hit" << std::endl;
       }
     }
+*/
   }
 
 }
