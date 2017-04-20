@@ -7,5 +7,6 @@ siPixelPhase1OfflineDQM_harvestingV = cms.Sequence(SiPixelPhase1DigisHarvesterV
                                                 + SiPixelPhase1HitsHarvesterV
                                                 + SiPixelPhase1RecHitsHarvesterV
                                                 + SiPixelPhase1TrackClustersHarvesterV
+					        + SiPixelPhase1TrackingParticleHarvesterV
                                                 )
 

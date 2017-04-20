@@ -179,42 +179,35 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     simTC = simTrackCollection.product();
   }  
 
+
+
   if ( TPCollectionH.isValid() && trackCollectionH.isValid() ) {
-    reco::SimToRecoCollection q = associatorByHits->associateSimToReco(trackCollectionH,TPCollectionH);
-//    reco::RecoToSimCollection p = associatorByHits->associateRecoToSim(trackCollectionH,TPCollectionH);
+    reco::RecoToSimCollection p = associatorByHits->associateRecoToSim(trackCollectionH,TPCollectionH);
 
-    for( unsigned int i=0; i<simTC->size(); ++i ) {
-      TrackingParticleRef tp (TPCollectionH,i);
-      std::vector<PSimHit> simHits = tp->trackPSimHit();
-      try { 
-        std::vector<std::pair<edm::RefToBase<reco::Track>, double> > trackV = q[tp]; // Causes the crash
-//        std::cout << "Sim hit has matched to " << trackV.size() << " reco::Tracks!" << std::endl; 
-      } 
-      catch (edm::Exception event) {
-//        std::cout << "Sim hit has not matched to at least one reco::Tracks!" << std::endl;
-      }
-    }
-
-
-/*
-//    edm::View<reco::Track>::const_iterator it;
-//      for( it = tC.begin(); it != tC.end(); it++ ) {
     for(edm::View<reco::Track>::size_type i=0; i<tC.size(); ++i) {
       edm::RefToBase<reco::Track> track(trackCollectionH, i);
-
-      auto id = DetId(track->innerDetId());
+      const reco::Track& t = *track;
+      auto id = DetId(track->innerDetId()); // histo manager requires a det ID, use innermost ID for ease
 
       try { 
         std::vector<std::pair<TrackingParticleRef, double> > tp = p[track];
 //        std::cout << "Reco track matched to " << tp.size() << " MC tracks." << std::endl;
-        histo[EFFICIENCY].fill(1, id, &iEvent);
+        histo[EFFICIENCY_TRACK].fill(1, id, &iEvent);
+        histo[EFFICIENCY_TRACK_PT].fill(1, t.pt(), id, &iEvent);
+        histo[EFFICIENCY_TRACK_ETA].fill(1, t.eta(), id, &iEvent);
+//        histo[EFFICIENCY_TRACK_PT].fill(t.pt(), 1, id, &iEvent);
+//        histo[EFFICIENCY_TRACK_ETA].fill(t.eta(), 1, id, &iEvent);
       } 
       catch (edm::Exception event) {
-        histo[EFFICIENCY].fill(0, id, &iEvent);
+        histo[EFFICIENCY_TRACK].fill(0, id, &iEvent);
+        histo[EFFICIENCY_TRACK_PT].fill(0, t.pt(), id, &iEvent);
+        histo[EFFICIENCY_TRACK_ETA].fill(0, t.eta(), id, &iEvent);
+//        histo[EFFICIENCY_TRACK_PT].fill(t.pt(), 0, id, &iEvent);
+//        histo[EFFICIENCY_TRACK_ETA].fill(t.eta(), 0, id, &iEvent);
 //        std::cout << "Reco track has not matched to at least one sim hit" << std::endl;
       }
     }
-*/
+
   }
 
 }

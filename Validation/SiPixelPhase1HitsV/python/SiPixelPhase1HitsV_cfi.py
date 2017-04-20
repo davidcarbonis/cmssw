@@ -82,16 +82,39 @@ SiPixelPhase1HitsPosEta = SiPixelPhase1HitsPosX.clone(
   range_min = -0.1, range_max = 0.1, range_nbins = 1000,
 )
 
-SiPixelPhase1HitsEfficiency = DefaultHistoTrack.clone(
-  name = "hitefficiency",
-  title = "Hit Efficiency",
+SiPixelPhase1HitsEfficiencyTrack = DefaultHistoTrack.clone(
+  name = "trackefficiency",
+  title = "Track Efficiency (by hits)",
   xlabel = "#valid/(#valid+#missing)",
   dimensions = 1,
   topFolderName = "PixelPhase1V/Hits",
   specs = VPSet(
     StandardSpecification2DProfile,
-    StandardSpecificationPixelmapProfile
   )
+)
+
+SiPixelPhase1HitsEfficiencyTrackPt = DefaultHistoTrack.clone(
+  name = "trackefficiencypt",
+  title = "Track Efficiency (by hits) vs Pt",
+  xlabel = "pT",
+  dimensions = 1,
+#  range_min = -0.1, range_max = 100.0, range_nbins = 100,
+  topFolderName = "PixelPhase1V/Hits",
+  specs = VPSet(
+    Specification().groupBy("PXBarrel")
+                   .reduce("Mean")
+                   .save(),
+    Specification().groupBy("PXForward")
+                   .reduce("Mean")
+                   .save(),
+  )
+)
+
+SiPixelPhase1HitsEfficiencyTrackEta = SiPixelPhase1HitsEfficiencyTrackPt.clone(
+  name = "trackefficiencyeta",
+  title = "Track Efficiency (by hits) vs eta",
+  xlabel = "eta",
+  range_min = -7.1, range_max = 7.1, range_nbins = 100,
 )
 
 SiPixelPhase1HitsConf = cms.VPSet(
@@ -104,7 +127,10 @@ SiPixelPhase1HitsConf = cms.VPSet(
   SiPixelPhase1HitsPosZ,
   SiPixelPhase1HitsPosPhi,
   SiPixelPhase1HitsPosEta,
-  SiPixelPhase1HitsEfficiency,
+#  SiPixelPhase1HitsEfficiencyHit,
+  SiPixelPhase1HitsEfficiencyTrack,
+  SiPixelPhase1HitsEfficiencyTrackPt,
+  SiPixelPhase1HitsEfficiencyTrackEta,
 )
 
 SiPixelPhase1HitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1HitsV",
@@ -125,14 +151,6 @@ SiPixelPhase1HitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1HitsV",
           'g4SimHitsTrackerHitsPixelBarrelHighTof', 
           'g4SimHitsTrackerHitsPixelEndcapLowTof', 
           'g4SimHitsTrackerHitsPixelEndcapHighTof'),
-
-#        ROUList = cms.vstring(
-           #"TrackerHitsTIBLowTof","TrackerHitsTIBHighTof", 
-           #"TrackerHitsTIDLowTof","TrackerHitsTIDHighTof",
-           #"TrackerHitsTOBLowTof","TrackerHitsTOBHighTof",
-           #"TrackerHitsTECLowTof","TrackerHitsTECHighTof",
-#           "TrackerHitsPixelBarrelLowTof","TrackerHitsPixelBarrelHighTof",
-#           "TrackerHitsPixelEndcapLowTof","TrackerHitsPixelEndcapHighTof"),
 
         # Track assoc. parameters
         histograms = SiPixelPhase1HitsConf,
