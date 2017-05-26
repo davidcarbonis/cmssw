@@ -29,10 +29,7 @@ class SiPixelPhase1HitsV : public SiPixelPhase1Base {
     LOCAL_Z,
     LOCAL_PHI,
     LOCAL_ETA,
-//    EFFICIENCY_HIT
     EFFICIENCY_TRACK,
-    EFFICIENCY_TRACK_PT,
-    EFFICIENCY_TRACK_ETA
   };
 
   public:

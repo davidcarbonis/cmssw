@@ -93,30 +93,6 @@ SiPixelPhase1HitsEfficiencyTrack = DefaultHistoTrack.clone(
   )
 )
 
-SiPixelPhase1HitsEfficiencyTrackPt = DefaultHistoTrack.clone(
-  name = "trackefficiencypt",
-  title = "Track Efficiency (by hits) vs Pt",
-  xlabel = "pT",
-  dimensions = 1,
-#  range_min = -0.1, range_max = 100.0, range_nbins = 100,
-  topFolderName = "PixelPhase1V/Hits",
-  specs = VPSet(
-    Specification().groupBy("PXBarrel")
-                   .reduce("Mean")
-                   .save(),
-    Specification().groupBy("PXForward")
-                   .reduce("Mean")
-                   .save(),
-  )
-)
-
-SiPixelPhase1HitsEfficiencyTrackEta = SiPixelPhase1HitsEfficiencyTrackPt.clone(
-  name = "trackefficiencyeta",
-  title = "Track Efficiency (by hits) vs eta",
-  xlabel = "eta",
-  range_min = -7.1, range_max = 7.1, range_nbins = 100,
-)
-
 SiPixelPhase1HitsConf = cms.VPSet(
   SiPixelPhase1HitsEnergyLoss,
   SiPixelPhase1HitsEntryExitX,
@@ -127,10 +103,7 @@ SiPixelPhase1HitsConf = cms.VPSet(
   SiPixelPhase1HitsPosZ,
   SiPixelPhase1HitsPosPhi,
   SiPixelPhase1HitsPosEta,
-#  SiPixelPhase1HitsEfficiencyHit,
   SiPixelPhase1HitsEfficiencyTrack,
-  SiPixelPhase1HitsEfficiencyTrackPt,
-  SiPixelPhase1HitsEfficiencyTrackEta,
 )
 
 SiPixelPhase1HitsAnalyzerV = cms.EDAnalyzer("SiPixelPhase1HitsV",
