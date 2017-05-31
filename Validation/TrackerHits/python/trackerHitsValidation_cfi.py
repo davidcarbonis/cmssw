@@ -24,18 +24,20 @@ trackerHitsValid = cms.EDAnalyzer("TrackerHitAnalyzer",
     SiTECHighSrc = cms.InputTag("g4SimHits","TrackerHitsTECHighTof"),
     PxlBrlHighSrc = cms.InputTag("g4SimHits","TrackerHitsPixelBarrelHighTof"),
     SiTECLowSrc = cms.InputTag("g4SimHits","TrackerHitsTECLowTof"),
-    SiTIDHighSrc = cms.InputTag("g4SimHits","TrackerHitsTIDHighTof")
+    SiTIDHighSrc = cms.InputTag("g4SimHits","TrackerHitsTIDHighTof"),
+
+    pixelOutput = cms.bool(True),
 )
 
-trackerSiStripHitsValid = cms.EDAnalyzer("TrackerSiStripHitAnalyzer",
+trackerSiStripHitsValid = cms.EDAnalyzer("TrackerHitAnalyzer",
     G4TrkSrc = cms.InputTag("g4SimHits"),
     SiTIDLowSrc = cms.InputTag("g4SimHits","TrackerHitsTIDLowTof"),
-#    PxlBrlLowSrc = cms.InputTag("g4SimHits","TrackerHitsPixelBarrelLowTof"),
+    PxlBrlLowSrc = cms.InputTag("g4SimHits","TrackerHitsPixelBarrelLowTof"),
     Name = cms.untracked.string('TrackerHitAnalyzer'),
     Verbosity = cms.untracked.bool(False),
     runStandalone = cms.bool(False),
     outputFile =cms.untracked.string(''),
-#    PxlFwdLowSrc = cms.InputTag("g4SimHits","TrackerHitsPixelEndcapLowTof"),
+    PxlFwdLowSrc = cms.InputTag("g4SimHits","TrackerHitsPixelEndcapLowTof"),
 
     Label = cms.string('TrkHits'),
     ProvenanceLookup = cms.PSet(
@@ -46,11 +48,11 @@ trackerSiStripHitsValid = cms.EDAnalyzer("TrackerSiStripHitAnalyzer",
     SiTIBHighSrc = cms.InputTag("g4SimHits","TrackerHitsTIBHighTof"),
     SiTIBLowSrc = cms.InputTag("g4SimHits","TrackerHitsTIBLowTof"),
     SiTOBHighSrc = cms.InputTag("g4SimHits","TrackerHitsTOBHighTof"),
-#    PxlFwdHighSrc = cms.InputTag("g4SimHits","TrackerHitsPixelEndcapHighTof"),
+    PxlFwdHighSrc = cms.InputTag("g4SimHits","TrackerHitsPixelEndcapHighTof"),
     SiTECHighSrc = cms.InputTag("g4SimHits","TrackerHitsTECHighTof"),
-#    PxlBrlHighSrc = cms.InputTag("g4SimHits","TrackerHitsPixelBarrelHighTof"),
+    PxlBrlHighSrc = cms.InputTag("g4SimHits","TrackerHitsPixelBarrelHighTof"),
     SiTECLowSrc = cms.InputTag("g4SimHits","TrackerHitsTECLowTof"),
-    SiTIDHighSrc = cms.InputTag("g4SimHits","TrackerHitsTIDHighTof")
+    SiTIDHighSrc = cms.InputTag("g4SimHits","TrackerHitsTIDHighTof"),
+
+    pixelOutput = cms.bool(False),
 )
-
-
