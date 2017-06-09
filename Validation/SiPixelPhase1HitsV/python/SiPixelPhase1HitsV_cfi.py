@@ -18,7 +18,7 @@ SiPixelPhase1HitsTofEta = DefaultHisto.clone(
 SiPixelPhase1HitsTofPhi = SiPixelPhase1HitsTofEta.clone(
   name = "tof_phi",
   title = "Time of flight vs #phi",
-  range_min = -180, range_max = 180, range_nbins = 5000,
+  range_min = -3.5, range_max = 3.5, range_nbins = 5000,
   xlabel = "#phi",
   dimensions = 2,
   specs = VPSet(
@@ -29,7 +29,7 @@ SiPixelPhase1HitsTofPhi = SiPixelPhase1HitsTofEta.clone(
 SiPixelPhase1HitsTofR = SiPixelPhase1HitsTofEta.clone(
   name = "tof_r",
   title = "Time of flight vs r",
-  range_min = 0, range_max = 300, range_nbins = 5000,
+  range_min = 0, range_max = 60, range_nbins = 5000,
   xlabel = "r",
   dimensions = 2,
   specs = VPSet(
@@ -40,7 +40,7 @@ SiPixelPhase1HitsTofR = SiPixelPhase1HitsTofEta.clone(
 SiPixelPhase1HitsTofZ = SiPixelPhase1HitsTofEta.clone(
   name = "tof_z",
   title = "Time of flight vs z",
-  range_min = -280, range_max = 280, range_nbins = 5000,
+  range_min = -60, range_max = 60, range_nbins = 5000,
   xlabel = "z",
   dimensions = 2,
   specs = VPSet(
