@@ -214,7 +214,7 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     histo[LOCAL_ETA].fill(localEta,  id, &iEvent);
   }
 
-
+/*
   // Sim Hit efficiency info
   edm::Handle< edm::View<reco::Track> > trackCollectionH;
   iEvent.getByToken(tracksToken_, trackCollectionH);
@@ -230,7 +230,9 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
   }
 
   if ( TPCollectionH.isValid() && trackCollectionH.isValid() ) {
+    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
     reco::RecoToSimCollection p = associatorByHits->associateRecoToSim(trackCollectionH,TPCollectionH);
+    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
     for(edm::View<reco::Track>::size_type i=0; i<tC.size(); ++i) {
       edm::RefToBase<reco::Track> track(trackCollectionH, i);
@@ -249,7 +251,7 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
     }
 
   }
-
+*/
 }
 
 DEFINE_FWK_MODULE(SiPixelPhase1HitsV);
