@@ -9,6 +9,7 @@
 
 #include "Validation/SiPixelPhase1HitsV/interface/SiPixelPhase1HitsV.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "DataFormats/GeometryVector/interface/LocalPoint.h"
@@ -225,9 +226,10 @@ void SiPixelPhase1HitsV::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   edm::Handle<reco::TrackToTrackingParticleAssociator> theHitsAssociator;
   iEvent.getByToken(trackAssociatorByHitsToken_,theHitsAssociator);
-  if ( theHitsAssociator.isValid() ) {
-    associatorByHits = theHitsAssociator.product();
+  if ( ! theHitsAssociator.isValid() ) {
+    throw cms::Exception ("NO VALID HIT ASSOCIATOR");
   }
+  associatorByHits = theHitsAssociator.product();
 
   if ( TPCollectionH.isValid() && trackCollectionH.isValid() ) {
     reco::RecoToSimCollection p = associatorByHits->associateRecoToSim(trackCollectionH,TPCollectionH);
