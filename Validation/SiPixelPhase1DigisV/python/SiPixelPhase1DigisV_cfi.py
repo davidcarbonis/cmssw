@@ -11,8 +11,8 @@ SiPixelPhase1DigisADC = DefaultHisto.clone(
   range_nbins = 300,
   topFolderName = "PixelPhase1V/Digis",
   specs = VPSet(
-    Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
-    Specification().groupBy("PXForward/PXDisk/PXModuleName").save()
+    Specification().groupBy("PXBarrel/PXLayer/PXLadder").save(),
+    Specification().groupBy("PXForward/PXDisk/PXBlade").save()
   )
 )
 
@@ -46,8 +46,8 @@ SiPixelPhase1DigisRows = DefaultHisto.clone(
   range_nbins = 200,
   topFolderName = "PixelPhase1V/Digis",
   specs = VPSet(
-    Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
-    Specification().groupBy("PXForward/PXDisk/PXModuleName").save()
+    Specification().groupBy("PXBarrel/PXLayer/PXLadder").save(),
+    Specification().groupBy("PXForward/PXDisk/PXBlade").save()
   )
 )
 
@@ -60,8 +60,8 @@ SiPixelPhase1DigisColumns = DefaultHisto.clone(
   range_nbins = 300,
   topFolderName = "PixelPhase1V/Digis",
   specs = VPSet(
-    Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
-    Specification().groupBy("PXForward/PXDisk/PXModuleName").save()
+    Specification().groupBy("PXBarrel/PXLayer/PXLadder").save(),
+    Specification().groupBy("PXForward/PXDisk/PXBlade").save()
  )
 )
 

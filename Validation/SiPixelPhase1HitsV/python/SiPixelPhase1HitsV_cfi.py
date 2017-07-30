@@ -29,7 +29,7 @@ SiPixelPhase1HitsTofPhi = SiPixelPhase1HitsTofEta.clone(
 SiPixelPhase1HitsTofR = SiPixelPhase1HitsTofEta.clone(
   name = "tof_r",
   title = "Time of flight vs r",
-  range_min = 0, range_max = 60, range_nbins = 5000,
+  range_min = 0, range_max = 60, range_nbins = 1000,
   xlabel = "r",
   dimensions = 2,
   specs = VPSet(
@@ -40,7 +40,7 @@ SiPixelPhase1HitsTofR = SiPixelPhase1HitsTofEta.clone(
 SiPixelPhase1HitsTofZ = SiPixelPhase1HitsTofEta.clone(
   name = "tof_z",
   title = "Time of flight vs z",
-  range_min = -60, range_max = 60, range_nbins = 5000,
+  range_min = -60, range_max = 60, range_nbins = 1000,
   xlabel = "z",
   dimensions = 2,
   specs = VPSet(
@@ -56,8 +56,8 @@ SiPixelPhase1HitsEnergyLoss = DefaultHisto.clone(
   dimensions = 1,
   topFolderName = "PixelPhase1V/Hits",
   specs = VPSet(
-   Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
-   Specification().groupBy("PXForward/PXDisk/PXModuleName").save(),
+    Specification().groupBy("PXBarrel/PXLayer/PXLadder").save(),
+    Specification().groupBy("PXForward/PXDisk/PXBlade").save()
   )
 )
 
@@ -69,8 +69,8 @@ SiPixelPhase1HitsEntryExitX = DefaultHisto.clone(
   dimensions = 1,
   topFolderName = "PixelPhase1V/Hits",
   specs = VPSet(
-    Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
-    Specification().groupBy("PXForward/PXDisk/PXModuleName").save(),
+    Specification().groupBy("PXBarrel/PXLayer/PXLadder").save(),
+    Specification().groupBy("PXForward/PXDisk/PXBlade").save()
   )
 )
 
@@ -96,8 +96,8 @@ SiPixelPhase1HitsPosX = DefaultHisto.clone(
   dimensions = 1,
   topFolderName = "PixelPhase1V/Hits",
   specs = VPSet(
-    Specification().groupBy("PXBarrel/PXLayer/PXModuleName").save(),
-    Specification().groupBy("PXForward/PXDisk/PXModuleName").save(),
+    Specification().groupBy("PXBarrel/PXLayer/PXLadder").save(),
+    Specification().groupBy("PXForward/PXDisk/PXBlade").save()
   )
 )
 
