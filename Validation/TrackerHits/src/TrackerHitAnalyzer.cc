@@ -91,10 +91,10 @@ void TrackerHitAnalyzer::bookHistograms(DQMStore::IBooker & ibooker,const edm::R
  int nbin = 5000;   
 
     ibooker.setCurrentFolder("TrackerHitsV/TrackerHit/");
-    htofeta  = ibooker.book2D ("tof_eta", "Time of flight vs eta", nbin , -3.0 , 3.0,200,-100,100);
-    htofphi  = ibooker.book2D("tof_phi", "Time of flight vs phi", nbin,-180,180,200,-100,100);
-    htofr  = ibooker.book2D("tof_r", "Time of flight vs r", nbin , 0 , 300, 200, -100,100);
-    htofz  = ibooker.book2D("tof_z", "Time of flight vs z", nbin , -280 , 280, 200, -100,100);
+    htofeta  = ibooker.book2D ("tof_eta", "Time of flight vs eta", nbin , -3.0 , 3.0,100,0,100);
+    htofphi  = ibooker.book2D("tof_phi", "Time of flight vs phi", nbin,-180,180,100,0,100);
+    htofr  = ibooker.book2D("tof_r", "Time of flight vs r", nbin , 0 , 300, 100, 0,100);
+    htofz  = ibooker.book2D("tof_z", "Time of flight vs z", nbin , -280 , 280, 100, 0,100);
 
 
  const float E2NEL = 1.; 

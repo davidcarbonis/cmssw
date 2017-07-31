@@ -6,7 +6,7 @@ SiPixelPhase1HitsTofEta = DefaultHisto.clone(
   name = "tof_eta",
   title = "Time of flight vs #eta",
   range_min = -4.0, range_max = 4.0, range_nbins = 5000,
-  range_y_min = -100, range_y_max = 100, range_y_nbins = 200,
+  range_y_min = 0.0, range_y_max = 100.0, range_y_nbins = 100,
   xlabel = "#eta", ylabel = "Time of flight",
   topFolderName = "PixelPhase1V/Hits",
   dimensions = 2,
