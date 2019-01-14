@@ -103,7 +103,7 @@ std::map<std::string, double> KFParamsComb::getTrackParams(const kalmanState *st
 
   std::vector<double> x = state->xa();
   std::map<std::string, double> y;
-  y["qOverPt"] = x.at(INV2R) / getSettings()->invPtToInvR() * 2.; 
+  y["qOverPt"] = 2. * x.at(INV2R) / getSettings()->invPtToInvR(); 
   y["phi0"] = wrapRadian( x.at(PHI0) + sectorPhi() );
   y["z0"] = x.at(Z0);
   y["t"] = x.at(T);
@@ -126,7 +126,7 @@ std::map<std::string, double> KFParamsComb::getTrackParams_BeamConstr( const kal
     x[INV2R] -= x.at(D0) * (cov_xa[INV2R][D0] / cov_xa[D0][D0]); 
     x[PHI0 ] -= x.at(D0) * (cov_xa[PHI0 ][D0] / cov_xa[D0][D0]); 
     x[D0   ]  = 0.0;
-    y["qOverPt"] = x.at(INV2R) / getSettings()->invPtToInvR() * 2.; 
+    y["qOverPt"] = 2. * x.at(INV2R) / getSettings()->invPtToInvR(); 
     y["phi0"]    = wrapRadian( x.at(PHI0) + sectorPhi() );
     y["z0"]      = x.at(Z0);
     y["t"]       = x.at(T);
@@ -198,19 +198,32 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
   // Assumed track seed (from HT) uncertainty in transverse impact parameter.
   const float d0Sigma = 1.0;
 
-  // optimised for 18x2 with additional error factor in pt/phi to avoid pulling towards wrong HT params
-  p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4;  // Base on HT cell size
-  p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; // Based on HT cell size.
-  p(Z0,Z0) = 5.0 * 5.0; 
-  p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
-  if (nPar_ == 5) {
-    p(D0,D0) = d0Sigma * d0Sigma; 
-  } 
+  if (getSettings()->hybrid()) {
 
+    //    p(INV2R,INV2R) = 100000*0.0157 * 0.0157 * c * c * 10; // N.B. Such large uncertainty may cause problems.
+    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4; 
+    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; 
+    p(Z0,Z0) = 5.0 * 5.0; // N.B. r-z seed uncertainties could be smaller for hybrid, except if seeded in 2S?
+    p(T,T) = 0.25 * 0.25 * 4;
+    if (nPar_ == 5) {
+      p(D0,D0) = d0Sigma * d0Sigma; 
+    } 
 
-  if ( getSettings()->numEtaRegions() <= 12 ) {    
-    // Inflate eta errors
-    p(T,T) = p(T,T) * 2 * 2;
+  } else {
+
+    // optimised for 18x2 with additional error factor in pt/phi to avoid pulling towards wrong HT params
+    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4;  // Base on HT cell size
+    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; // Based on HT cell size.
+    p(Z0,Z0) = 5.0 * 5.0; 
+    p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
+    if (nPar_ == 5) {
+      p(D0,D0) = d0Sigma * d0Sigma; 
+    } 
+
+    if ( getSettings()->numEtaRegions() <= 12 ) {    
+      // Inflate eta errors
+      p(T,T) = p(T,T) * 2 * 2;
+    }
   }
 
   return p;
@@ -219,7 +232,7 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
 /* The forecast matrix
  * (here equals identity matrix) */
 TMatrixD KFParamsComb::F(const StubCluster* stubCluster, const kalmanState *state )const{
-  TMatrixD F(nPar_,nPar_);
+  TMatrixD F(nPar_,nPar_); 
   for(unsigned int n = 0; n < nPar_; n++)
     F(n, n) = 1;
   return F;
@@ -381,8 +394,10 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );
 
-  double pt=fabs( getSettings()->invPtToInvR() / (2*state.xa()[INV2R]) ); 
-  double z0=fabs( state.xa()[Z0] ); 
+  std::map<std::string, double> y = getTrackParams( &state );
+  double qOverPt = y["qOverPt"]; 
+  double pt=fabs( 1/qOverPt ); 
+  double z0=fabs( y["z0"] ); 
 
   // state parameter selections
 
@@ -420,12 +435,14 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
   }
 
-  if ( getSettings()->kalmanDebugLevel() >= 1 && tpa_ != nullptr) {
+  if ( (getSettings()->kalmanDebugLevel() >= 2 && tpa_ != nullptr) ||
+       (getSettings()->kalmanDebugLevel() >= 2 && getSettings()->hybrid()) ) {
     if (not goodState) cout<<"State veto: nlay="<<nStubLayers;
     if (goodState)     cout<<"State kept: nlay="<<nStubLayers; 
-    cout<<" chi2="<<state.chi2()<<" pt="<<pt<<" pt(mc)="<<tpa_->pt();
-    cout<<" tanL="<<state.xa()[T]<<" z0="<<z0<<" phi0="<<state.xa()[PHI0];
-    if (nPar_ == 5) cout<<" d0="<<state.xa()[D0];
+    cout<<" chi2="<<state.chi2()<<" pt="<<pt;
+    if (tpa_ != nullptr) cout<<" pt(mc)="<<tpa_->pt();
+    cout<<" q/pt="<<qOverPt<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"];
+    if (nPar_ == 5) cout<<" d0="<<y["D0"];
     cout<<endl;
   }
 
@@ -433,3 +450,4 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 }
 
 }
+
