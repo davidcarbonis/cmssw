@@ -276,6 +276,20 @@ TMTrackProducer_params = cms.PSet(
      StubMatchStrict          = cms.bool(False)
   ),
 
+  #=== Full track finding and fitting CKF Settings
+
+  FullKalmanCombSettings = cms.PSet(
+     #
+     #--- Options for the Full CKF ---
+     #
+     Parameterisation = cms.vstring(
+                                    "vertexParameters",
+                                    "runningParameters",
+                                   ),
+     UseOfflineSeeding = cms.bool(True),
+
+  ),
+
   #=== Track Fitting Algorithm Settings.
 
   TrackFitSettings = cms.PSet(

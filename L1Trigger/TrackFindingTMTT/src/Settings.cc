@@ -87,6 +87,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   l1TrackDef_             ( iConfig.getParameter< edm::ParameterSet >         ( "L1TrackDef"             ) ),
   dupTrkRemoval_          ( iConfig.getParameter< edm::ParameterSet >         ( "DupTrkRemoval"          ) ),
   trackMatchDef_          ( iConfig.getParameter< edm::ParameterSet >         ( "TrackMatchDef"          ) ),
+  fullKalmanCombSettings_ ( iConfig.getParameter< edm::ParameterSet >         ( "FullKalmanCombSettings" ) ),
   trackFitSettings_       ( iConfig.getParameter< edm::ParameterSet >         ( "TrackFitSettings"       ) ),
   deadModuleOpts_         ( iConfig.getParameter< edm::ParameterSet >         ( "DeadModuleOpts"         ) ),
   trackDigi_              ( iConfig.getParameter< edm::ParameterSet >         ( "TrackDigi"              ) ),
@@ -221,6 +222,11 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   minNumMatchLayers_      ( trackMatchDef_.getParameter<unsigned int>         ( "MinNumMatchLayers"      ) ),
   minNumMatchPSLayers_    ( trackMatchDef_.getParameter<unsigned int>         ( "MinNumMatchPSLayers"    ) ),
   stubMatchStrict_        ( trackMatchDef_.getParameter<bool>                 ( "StubMatchStrict"        ) ),
+
+  //=== Full Kalman Track Finding and Fitting Settings
+
+  kalmanParameterisation_ ( fullKalmanCombSettings_.getParameter<vector<std::string>> ( "Parameterisation")  ),
+  kalmanUseOfflineSeeding_( fullKalmanCombSettings_.getParameter <bool>               ( "UseOfflineSeeding") ),
 
   //=== Track Fitting Settings
 

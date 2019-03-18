@@ -6,6 +6,7 @@
 #include <L1Trigger/TrackFindingTMTT/interface/HTrphi.h>
 #include <L1Trigger/TrackFindingTMTT/interface/Get3Dtracks.h>
 #include <L1Trigger/TrackFindingTMTT/interface/KillDupFitTrks.h>
+#include <L1Trigger/TrackFindingTMTT/interface/FullKalmanComb.h>
 #include <L1Trigger/TrackFindingTMTT/interface/TrackFitGeneric.h>
 #include <L1Trigger/TrackFindingTMTT/interface/L1fittedTrack.h>
 #include <L1Trigger/TrackFindingTMTT/interface/L1fittedTrk4and5.h>
@@ -128,6 +129,10 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // Creates matrix of Sector objects, which decide which stubs are in which (eta,phi) sector
   matrix<Sector>  mSectors(settings_->numPhiSectors(), settings_->numEtaRegions());
+
+  // Create matrix of CKF arrays for TF+TF, with one-to-one correspondence to the sectors
+  matrix<FullKalmanComb> mFullKalmanFilters( settings_->numPhiSectors(), settings_->numEtaRegions() );
+
   // Create matrix of r-phi Hough-Transform arrays, with one-to-one correspondence to sectors.
   matrix<HTrphi>  mHtRphis(settings_->numPhiSectors(), settings_->numEtaRegions());
   // Create matrix of Get3Dtracks objects, to run optional r-z track filter, with one-to-one correspondence to sectors.
@@ -153,6 +158,57 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     allFitTTTracksForOutput[ialg] =  std::move( fitTTTracksForOutput );
     locationInsideArray[fitterName] = ialg++;
   }
+
+  // Initialize fittedTracks with empty vector in case no fitted tracks found.
+  map<string, vector<L1fittedTrack>> fittedTracks;
+
+  //=== Do full track finding + fitting with CKF
+  for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
+    for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
+
+      Sector& sector = mSectors(iPhiSec, iEtaReg);
+      FullKalmanComb& fullKalmanComb = mFullKalmanFilters(iPhiSec, iEtaReg);
+
+      // Initialize constants for this sector.
+      sector.init(settings_, iPhiSec, iEtaReg); 
+      fullKalmanComb.init( settings_, iPhiSec, iEtaReg, sector.etaMin(), sector.etaMax(), sector.phiCentre() )
+
+      // Check sector is enabled (always true, except if user disabled some for special studies).
+      if (settings_->isHTRPhiEtaRegWhitelisted(iEtaReg)) {
+
+	for (const Stub* stub: vStubs) {
+	  // Digitize stub as would be at input to GP. This doesn't need the octant number, since we assumed an integer number of
+	  // phi digitisation  bins inside an octant. N.B. This changes the coordinates & bend stored in the stub.
+	  // The cast allows us to ignore the "const".
+	  if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForGPinput(iPhiSec);
+
+	  // Check if stub is inside this sector
+	  bool inside = sector.inside( stub );
+
+	  if (inside) { // start inside check
+	    // Check which eta subsectors within the sector the stub is compatible with (if subsectors being used).
+	    const vector<bool> inEtaSubSecs =  sector.insideEtaSubSecs( stub );
+
+	    // Digitize stub if as would be at input to HT, which slightly degrades its coord. & bend resolution, affecting the HT performance.
+	    if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForHTinput(iPhiSec);
+
+	    // Store stub in Hough transform array for this sector, indicating its compatibility with eta subsectors with sector.
+	    htRphi.store( stub, inEtaSubSecs );
+	  } // end inside check
+	} // end stub loop
+      } // End enabled sector check if statement
+
+    // Finally, now we can find and fit the tracks using the CKF!
+//    fullKalmanComb.run();
+
+#ifdef OutputHT_TTracks
+    // Convert found tracks into EDM format for output (used for collaborative work outside TMTT group).
+    // DO LATER
+#endif
+
+    }  // End Full CKF iEta Loop
+  } // End Full CKF iPhi Loop
+
 
   //=== Do tracking in the r-phi Hough transform within each sector.
 
@@ -255,8 +311,6 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   //=== Do a helix fit to all the track candidates.
 
-  map<string, vector<L1fittedTrack>> fittedTracks;
-  // Initialize with empty vector in case no fitted tracks found.
   for (const string& fitterName : trackFitters_) { // Loop over fit algos.
     fittedTracks[fitterName] = vector<L1fittedTrack>(); 
   }

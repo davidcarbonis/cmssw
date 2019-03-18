@@ -219,6 +219,13 @@ public:
   // Associate stub to TP only if the TP contributed to both its clusters? (If False, then associate even if only one cluster was made by TP).
   bool                 stubMatchStrict()         const   {return stubMatchStrict_;}
 
+  //=== Full Kalman Track Finding and Fitting Settings
+
+  // Parameterisation of the CKF to be used. Several can be run in parallel.
+  vector<string>       kalmanParameterisation()  const   {return kalmanParameterisation_;}
+  // Use the offline tracker seedding in lieu of the default L0+beamspot seed
+  bool                 kalmanUseOfflineSeeding() const   {return kalmanUseOfflineSeeding_;}
+
   //=== Track Fitting Settings
 
   //--- Options applicable to all track fitters ---
@@ -439,6 +446,7 @@ private:
   edm::ParameterSet    l1TrackDef_;
   edm::ParameterSet    dupTrkRemoval_;
   edm::ParameterSet    trackMatchDef_;
+  edm::ParameterSet    fullKalmanCombSettings_;
   edm::ParameterSet    trackFitSettings_;
   edm::ParameterSet    deadModuleOpts_;
   edm::ParameterSet    trackDigi_;
@@ -567,6 +575,12 @@ private:
   unsigned int         minNumMatchLayers_;
   unsigned int         minNumMatchPSLayers_;
   bool                 stubMatchStrict_;
+
+  // Full Kalman Track Finding and Fitting Settings
+
+  vector<string>       kalmanParameterisation_;
+  bool                 kalmanUseOfflineSeeding_;
+
 
   // Track Fitting Settings
   vector<string>       trackFitters_;
