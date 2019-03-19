@@ -286,7 +286,7 @@ TMTrackProducer_params = cms.PSet(
                                     "vertexParameters",
                                     "runningParameters",
                                    ),
-     UseOfflineSeeding = cms.bool(True),
+     SeedingOption = cms.uint32(0),
 
   ),
 

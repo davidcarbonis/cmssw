@@ -192,8 +192,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    // Digitize stub if as would be at input to HT, which slightly degrades its coord. & bend resolution, affecting the HT performance.
 	    if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForHTinput(iPhiSec);
 
-	    // Store stub in Hough transform array for this sector, indicating its compatibility with eta subsectors with sector.
-	    htRphi.store( stub, inEtaSubSecs );
+	    // Add stub for this sector to the KF hit buffer, indicating its compatibility with eta subsectors with sector.
+	    fullKalmanComb.hitBuffer( stub, inEtaSubSecs );
 	  } // end inside check
 	} // end stub loop
       } // End enabled sector check if statement
