@@ -20,38 +20,37 @@ using namespace std;
 
 namespace TMTT {
 
+  class Stub;
+
   class KalmanSeed {
 
   public: 
 
-    KalmanSeed (const Settings* settings, const <Stub*>& seedStubs, vector<Stub*>& otherStubs, pair<float, float> helixRphi, pair<float, float> helixRz, unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID) :
+    KalmanSeed (const Settings* settings, const vector<const Stub*>& seedStubs, pair<float, float> helixRphi, 
+                pair<float, float> helixRz, unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID) :
         settings_(settings),
         seedStubs_(seedStubs),
-        otherStubs_(otherStubs),
         helixRphi_(helixRphi),
         helixRz_(helixRz),
         iPhiSec_(iPhiSec),
-        iEtaSec_(iEtaSec),
+        iEtaReg_(iEtaReg),
         optoLinkID_(optoLinkID)
     {
         nSeedLayers_ = Utility::countLayers(settings, seedStubs); // count the tracker layers that the seed stub(s) are in
-        matchedTP_   = Utility::matchingTP(settings, seedStubs, matchedSeedLayers_, matchedSeedStubs_);
+        matchedTP_   = Utility::matchingTP(settings, seedStubs, nMatchedSeedLayers_, matchedSeedStubs_);
     }
 
     ~KalmanSeed() {}
 
     // Get the initial stubs to be used as seeds by the KF and the remaining ones to be used in the track building
     const vector< const Stub*>&        getSeedStubs()              const  {return seedStubs_;}
-    const vector< const Stub*>&        getOtherStubs()             const  {return otherStubs_;}
 
     // Get the total number of seed stubs
     unsigned int                       getNumSeedStubs()           const  {return seedStubs_.size();}
-    // Get the total number of stubs to be considered (i.e. minus seeds) during the track building
-    unsigned int                       getNumOtherStubs()          const  {return otherStubs_.size();}
 
     // Return the conventionally agreed track helix parameters relevant in the r-phi and r-z planes
     pair<float, float>                 getHelixRphi()              const  {return helixRphi_;}
-    pair<float, float>                 getHelixRz()                const  {return helixRZ_;}
+    pair<float, float>                 getHelixRz()                const  {return helixRz_;}
 
     // User-friendly access to the helix parameters
     float   charge()     const  {return (this->qOverPt() > 0  ?  1  :  -1);} 
@@ -93,9 +92,8 @@ namespace TMTT {
     //--- Seed information, including stubs used as seeds
     vector<const Stub*>                seedStubs_;
     unsigned int                       nSeedLayers_;
-    vector<const Stub*>                otherStubs_;
-    pair<float, float> >               helixRphi_;
-    pair<float, float> >               helixRz_;
+    pair<float, float>                 helixRphi_;
+    pair<float, float>                 helixRz_;
     unsigned int                       iPhiSec_;
     unsigned int                       iEtaReg_; 
     unsigned int                       optoLinkID_;
@@ -106,8 +104,9 @@ namespace TMTT {
     vector<const Stub*>                matchedSeedStubs_;
     unsigned int                       nMatchedSeedLayers_;
 
-  }
+  };
 }
 
 
 
+#endif
