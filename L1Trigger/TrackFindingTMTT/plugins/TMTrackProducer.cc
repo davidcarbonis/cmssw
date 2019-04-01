@@ -174,6 +174,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
 
 	Sector& sector = mSectors(iPhiSec, iEtaReg);
+	Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 	FullKalmanComb& fullKFs = mFullKalmanFilters(iPhiSec, iEtaReg);
 
 	// Initialize constants for this sector.
@@ -205,6 +206,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	} // End whitelisted if
 	// Create KF seeds
 	fullKFs.createSeeds();
+
+        get3Dtrk.kalmanCands( fullKFs.trackCands3D() );
 
 	/*#ifdef OutputKF_TTracks
 	// Convert these tracks to EDM format for output (used for collaborative work outside TMTT group).
@@ -342,20 +345,9 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	// Does this fitter require r-z track filter to be run before it?
 	bool useRZfilt = (std::count(useRZfilter_.begin(), useRZfilter_.end(), fitterName) > 0);
 
-        vector<L1track3D> tempVecTrk3D {};
-
-        if ( settings_->runFullKalman() ) {
-	  // Get the KF seed tracks for the KF to fit.
-	  const FullKalmanComb& fullKFs = mFullKalmanFilters(iPhiSec, iEtaReg);
-	  tempVecTrk3D = fullKFs.trackCands3D();
-	}
-
-	else {
-	  // Get 3D track candidates found by Hough transform (plus optional r-z filters/duplicate removal) in this sector.
-	  tempVecTrk3D = get3Dtrk.trackCands3D(useRZfilt);
-	}
-
-        const vector<L1track3D>& vecTrk3D = tempVecTrk3D;
+        // Get 3D track candidates found by Hough transform (plus optional r-z filters/duplicate removal) in this sector.
+        // Or get the KF seed tracks for the KF to fit ...
+        const vector<L1track3D> vecTrk3D = get3Dtrk.trackCands3D(useRZfilt);
 
         // Fit all tracks in this sector
 	vector<L1fittedTrack> fittedTracksInSec;

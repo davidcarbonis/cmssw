@@ -110,14 +110,14 @@ void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors,
   this->fillInputData(inputData);
   // Fill histograms checking if (eta,phi) sector definition choices are good.
   this->fillEtaPhiSectors(inputData, mSectors);
-  // Fill histograms about r-z track filters.
-  this->fillRZfilters(mGet3Dtrks);
+  // No need to fill histograms about r-z track filters.
+
   // Fill histograms for studying freak, extra large events at HT.
 //  this->fillStudyBusyEvents(inputData, mSectors, mHtRphis, mGet3Dtrks); // NEED TO FIX
-  // Fill histograms studying 3D track candidates found after HT.
+
+  // Fill histograms studying 3D track candidates found after KF seeding.
   this->fillTrackCands(inputData, mGet3Dtrks, false);
-  // Fill histograms studying 3D track candidates found after r-z track filter.
-  if (ranRZfilter_) this->fillTrackCands(inputData, mGet3Dtrks, true);
+	
   // Fill histograms studying track fitting performance
   this->fillTrackFitting(inputData, fittedTracks);
 }

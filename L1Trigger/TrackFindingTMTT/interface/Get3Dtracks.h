@@ -68,6 +68,9 @@ public:
 
   const TrkRZfilter& getRZfilter() const {return rzFilter_;}
 
+  //=== Store KF seed L1track3D cands
+  void kalmanCands (const vector<L1track3D>& kalmanCands) {vecTracks3D_unfiltered_ = kalmanCands;}
+
 private:
 
   // Convert 2D HT tracks within the current sector to 3D tracks,
