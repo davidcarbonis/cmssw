@@ -35,7 +35,7 @@ class FullKalmanComb {
                   float etaMinSector, float etaMaxSector, float phiCentreSector);
         void stubBuffer (const Stub* stub);
         void createSeeds();
-        void run();
+//        void run();
         virtual const vector<L1track3D>& trackCands3D() const {return trackCands3D_;}
 
 
@@ -72,7 +72,9 @@ class FullKalmanComb {
         unsigned int nReceivedStubs_;
 
         // input stub data
-        vector<const Stub*> vSeedStubs_; // input seed stubs	
+        vector<const Stub*> vLayer1Stubs_; // input seed stubs from Layer 1	
+        vector<const Stub*> vLayer2Stubs_; // input seed stubs from Layer 2	
+        vector<const Stub*> vLayer3Stubs_; // input seed stubs from Layer 3	
         vector<const Stub*> vOtherStubs_; // input non-seed stubs	
 
         // List of all the Kalman Seeds constructed

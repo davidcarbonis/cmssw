@@ -265,9 +265,9 @@ private:
   double getApproxB();
 
   // No HT firmware can access directly the stub bend info.
-  void check1() const {if (digitizeWarningsOn_ && digitizedForHTinput_) throw cms::Exception("Stub: You can't access digitized bend variable within HT firmware!");}
+  void check1() const {if (digitizeWarningsOn_ && digitizedForHTinput_ && !settings_->runFullKalman()) throw cms::Exception("Stub: You can't access digitized bend variable within HT firmware!");}
   // If using daisy-chain firmware, then it makes no sense to access the digiitzed values of dphi within HT.
- void check2() const {if (digitizeWarningsOn_ && digitizedForHTinput_) throw cms::Exception("Stub: You can't access digitized dphi within the HT or KF!");}
+ void check2() const {if (digitizeWarningsOn_ && digitizedForHTinput_ && !settings_->runFullKalman()) throw cms::Exception("Stub: You can't access digitized dphi within the HT or KF!");}
 
 private:
 

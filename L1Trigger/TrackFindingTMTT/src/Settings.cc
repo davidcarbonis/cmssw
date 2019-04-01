@@ -225,6 +225,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
 
   //=== Full Kalman Track Finding and Fitting Settings
 
+  runFullKalman_          ( fullKalmanCombSettings_.getParameter < bool >             ( "RunFullKalman"   )  ),
   kalmanParameterisation_ ( fullKalmanCombSettings_.getParameter<vector<std::string>> ( "Parameterisation")  ),
   kalmanSeedingOption_    ( fullKalmanCombSettings_.getParameter <unsigned int>       ( "SeedingOption"   )  ),
 

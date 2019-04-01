@@ -69,9 +69,12 @@ void FullKalmanComb::stubBuffer( const Stub* stub ) {
     unsigned int stubLayer = stub->layerIdReduced();
 
     //Seeding options:
+    // Search for pairs of stubs, thinking about missing layers
+    if ( seedingOption_ == 1 ) {
+    }
     //Default option L0 + beamspot
-    if ( seedingOption_ == 0 ) {
-      if ( stubLayer == 1 ) vSeedStubs_.push_back(stub);
+    else {
+      if ( stubLayer == 1 ) vLayer1Stubs_.push_back(stub);
       else vOtherStubs_.push_back(stub);
     }
   }
@@ -81,66 +84,71 @@ void FullKalmanComb::createSeeds() {
 
   vector<L1track3D> trackCands3D;
 
-  // Read in stubs from initial buffer and create seeds from the seed stub collection	
-
-  const vector<const Stub*>& seedStubs = vSeedStubs_;
-
-
   //=== Create Seeds  
   // SPIT OUT A KalmanSeed or L1track3D to be used by the KF fit
 
 //    KalmanSeed (const Settings* settings, const vector<const Stub*>& seedStubs, pair<float, float> helixRphi,
 //                pair<float, float> helixRz, unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID) :
 
-  // If seeding with just a single stub from Layer 0
-  if (seedingOption_ ==0) {
-    
+  // If seeding from multiple stubs, including missing layers
+  if ( seedingOption_ == 1 ) {
+
+//    for ( auto kfSeed : kalmanSeeds ) {
+//
+//    }
+    /*
+      L1track3D l1Trk3D(settings_, stubs, cellLocation, helixParamsRphi, helixParamsRz, iPhiSec, iEtaReg, optoLinkID, false);
+	
+      float deltaPhi = wrapRadian( innerStub->phi() - outerStub->phi() );
+      float displacement = sqrt( pow( outerStub->r(), 2 ) + pow( innerStub->r(), 2 )
+      - 2*outerStub->r()*innerStub->r()*cos(deltaPhi));
+      float qOverPt = 2*sin(deltaPhi)/displacement;
+      
+      if ( endcap stubs && innerStub->() > outerStub->r() ) qOverPt = -qOverPt;
+      
+      float phi0 = innerStub->phi() - this->secPhiMin() + asin(0.5*innerStub->r()*rInv);
+      float z0 = innerStub->z() - tanLambda * ( 2 * ( asin( 0.5 * rInv * innerStub->r() ) ) ) / rInv;
+      float tan_lambda = ( innerStub->z() - outerStub->z() ) * rInv / ( 2 * ( asin( 0.5*rInv*innerStub->r() ) - asin( 0.5*rInv*outerStub->r() ) ) );
+	
+      
+      // Store all this info about the track ...
+      */
   }
 
-  for ( auto stub : seedStubs ) {
+  // If seeding with just a single stub from Layer 1
+  else {
+    // Read in stubs from initial buffer and create seeds from the seed stub collection	
 
-    vector<const Stub*> stubs {stub};
-//    stubs.push_back(stub);
-    stubs.insert( stubs.end(), vOtherStubs_.begin(), vOtherStubs_.end() );
+    const vector<const Stub*>& seedStubs = vLayer1Stubs_;
+    const vector<const Stub*>& otherStubs = vOtherStubs_;
 
-    const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+    for ( auto stub : seedStubs ) {
 
-    float qOverPt = stub->qOverPt();
-    float phi0 = stub->beta();
-    float z0 = 0;
-    float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector_))) + 1/tan(2*atan(exp(-etaMaxSector_))));
+      vector<const Stub*> stubs {stub};
+      //    stubs.push_back(stub);
+      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
 
-    const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-    const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
 
-    unsigned int optoLinkID = this->calcOptoLinkID();    
+      float qOverPt = stub->qOverPt();
+      float phi0 = stub->beta();
+      float z0 = 0;
+      float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector_))) + 1/tan(2*atan(exp(-etaMaxSector_))));
 
-    L1track3D l1Trk3D(settings_, stubs, cellLocation, helixParamsRphi, helixParamsRz, iPhiSec_, iEtaReg_, optoLinkID, false);
+      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
 
-    trackCands3D_.push_back(l1Trk3D);
+      unsigned int optoLinkID = this->calcOptoLinkID();    
+
+      L1track3D l1Trk3D(settings_, stubs, cellLocation, helixParamsRphi, helixParamsRz, iPhiSec_, iEtaReg_, optoLinkID, false);
+
+      trackCands3D_.push_back(l1Trk3D);
+    }
   }
 
-
-/*  L1track3D l1Trk3D(settings_, stubs, cellLocation, helixParamsRphi, helixParamsRz, iPhiSec, iEtaReg, optoLinkID, false);
-
-  float deltaPhi = wrapRadian( innerStub->phi() - outerStub->phi() );
-  float displacement = sqrt( pow( outerStub->r(), 2 ) + pow( innerStub->r(), 2 )
-                        - 2*outerStub->r()*innerStub->r()*cos(deltaPhi));
-  float qOverPt = 2*sin(deltaPhi)/displacement;
-
-  if ( endcap stubs && innerStub->() > outerStub->r() ) qOverPt = -qOverPt;
-
-  float phi0 = innerStub->phi() - this->secPhiMin() + asin(0.5*innerStub->r()*rInv);
-  float z0 = innerStub->z() - tanLambda * ( 2 * ( asin( 0.5 * rInv * innerStub->r() ) ) ) / rInv;
-  float tan_lambda = ( innerStub->z() - outerStub->z() ) * rInv / ( 2 * ( asin( 0.5*rInv*innerStub->r() ) - asin( 0.5*rInv*outerStub->r() ) ) );
-
-
-  // Store all this info about the track ...
-*/
-// Something other seeding option?
 }
 
-void FullKalmanComb::run() {}
+  //void FullKalmanComb::run() {}
 
 
 }
