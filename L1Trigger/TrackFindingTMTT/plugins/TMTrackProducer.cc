@@ -196,7 +196,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	    if (inside) {
 	      // Digitize stub if as would be at input to HT, which slightly degrades its coord. & bend resolution, affecting the HT performance.
-	      if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForHTinput(iPhiSec);
+              // Do not digitise stub using HT option for KF seeding - this needs understanding first.                
+	      //if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForHTinput(iPhiSec);
 
 	      // Push stubs to the KF initial stub buffer prior to sorting by layer
 	      fullKFs.stubBuffer( stub );
@@ -324,6 +325,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
 
+
   // Initialize the duplicate track removal algorithm that can optionally be run after the track fit.
   KillDupFitTrks killDupFitTrks;
   killDupFitTrks.init(settings_, settings_->dupTrkAlgFit());
@@ -362,7 +364,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  if (settings_->enableDigitize()) {
   	    const vector<const Stub*>& stubsOnTrk = trk.getStubs();
             for (const Stub* s : stubsOnTrk) {
-             (const_cast<Stub*>(s))->digitizeForHTinput(iPhiSec);
+             // Do not digitise stub using HT option for KF seeding - this needs understanding first.
+             if (!settings_->runFullKalman()) (const_cast<Stub*>(s))->digitizeForHTinput(iPhiSec);
 	     // Also digitize stub in way this specific track fitter uses it.
              (const_cast<Stub*>(s))->digitizeForSForTFinput(fitterName);          
 	    }
@@ -411,7 +414,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
       }
     }
-    cout<<"Number of tracks after HT = "<<numHTtracks<<endl;
+    if ( settings_->runFullKalman() ) cout<<"Number of tracks after KF seeding = "<<numHTtracks<<endl;
+    else cout<<"Number of tracks after HT = "<<numHTtracks<<endl;
     for (const auto& p : fittedTracks) {
       const string& fitName = p.first;
       const vector<L1fittedTrack>& fittedTracks = p.second;

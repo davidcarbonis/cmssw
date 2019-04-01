@@ -44,6 +44,7 @@ Histos::Histos(const Settings* settings) : settings_(settings), plotFirst_(true)
   useRZfilter_      = settings->useRZfilter();
   ranRZfilter_      = (useRZfilter_.size() > 0); // Was any r-z track filter run?
   resPlotOpt_       = settings->resPlotOpt(); // Only use signal events for helix resolution plots?
+  runFullKalman_    = settings->runFullKalman(); // Running KF for track finding and fitting
 }
 
 //=== Book all histograms
@@ -2980,6 +2981,9 @@ void Histos::printTrackPerformance(bool withRZfilter) {
   cout<<"========================================================================="<<endl;
   if (withRZfilter) {
     cout<<"               TRACK-FINDING SUMMARY AFTER R-Z TRACK FILTER            "<<endl;
+  }
+  else if (runFullKalman_) {
+    cout<<"               TRACK-FINDING SUMMARY AFTER KALMAN FILTER SEEDING       "<<endl;
   } else {
     cout<<"               TRACK-FINDING SUMMARY AFTER HOUGH TRANSFORM             "<<endl;
   }
@@ -3136,7 +3140,7 @@ void Histos::endJobAnalysis() {
 
   // Check that stub filling was consistent with known limitations of firmware design.
 
-  cout<<endl<<"Max. |gradients| of stub lines in HT array is: r-phi = "<<HTrphi::maxLineGrad()<<endl;
+  if (!runFullKalman_) cout<<endl<<"Max. |gradients| of stub lines in HT array is: r-phi = "<<HTrphi::maxLineGrad()<<endl;
 
   if (HTrphi::maxLineGrad() > 1.) {
 

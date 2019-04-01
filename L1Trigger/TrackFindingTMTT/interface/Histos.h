@@ -117,6 +117,7 @@ private:
   float chosenRofZ_;
   vector<string> trackFitters_;
   vector<string> useRZfilter_;
+  bool runFullKalman_;
   bool ranRZfilter_;
   bool resPlotOpt_;
 
