@@ -48,6 +48,9 @@ public:
   void fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtPhis, 
     	    const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
 
+  void fill(const InputData& inputData, const matrix<Sector>& mSectors, 
+            const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
+
   // Print tracking performance summary & make tracking efficiency histograms.
   void endJobAnalysis();
 

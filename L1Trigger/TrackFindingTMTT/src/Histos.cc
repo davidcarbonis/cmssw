@@ -98,6 +98,30 @@ void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors, co
   this->fillTrackFitting(inputData, fittedTracks);
 }
 
+//=== Fill all histograms (minus HT)
+
+void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors,
+    	          const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks) 
+{
+  // Don't bother filling histograms if user didn't request them via TFileService in their cfg.
+  if ( ! this->enabled() ) return;
+
+  // Fill histograms about input data.
+  this->fillInputData(inputData);
+  // Fill histograms checking if (eta,phi) sector definition choices are good.
+  this->fillEtaPhiSectors(inputData, mSectors);
+  // Fill histograms about r-z track filters.
+  this->fillRZfilters(mGet3Dtrks);
+  // Fill histograms for studying freak, extra large events at HT.
+//  this->fillStudyBusyEvents(inputData, mSectors, mHtRphis, mGet3Dtrks); // NEED TO FIX
+  // Fill histograms studying 3D track candidates found after HT.
+  this->fillTrackCands(inputData, mGet3Dtrks, false);
+  // Fill histograms studying 3D track candidates found after r-z track filter.
+  if (ranRZfilter_) this->fillTrackCands(inputData, mGet3Dtrks, true);
+  // Fill histograms studying track fitting performance
+  this->fillTrackFitting(inputData, fittedTracks);
+}
+
 //=== Book histograms using input stubs and tracking particles.
 
 void Histos::bookInputData() {

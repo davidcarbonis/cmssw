@@ -353,8 +353,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	else {
 	  // Get 3D track candidates found by Hough transform (plus optional r-z filters/duplicate removal) in this sector.
 	  tempVecTrk3D = get3Dtrk.trackCands3D(useRZfilt);
-
 	}
+
         const vector<L1track3D>& vecTrk3D = tempVecTrk3D;
 
         // Fit all tracks in this sector
@@ -409,17 +409,21 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     unsigned int numHTtracks = 0;
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
       for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
-	const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-	numHTtracks += get3Dtrk.trackCands3D(false).size();
+        if ( settings_->runFullKalman() ) {
+          const FullKalmanComb& fullKFs = mFullKalmanFilters(iPhiSec, iEtaReg);
+          numHTtracks += fullKFs.trackCands3D().size();
+        }
+        else {
+  	  const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
+	  numHTtracks += get3Dtrk.trackCands3D(false).size();
+        }
       }
     }
-    if ( !settings_->runFullKalman() ) {
-      cout<<"Number of tracks after HT = "<<numHTtracks<<endl;
-      for (const auto& p : fittedTracks) {
-        const string& fitName = p.first;
-        const vector<L1fittedTrack>& fittedTracks = p.second;
-        cout<<"Number of tracks after "<<fitName<<" track helix fit = "<<fittedTracks.size()<<endl;
-      }
+    cout<<"Number of tracks after HT = "<<numHTtracks<<endl;
+    for (const auto& p : fittedTracks) {
+      const string& fitName = p.first;
+      const vector<L1fittedTrack>& fittedTracks = p.second;
+      cout<<"Number of tracks after "<<fitName<<" track helix fit = "<<fittedTracks.size()<<endl;
     }
   }
 
@@ -430,7 +434,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // Fill histograms to monitor input data & tracking performance.
   // EDIT TO INCLUDE KF HISTOS
-  if (!settings_->runFullKalman()) hists_->fill(inputData, mSectors, mHtRphis, mGet3Dtrks, fittedTracks);
+  if (settings_->runFullKalman()) hists_->fill(inputData, mSectors, mGet3Dtrks, fittedTracks);
+  else hists_->fill(inputData, mSectors, mHtRphis, mGet3Dtrks, fittedTracks);
 
   //=== Store output EDM track and hardware stub collections.
 #ifdef OutputHT_TTracks
