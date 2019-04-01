@@ -30,6 +30,16 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 #=== They are listed here just to remind you of the most interesting parameters to play with.
 #===================================================================================================
 
+#--- Configure Full CKF
+TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
+#TMTrackProducer.FullKalmanCombSettings.Parameterisation = cms.vstring("vertexParameters","runningParameters")
+TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(0)
+
+TMTrackProducer.DupTrkRemoval.DupTrkAlgRphi   = cms.uint32(0)
+TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
+TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
+TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
+
 #--- Configure track fitting
 
 # Use only 4 or 5 parameter helix fit Kalman Filter (which automatically runs on tracks produced with no r-z track filter)

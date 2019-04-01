@@ -282,7 +282,7 @@ TMTrackProducer_params = cms.PSet(
      #
      #--- Options for the Full CKF ---
      #
-     RunFullKalman = cms.bool(True),
+     RunFullKalman = cms.bool(False),
      Parameterisation = cms.vstring(
                                     "vertexParameters",
                                     "runningParameters",

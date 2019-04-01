@@ -327,7 +327,6 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   //=== Do a helix fit to all the track candidates.
 
-
   for (const string& fitterName : trackFitters_) { // Loop over fit algos.
     fittedTracks[fitterName] = vector<L1fittedTrack>(); 
   }
@@ -414,14 +413,15 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	numHTtracks += get3Dtrk.trackCands3D(false).size();
       }
     }
-    cout<<"Number of tracks after HT = "<<numHTtracks<<endl;
-    for (const auto& p : fittedTracks) {
-      const string& fitName = p.first;
-      const vector<L1fittedTrack>& fittedTracks = p.second;
-      cout<<"Number of tracks after "<<fitName<<" track helix fit = "<<fittedTracks.size()<<endl;
+    if ( !settings_->runFullKalman() ) {
+      cout<<"Number of tracks after HT = "<<numHTtracks<<endl;
+      for (const auto& p : fittedTracks) {
+        const string& fitName = p.first;
+        const vector<L1fittedTrack>& fittedTracks = p.second;
+        cout<<"Number of tracks after "<<fitName<<" track helix fit = "<<fittedTracks.size()<<endl;
+      }
     }
   }
-
 
   // Allow histogramming to plot undigitized variables.
   for (const Stub* stub: vStubs) {
@@ -430,7 +430,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // Fill histograms to monitor input data & tracking performance.
   // EDIT TO INCLUDE KF HISTOS
-  hists_->fill(inputData, mSectors, mHtRphis, mGet3Dtrks, fittedTracks);
+  if (!settings_->runFullKalman()) hists_->fill(inputData, mSectors, mHtRphis, mGet3Dtrks, fittedTracks);
 
   //=== Store output EDM track and hardware stub collections.
 #ifdef OutputHT_TTracks
