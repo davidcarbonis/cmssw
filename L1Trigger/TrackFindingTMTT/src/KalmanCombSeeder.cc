@@ -74,7 +74,7 @@ void KalmanCombSeeder::stubBuffer( const Stub* stub ) {
     }
     //Default option L0 + beamspot
     else {
-      if ( stubLayer == 1 ) vLayer1Stubs_.push_back(stub);
+      if ( stubLayer == 1 ) vSeedStubs_.push_back(stub);
       else vOtherStubs_.push_back(stub);
     }
   }
@@ -119,7 +119,7 @@ void KalmanCombSeeder::createSeeds() {
   else {
     // Read in stubs from initial buffer and create seeds from the seed stub collection	
 
-    const vector<const Stub*>& seedStubs = vLayer1Stubs_;
+    const vector<const Stub*>& seedStubs = vSeedStubs_;
     const vector<const Stub*>& otherStubs = vOtherStubs_;
 
     for ( auto stub : seedStubs ) {
@@ -149,6 +149,5 @@ void KalmanCombSeeder::createSeeds() {
 }
 
   //void KalmanCombSeeder::run() {}
-
 
 }

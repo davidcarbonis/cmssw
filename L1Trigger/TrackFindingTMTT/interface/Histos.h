@@ -258,8 +258,49 @@ private:
   map<string, TH1F*> hisSumPtTPpileup_; 
 
   // Histograms studying the KF seed candidates prior to KF track finding/fitting.
-  map<string, TProfile*> profNumKfSeedsCands_;
-  map<string, TProfile*> profNumKfSeedsVsEta_;
+
+  TProfile* profSeedingCands_;
+
+  TH1F* hisSeedStubQoverPt_;
+  TH1F* hisSeedStubR_;
+  TH1F* hisSeedStubPhi_;
+  TH1F* hisSeedStubZ_;
+  TH1F* hisSeedStubEta_;
+
+  TH2F* hisSeedStubRvsPhi_;
+  TH2F* hisSeedStubRvsZ_;
+  TH2F* hisSeedStubRvsEta_;
+  TH2F* hisSeedStubPhiVsZ_;
+  TH2F* hisSeedStubPhiVsEta_;
+  TH2F* hisSeedStubEtaVsZ_;
+
+  TH1F* hisOtherStubQoverPt_;
+  TH1F* hisOtherStubR_;
+  TH1F* hisOtherStubPhi_;
+  TH1F* hisOtherStubZ_;
+  TH1F* hisOtherStubEta_;
+
+  TH2F* hisOtherStubRvsPhi_;
+  TH2F* hisOtherStubRvsZ_;
+  TH2F* hisOtherStubRvsEta_;
+  TH2F* hisOtherStubPhiVsZ_;
+  TH2F* hisOtherStubPhiVsEta_;
+  TH2F* hisOtherStubEtaVsZ_;
+
+  TH1F* hisNumKfSeedsPerTP_;
+  TProfile* profMeanKfSeedsPerTP_;
+  TH1F* hisNumDupsPerKfSeed_;
+  TProfile* profMeanDupsPerKfSeed_;
+
+  TH1F* hisNumKfSeedStubsPerLayer_;
+  TProfile* profMeanKfSeedStubsPerLayer_;
+  TH1F* hisNumKfOtherStubsPerLayer_;
+  TProfile* profMeanKfOtherStubsPerLayer_;
+
+  TH1F* hisNumKfMatchedOtherStubsPerLayer_;
+  TProfile* profMeanKfMatchedOtherStubsPerLayer_;
+  TH1F* hisNumKfUnmatchedOtherStubsPerLayer_;
+  TProfile* profMeanKfUnmatchedOtherStubsPerLayer_;
 
   // Histograms studying 3D track candidates found by Hough Transform or r-z Track Filter.
   map<string, TProfile*> profNumTrackCands_;

@@ -28,7 +28,7 @@ class KalmanCombSeeder {
     public:
 
 	KalmanCombSeeder() {}
-	virtual ~KalmanCombSeeder() {}
+	~KalmanCombSeeder() {}
 
 
         void init (const Settings* settings, unsigned int iPhiSec, unsigned int iEtaReg, 
@@ -36,11 +36,13 @@ class KalmanCombSeeder {
         void stubBuffer (const Stub* stub);
         void createSeeds();
 //        void run();
-        virtual const vector<L1track3D>& trackCands3D() const {return trackCands3D_;}
+        const vector<L1track3D>& trackCands3D() const {return trackCands3D_;}
 
 
         const Settings* getSettings() const{return settings_;}
 
+        const vector<const Stub*>& getSeedStubs() const{return vSeedStubs_;}
+        const vector<const Stub*>& getOtherStubs() const{return vOtherStubs_;}
 
     protected:
 
@@ -75,6 +77,7 @@ class KalmanCombSeeder {
         vector<const Stub*> vLayer1Stubs_; // input seed stubs from Layer 1	
         vector<const Stub*> vLayer2Stubs_; // input seed stubs from Layer 2	
         vector<const Stub*> vLayer3Stubs_; // input seed stubs from Layer 3	
+        vector<const Stub*> vSeedStubs_; // all input seed stubs
         vector<const Stub*> vOtherStubs_; // input non-seed stubs	
 
         // List of all the Kalman Seeds constructed
@@ -85,7 +88,7 @@ class KalmanCombSeeder {
 
     private:
         // Calculate output opto-link ID from HT, assuming there is no MUX stage.
-        virtual unsigned int calcOptoLinkID() const {
+        unsigned int calcOptoLinkID() const {
         unsigned int numPhiSecPerOct =  settings_->numPhiSectors() / settings_->numPhiOctants();
         return (iEtaReg_ * numPhiSecPerOct + iPhiSec_);
         }

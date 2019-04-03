@@ -395,7 +395,7 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
 //  chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
 //  chi2Cut     = { 999.,  999.,   999.,  999., 999.,  999.,  999.};  // Consider reducing chi2 cut 2 to 7.
-  chi2Cut     = { 999.,  999.,   999.,  999., 999.,  999.,  500.};  // Consider reducing chi2 cut 2 to 7.
+  chi2Cut     = { 999.,  999.,  200.,  300., 300.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
 
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );

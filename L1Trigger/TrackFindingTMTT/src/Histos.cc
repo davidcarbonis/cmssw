@@ -1839,9 +1839,124 @@ void Histos::bookKFseeds() {
 
   TFileDirectory inputDir = fs_->mkdir("KFseeds");
 
+  profSeedingCands_= inputDir.make<TProfile>("Stub seeding candidates", "; class; #stubs", 6, 0.5, 6.5);
+  profSeedingCands_->GetXaxis()->SetBinLabel(6, "Number of unmatched other stubs");
+  profSeedingCands_->GetXaxis()->SetBinLabel(5, "Number of matched other stubs");
+  profSeedingCands_->GetXaxis()->SetBinLabel(4, "Number of unmatched seeds");
+  profSeedingCands_->GetXaxis()->SetBinLabel(3, "Number of part-matched seeds");
+  profSeedingCands_->GetXaxis()->SetBinLabel(2, "Number of matched seeds");
+  profSeedingCands_->GetXaxis()->SetBinLabel(1, "Number of seeds per TP"); 
+
+  hisSeedStubQoverPt_                    = inputDir.make<TH1F>("SeedStubQoverPt", "; Seed stub q/Pt", 50, -0.5, 0.5);
+  hisSeedStubR_                          = inputDir.make<TH1F>("SeedStubR", "; Seed stub radius (cm)", 1200,0.,120.);
+  hisSeedStubPhi_                        = inputDir.make<TH1F>("SeedStubPhi", "; Seed stub #phi", 200,-M_PI,M_PI);
+  hisSeedStubZ_                          = inputDir.make<TH1F>("SeedStubZ", "; Seed stub z (cm)", 1000,-280.,280.);
+  hisSeedStubEta_                        = inputDir.make<TH1F>("SeedStubEta", "; Seed stub #eta", 30,-3.0,3.0);
+
+  hisSeedStubRvsPhi_                     = inputDir.make<TH2F>("SeedStubRvsPhi", "; Seed stub #phi; Seed stub r (cm)", 30,-3.0,3.0,1000,-280,280);
+  hisSeedStubRvsZ_                       = inputDir.make<TH2F>("SeedStubRvsZ", "; Seed stub z (cm); Seed stub r (cm)", 1000,-280.,280.,1200,0.,120.);
+  hisSeedStubRvsEta_                     = inputDir.make<TH2F>("SeedStubRvsEta", "; Seed stub #eta; Seed stub r (cm)", 30,-3.0,3.0,1200,0.,120.);
+  hisSeedStubPhiVsZ_                     = inputDir.make<TH2F>("SeedStubPhiVsZ", "; Seed stub z (cm); Seed stub #phi", 1000,-280.,280.,200,-M_PI,M_PI);
+  hisSeedStubPhiVsEta_                   = inputDir.make<TH2F>("SeedStubPhiVsEta", "; Seed stub #eta; Seed stub #phi", 30,-3.0,3.0,200,-M_PI,M_PI);
+  hisSeedStubEtaVsZ_                     = inputDir.make<TH2F>("SeedStubEtaVsZ", "; Seed stub z (cm); Seed stub #eta", 1000,-280.,280.,30,-3.0,3.0);
+
+  hisOtherStubQoverPt_                   = inputDir.make<TH1F>("OtherStubQoverPt", "; Other stubs q/Pt", 50, -0.5, 0.5);
+  hisOtherStubR_                         = inputDir.make<TH1F>("OtherStubR", "; Other stubs radius (cm)", 1200,0.,120.);
+  hisOtherStubPhi_                       = inputDir.make<TH1F>("OtherStubPhi", "; Other stubs #phi", 200,-M_PI,M_PI);
+  hisOtherStubZ_                         = inputDir.make<TH1F>("OtherStubZ", "; Other stubs z (cm)", 1000,-280,280);
+  hisOtherStubEta_                       = inputDir.make<TH1F>("OtherStubEta", "; Other stubs #eta", 30,-3.0,3.0);
+
+  hisOtherStubRvsPhi_                    = inputDir.make<TH2F>("OtherStubRvsPhi", "; Other stubs #phi; Other stubs r (cm)", 30,-3.0,3.0,1000,-280,280);
+  hisOtherStubRvsZ_                      = inputDir.make<TH2F>("OtherStubRvsZ", "; Other stubs z (cm); Other stubs r (cm)", 1000,-280.,280.,1200,0.,120.);
+  hisOtherStubRvsEta_                    = inputDir.make<TH2F>("OtherStubRvsEta", "; Other stubs #eta; Other stubs r (cm)", 30,-3.0,3.0,1200,0.,120.);
+  hisOtherStubPhiVsZ_                    = inputDir.make<TH2F>("OtherStubPhiVsZ", "; Other stubs z (cm); Other stubs #phi", 1000,-280.,280.,200,-M_PI,M_PI);
+  hisOtherStubPhiVsEta_                  = inputDir.make<TH2F>("OtherStubPhiVsEta", "; Other stubs #eta; Other stubs #phi", 30,-3.0,3.0,200,-M_PI,M_PI);
+  hisOtherStubEtaVsZ_                    = inputDir.make<TH2F>("OtherStubEtaVsZ", "; Other stubs z (cm); Other stubs #eta", 1000,-280.,280.,30,-3.0,3.0);
+
+  hisNumKfSeedsPerTP_                    = inputDir.make<TH1F>("NumKfSeedsPerTP", "; #seeds per TP;", 10, -0.5, 9.5);
+  profMeanKfSeedsPerTP_                  = inputDir.make<TProfile>("MeanKfSeedsPerTP", "; Mean #seeds per TP;", 10, -0.5, 9.5);
+  hisNumDupsPerKfSeed_                   = inputDir.make<TH1F>("hisNumDupsPerKfSeed", "; #duplicates per KF seed;", 10, -0.5, 9.5);
+  profMeanDupsPerKfSeed_                 = inputDir.make<TProfile>("profMeanDupsPerKfSeed", "; mean #duplicatess per KF seed;", 10, -0.5, 9.5);
+
+  hisNumKfSeedStubsPerLayer_             = inputDir.make<TH1F>("NumKfSeedStubsPerLayer", "; #stubs used as seed per layer;", 20,-0.5,19.5);
+  profMeanKfSeedStubsPerLayer_           = inputDir.make<TProfile>("MeanKfSeedStubsPerLayer", "; Mean #seed stubs per layer;", 20,-0.5,19.5);
+  hisNumKfOtherStubsPerLayer_            = inputDir.make<TH1F>("NumKfOtherStubsPerLayer", "; #other stubs per layer;", 20,-0.5,19.5);
+  profMeanKfOtherStubsPerLayer_          = inputDir.make<TProfile>("MeanKfOtherStubsPerLayer", "; Mean #other stubs per layer;", 20,-0.5,19.5);
+
+  hisNumKfMatchedOtherStubsPerLayer_     = inputDir.make<TH1F>("NumKfMatchedOtherStubsPerLayer", "; #matched other stubs per layer;", 20,-0.5,19.5);
+  profMeanKfMatchedOtherStubsPerLayer_   = inputDir.make<TProfile>("MeanKfMatchedOtherStubsPerLayer", "; Mean #matched other stubs per layer;", 20,-0.5,19.5);
+  hisNumKfUnmatchedOtherStubsPerLayer_   = inputDir.make<TH1F>("NumKfUnmatchedOtherStubsPerLayer", "; #unmatched other stubs per layer;", 20,-0.5,19.5);
+  profMeanKfUnmatchedOtherStubsPerLayer_ = inputDir.make<TProfile>("MeanKfUnmatchedOtherStubsPerLayer", "; Mean #unmatched other stubs per layer;", 20,-0.5,19.5);
+
 }
 
 void Histos::fillKFseeds( const matrix<KalmanCombSeeder>& mKfSeeder ) {
+
+  for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
+    for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
+
+      const KalmanCombSeeder& fullKFs = mKfSeeder(iPhiSec, iEtaReg);
+      const vector<const Stub*>& vSeedStubs = fullKFs.getSeedStubs();
+      const vector<const Stub*>& vOtherStubs = fullKFs.getOtherStubs();
+
+/*
+  profSeedingCands_->GetXaxis()->SetBinLabel(6, "Number of unmatched other stubs");
+  profSeedingCands_->GetXaxis()->SetBinLabel(5, "Number of matched other stubs");
+  profSeedingCands_->GetXaxis()->SetBinLabel(4, "Number of unmatched seeds");
+  profSeedingCands_->GetXaxis()->SetBinLabel(3, "Number of part-matched seeds");
+  profSeedingCands_->GetXaxis()->SetBinLabel(2, "Number of matched seeds");
+  profSeedingCands_->GetXaxis()->SetBinLabel(1, "Number of seeds per TP");
+*/
+      for (const Stub* seedStub : vSeedStubs ) {
+        hisSeedStubQoverPt_->Fill(seedStub->qOverPt());
+        hisSeedStubR_->Fill(seedStub->r());
+        hisSeedStubPhi_->Fill(seedStub->phi());
+        hisSeedStubZ_->Fill(seedStub->z());
+        hisSeedStubEta_->Fill(seedStub->eta());
+
+        hisSeedStubRvsPhi_->Fill(seedStub->r(), seedStub->phi());
+        hisSeedStubRvsZ_->Fill(seedStub->r(), seedStub->z());
+        hisSeedStubRvsEta_->Fill(seedStub->eta(), seedStub->eta());
+        hisSeedStubPhiVsZ_->Fill(seedStub->phi(), seedStub->z());
+        hisSeedStubPhiVsEta_->Fill(seedStub->phi(), seedStub->eta());
+        hisSeedStubEtaVsZ_->Fill(seedStub->eta(), seedStub->z());
+      }
+
+      for (const Stub* otherStubs : vOtherStubs ) {
+        hisOtherStubQoverPt_->Fill(otherStubs->qOverPt());
+        hisOtherStubR_->Fill(otherStubs->r());
+        hisOtherStubPhi_->Fill(otherStubs->phi());
+        hisOtherStubZ_->Fill(otherStubs->z());
+        hisOtherStubEta_->Fill(otherStubs->eta());
+
+        hisOtherStubRvsPhi_->Fill(otherStubs->r(), otherStubs->phi());
+        hisOtherStubRvsZ_->Fill(otherStubs->r(), otherStubs->z());
+        hisOtherStubRvsEta_->Fill(otherStubs->eta(), otherStubs->eta());
+        hisOtherStubPhiVsZ_->Fill(otherStubs->phi(), otherStubs->z());
+        hisOtherStubPhiVsEta_->Fill(otherStubs->phi(), otherStubs->eta());
+        hisOtherStubEtaVsZ_->Fill(otherStubs->eta(), otherStubs->z());      
+      }
+      
+    }
+  }
+
+//  profSeedingCands_
+
+//  hisNumKfSeedsPerTP_
+//  profMeanKfSeedsPerTP_
+//  hisNumDupsPerKfSeed_
+//  profMeanDupsPerKfSeed_
+
+//  hisNumKfSeedStubsPerLayer_
+//  profMeanKfSeedStubsPerLayer_
+//  hisNumKfOtherStubsPerLayer_
+//  profMeanKfOtherStubsPerLayer_
+
+//  hisNumKfMatchedOtherStubsPerLayer_
+//  profMeanKfMatchedOtherStubsPerLayer_
+//  hisNumKfUnmatchedOtherStubsPerLayer_
+//  profMeanKfUnmatchedOtherStubsPerLayer_
+
 }
 
 //=== Book histograms studying freak, large events with too many stubs.
