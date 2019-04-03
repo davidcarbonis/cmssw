@@ -219,7 +219,7 @@ public:
   // Associate stub to TP only if the TP contributed to both its clusters? (If False, then associate even if only one cluster was made by TP).
   bool                 stubMatchStrict()         const   {return stubMatchStrict_;}
 
-  //=== Full Kalman Track Finding and Fitting Settings
+  //=== Kalman Track Finding and Fitting Settings
 
   // Parameterisation of the CKF to be used. Several can be run in parallel.
   bool                 runFullKalman()           const   {return runFullKalman_;} 
@@ -577,7 +577,7 @@ private:
   unsigned int         minNumMatchPSLayers_;
   bool                 stubMatchStrict_;
 
-  // Full Kalman Track Finding and Fitting Settings
+  // Kalman Track Finding and Fitting Settings
 
   bool                 runFullKalman_;
   vector<string>       kalmanParameterisation_;

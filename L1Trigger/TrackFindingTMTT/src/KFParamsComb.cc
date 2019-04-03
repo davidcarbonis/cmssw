@@ -386,18 +386,16 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
   vector<float> z0Cut, ptTolerance, d0Cut, chi2Cut;
   //  Layer   =    0      1      2     3     4      5      6
-//  z0Cut       = { 999.,  999.,   15.,  15.,  15.,   15.,   15.};
-  z0Cut       = { 999.,  999.,   999.,  999.,  25.,   25.,   25.};
+  z0Cut       = { 999.,  999.,   15.,  15.,  15.,   15.,   15.};
 
-//  ptTolerance = { 999.,  999.,   0.1,  0.1,  0.05, 0.05,  0.05};
-  ptTolerance = { 999.,  999.,   999.,  999.,  0.5, 0.5,  0.5};
+  ptTolerance = { 999.,  999.,   0.1,  0.1,  0.05, 0.05,  0.05};
+//  ptTolerance = { 999., 999., 0.3, 0.1, 0.05, 0.05, 0.05}; /// optimum for Full CKF 5 params
 
-//  d0Cut       = { 999.,  999.,  999.,  10.,   5.,    5.,   5.};  // Only used for 5 param helix fit
-  d0Cut       = { 999.,  999.,  999.,  999.,   5.,    5.,   5.};  // Only used for 5 param helix fit
+  d0Cut       = { 999.,  999.,  999.,  10.,   5.,    5.,   5.};  // Only used for 5 param helix fit
 
 //  chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
-  chi2Cut     = { 999.,  999.,   999.,  999., 999.,  999.,  999.};  // Consider reducing chi2 cut 2 to 7.
-//  chi2Cut     = { 999.,  999.,   160.,  160., 165.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
+//  chi2Cut     = { 999.,  999.,   999.,  999., 999.,  999.,  999.};  // Consider reducing chi2 cut 2 to 7.
+  chi2Cut     = { 999.,  999.,   999.,  999., 999.,  999.,  500.};  // Consider reducing chi2 cut 2 to 7.
 
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );

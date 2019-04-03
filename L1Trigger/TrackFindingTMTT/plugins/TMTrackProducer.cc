@@ -6,7 +6,7 @@
 #include <L1Trigger/TrackFindingTMTT/interface/HTrphi.h>
 #include <L1Trigger/TrackFindingTMTT/interface/Get3Dtracks.h>
 #include <L1Trigger/TrackFindingTMTT/interface/KillDupFitTrks.h>
-#include <L1Trigger/TrackFindingTMTT/interface/FullKalmanComb.h>
+#include <L1Trigger/TrackFindingTMTT/interface/KalmanCombSeeder.h>
 #include <L1Trigger/TrackFindingTMTT/interface/TrackFitGeneric.h>
 #include <L1Trigger/TrackFindingTMTT/interface/L1fittedTrack.h>
 #include <L1Trigger/TrackFindingTMTT/interface/L1fittedTrk4and5.h>
@@ -134,7 +134,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   matrix<HTrphi>  mHtRphis(settings_->numPhiSectors(), settings_->numEtaRegions());
 
   // Create matrix of CKF arrays for TF+TF, with one-to-one correspondence to the sectors
-  matrix<FullKalmanComb> mFullKalmanFilters( settings_->numPhiSectors(), settings_->numEtaRegions() );
+  matrix<KalmanCombSeeder> mKfSeeder( settings_->numPhiSectors(), settings_->numEtaRegions() );
 
   // Create matrix of Get3Dtracks objects, to run optional r-z track filter, with one-to-one correspondence to sectors.
   matrix<Get3Dtracks>  mGet3Dtrks(settings_->numPhiSectors(), settings_->numEtaRegions());
@@ -175,7 +175,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	Sector& sector = mSectors(iPhiSec, iEtaReg);
 	Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
-	FullKalmanComb& fullKFs = mFullKalmanFilters(iPhiSec, iEtaReg);
+	KalmanCombSeeder& fullKFs = mKfSeeder(iPhiSec, iEtaReg);
 
 	// Initialize constants for this sector.
 	sector.init(settings_, iPhiSec, iEtaReg);
@@ -405,7 +405,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
       for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
         if ( settings_->runFullKalman() ) {
-          const FullKalmanComb& fullKFs = mFullKalmanFilters(iPhiSec, iEtaReg);
+          const KalmanCombSeeder& fullKFs = mKfSeeder(iPhiSec, iEtaReg);
           numHTtracks += fullKFs.trackCands3D().size();
         }
         else {
@@ -430,7 +430,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // Fill histograms to monitor input data & tracking performance.
   // EDIT TO INCLUDE KF HISTOS
-  if (settings_->runFullKalman()) hists_->fill(inputData, mSectors, mGet3Dtrks, fittedTracks);
+  if (settings_->runFullKalman()) hists_->fill(inputData, mSectors, mKfSeeder, mGet3Dtrks, fittedTracks);
   else hists_->fill(inputData, mSectors, mHtRphis, mGet3Dtrks, fittedTracks);
 
   //=== Store output EDM track and hardware stub collections.

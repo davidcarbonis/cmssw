@@ -38,7 +38,44 @@ TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlgRphi   = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
+
 TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
+
+#--- Options for Kalman filter track fitters ---
+# Fit will reject fitted tracks unless it can assign at least this number of stubs to them.
+TMTrackProducer.TrackFitSettings.KalmanMinNumStubs       = cms.uint32(4)
+# Fit will attempt to add up to this nummber of stubs to each fitted tracks, but won't bother adding more.
+TMTrackProducer.TrackFitSettings.KalmanMaxNumStubs       = cms.uint32(4)
+# For 5-param helix fits, calculate also beam-constrained helix params after fit is complete, & use them for duplicate removal if DupTrkAlgFit=50.
+TMTrackProducer.TrackFitSettings.KalmanAddBeamConstr     = cms.bool(True)
+# Remove requirement of at least 2 PS layers per track.
+TMTrackProducer.TrackFitSettings.KalmanRemove2PScut      = cms.bool(False)
+# Allow the KF to skip this many layers in total per track.
+TMTrackProducer.TrackFitSettings.KalmanMaxSkipLayersHard = cms.uint32(1) # For HT tracks with many stubs (1)
+TMTrackProducer.TrackFitSettings.KalmanMaxSkipLayersEasy = cms.uint32(2) # For HT tracks with few stubs (2)
+TMTrackProducer.TrackFitSettings.KalmanMaxStubsEasy      = cms.uint32(10) # Max stubs an HT track can have to be "easy". (10)
+# KF will consider at most this #stubs per layer to save time.
+TMTrackProducer.TrackFitSettings.KalmanMaxStubsPerLayer  = cms.uint32(15) #(4)
+# Multiple scattering term - inflate hit phi errors by this divided by Pt
+# (0.00075 gives best helix resolution & 0.00450 gives best chi2 distribution).
+TMTrackProducer.TrackFitSettings.KalmanMultiScattTerm    = cms.double(0.00075)
+# Multiple scattering factor -- buggy so don't use!
+TMTrackProducer.TrackFitSettings.KalmanMultiScattFactor  = cms.double(0.0)
+# N.B. KF track fit chi2 cut is not cfg param, but instead is hard-wired in KF4ParamsComb::isGoodState(...).
+#--- Enable Higher order corrections
+# Treat z uncertainty in tilted barrel modules correctly.
+TMTrackProducer.TrackFitSettings.KalmanHOtilted          = cms.bool(False)
+# Higher order circle explansion terms for low Pt.
+TMTrackProducer.TrackFitSettings.KalmanHOhelixExp        = cms.bool(False)
+# Alpha correction for non-radial 2S endcap strips. (0=disable correction, 1=correct with offset, 2=correct with non-diagonal stub covariance matrix). -- Option 1 is easier in FPGA, but only works if fit adds PS stubs before 2S ones.
+TMTrackProducer.TrackFitSettings.KalmanHOalpha           = cms.uint32(0)
+# Projection from (r,phi) to (z,phi) for endcap 2S modules. (0=disable correction, 1=correct with offset, 2=correct with non-diagonal stub covariance matrix). -- Option 1 is easier in FPGA, but only works if fit adds PS stubs before 2S ones.
+TMTrackProducer.TrackFitSettings.KalmanHOprojZcorr       = cms.uint32(0)
+# Use dodgy calculation to account for non-radial endcap 2S modules that was used in Dec. 2016 demonstrator & use no special treatment for tilted modules.
+TMTrackProducer.TrackFitSettings.KalmanHOdodgy           = cms.bool(True)
+
+
+
 
 #--- Configure track fitting
 

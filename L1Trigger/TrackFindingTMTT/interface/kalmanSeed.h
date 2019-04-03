@@ -14,7 +14,7 @@
 
 using namespace std;
 
-//=== Full track finding and fitter KF seed.
+//=== Track finding and fitter KF seed.
 //=== Gives access to all stubs used for the seeding and remaining stubs and initial helix estimates.
 //=== Also calculates & gives access to associated truth particle (Tracking Particle) if any.
 

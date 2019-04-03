@@ -1,7 +1,7 @@
-///=== This is the base class for the Full Kalman Combinatorial Filter track finding and fitting algorithm.
+///=== This is the class for seeding the Kalman Combinatorial Filter track finding and fitting algorithm.
  
-#ifndef __FULL_KALMAN_COMB__
-#define __FULL_KALMAN_COMB__
+#ifndef __KALMAN_COMB_SEEDER__
+#define __KALMAN_COMB_SEEDER__
  
 #include <TMatrixD.h>
 #include "L1Trigger/TrackFindingTMTT/interface/Settings.h"
@@ -23,12 +23,12 @@ class kalmanState;
 class StubCluster;
 class Stub;
 
-class FullKalmanComb {
+class KalmanCombSeeder {
  
     public:
 
-	FullKalmanComb() {}
-	virtual ~FullKalmanComb() {}
+	KalmanCombSeeder() {}
+	virtual ~KalmanCombSeeder() {}
 
 
         void init (const Settings* settings, unsigned int iPhiSec, unsigned int iEtaReg, 
@@ -65,7 +65,7 @@ class FullKalmanComb {
         bool busySectorKill_;     
         unsigned int busySectorNumStubs_; 
 
-        // Full CKF options
+        // CKF Seeder options
         unsigned int seedingOption_;
 
         // Number of stubs received from GP, irrespective of the number used in the KF (e.g.filtered, truncation)

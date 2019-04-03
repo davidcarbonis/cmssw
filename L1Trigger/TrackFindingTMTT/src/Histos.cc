@@ -4,6 +4,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/HTrphi.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Get3Dtracks.h"
 #include "L1Trigger/TrackFindingTMTT/interface/TrkRZfilter.h"
+#include <L1Trigger/TrackFindingTMTT/interface/KalmanCombSeeder.h>
 #include "L1Trigger/TrackFindingTMTT/interface/L1fittedTrack.h"
 #include "L1Trigger/TrackFindingTMTT/interface/L1fittedTrk4and5.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Utility.h"
@@ -59,12 +60,17 @@ void Histos::book() {
   this->bookInputData();
   // Book histograms checking if (eta,phi) sector definition choices are good.
   this->bookEtaPhiSectors();
-  // Book histograms checking filling of r-phi HT array.
-  this->bookRphiHT();
-  // Book histograms about r-z track filters.
-  this->bookRZfilters();
-  // Book histograms for studying freak, extra large events at HT.
-  this->bookStudyBusyEvents();
+  if (!runFullKalman_) {
+    // Book histograms checking filling of r-phi HT array.
+    this->bookRphiHT();
+    // Book histograms about r-z track filters.
+    this->bookRZfilters();
+    // Book histograms for studying freak, extra large events at HT. Need CKF track finding and fitting version...
+    this->bookStudyBusyEvents();
+  }
+  else {
+    this->bookKFseeds();
+  }
   // Book histograms studying 3D track candidates found after HT.
   this->bookTrackCands(false);
   // Book histograms studying 3D track candidates found after r-z track filter.
@@ -101,7 +107,7 @@ void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors, co
 
 //=== Fill all histograms (minus HT)
 
-void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors,
+void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<KalmanCombSeeder>& mKfSeeder,
     	          const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks) 
 {
   // Don't bother filling histograms if user didn't request them via TFileService in their cfg.
@@ -111,7 +117,8 @@ void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors,
   this->fillInputData(inputData);
   // Fill histograms checking if (eta,phi) sector definition choices are good.
   this->fillEtaPhiSectors(inputData, mSectors);
-  // No need to fill histograms about r-z track filters.
+  // Fill histograms studying KF seeds
+  this->fillKFseeds(mKfSeeder);
 
   // Fill histograms for studying freak, extra large events at HT.
 //  this->fillStudyBusyEvents(inputData, mSectors, mHtRphis, mGet3Dtrks); // NEED TO FIX
@@ -1824,6 +1831,17 @@ map<const TP*, string> Histos::diagnoseTracking(const vector<TP>& allTPs, const 
     }
   }
   return diagnosis;
+}
+
+//=== Book histograms studying KF seeds.
+
+void Histos::bookKFseeds() {
+
+  TFileDirectory inputDir = fs_->mkdir("KFseeds");
+
+}
+
+void Histos::fillKFseeds( const matrix<KalmanCombSeeder>& mKfSeeder ) {
 }
 
 //=== Book histograms studying freak, large events with too many stubs.

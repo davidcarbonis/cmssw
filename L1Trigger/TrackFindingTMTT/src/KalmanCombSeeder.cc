@@ -1,8 +1,8 @@
-///=== This is the base class for the Full Kalman Combinatorial Filter track finding and fitting algorithm.
+///=== This is the base class for seeding the  Kalman Combinatorial Filter track finding and fitting algorithm.
 
 ///=== Written by: A. D. Morton, adapted from L1KalmanComb class
 
-#include "L1Trigger/TrackFindingTMTT/interface/FullKalmanComb.h"
+#include "L1Trigger/TrackFindingTMTT/interface/KalmanCombSeeder.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Utility.h"
 
 #include <TMatrixD.h> 
@@ -28,7 +28,7 @@
 
 namespace TMTT {
 
-void FullKalmanComb::init(const Settings* settings, unsigned int iPhiSec, unsigned int iEtaReg, 
+void KalmanCombSeeder::init(const Settings* settings, unsigned int iPhiSec, unsigned int iEtaReg, 
 		  float etaMinSector, float etaMaxSector, float phiCentreSector) {
 
   settings_ = settings;
@@ -53,11 +53,11 @@ void FullKalmanComb::init(const Settings* settings, unsigned int iPhiSec, unsign
   busySectorKill_          = settings_->busySectorKill();        // Kill excess tracks flowing out of HT?
   busySectorNumStubs_      = settings_->busySectorNumStubs();    // Max. num. of stubs that can be sent out of HT within TM period
 
-  // Full CKF Options
+  // CKF Seeder Options
   seedingOption_           = settings_->kalmanSeedingOption();
 }
 
-void FullKalmanComb::stubBuffer( const Stub* stub ) {
+void KalmanCombSeeder::stubBuffer( const Stub* stub ) {
 
   //=== Filter stubs
   // Stub Bend Filter?
@@ -80,7 +80,7 @@ void FullKalmanComb::stubBuffer( const Stub* stub ) {
   }
 }
 
-void FullKalmanComb::createSeeds() {
+void KalmanCombSeeder::createSeeds() {
 
   vector<L1track3D> trackCands3D;
 
@@ -148,7 +148,7 @@ void FullKalmanComb::createSeeds() {
 
 }
 
-  //void FullKalmanComb::run() {}
+  //void KalmanCombSeeder::run() {}
 
 
 }

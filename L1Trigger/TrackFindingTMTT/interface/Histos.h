@@ -34,6 +34,7 @@ class HTrphi;
 class Get3Dtracks;
 class L1fittedTrack;
 class L1fittedTrk4and5;
+class KalmanCombSeeder;
 
 class Histos {
 
@@ -48,7 +49,7 @@ public:
   void fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtPhis, 
     	    const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
 
-  void fill(const InputData& inputData, const matrix<Sector>& mSectors, 
+  void fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<KalmanCombSeeder>& mKfSeeder,
             const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
 
   // Print tracking performance summary & make tracking efficiency histograms.
@@ -70,6 +71,7 @@ private:
   void bookEtaPhiSectors();
   void bookRphiHT();
   void bookRZfilters();
+  void bookKFseeds();
   void bookStudyBusyEvents();
   void bookTrackCands(bool withRZfilter);
   void bookTrackFitting();
@@ -79,6 +81,7 @@ private:
   void fillEtaPhiSectors(const InputData& inputData, const matrix<Sector>& mSectors);
   void fillRphiHT(const matrix<HTrphi>& mHtRphis);
   void fillRZfilters(const matrix<Get3Dtracks>& mGet3Dtrks);
+  void fillKFseeds(const matrix<KalmanCombSeeder>& mKfSeeder);
   void fillStudyBusyEvents(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtRphis, 
     		           const matrix<Get3Dtracks> mGet3Dtrks);
   void fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks> mGet3Dtrks, bool withRZfilter);
@@ -253,6 +256,10 @@ private:
   map<string, TH1F*> hisNumTPpileup_; 
   map<string, TH1F*> hisSumPtTPphysics_; 
   map<string, TH1F*> hisSumPtTPpileup_; 
+
+  // Histograms studying the KF seed candidates prior to KF track finding/fitting.
+  map<string, TProfile*> profNumKfSeedsCands_;
+  map<string, TProfile*> profNumKfSeedsVsEta_;
 
   // Histograms studying 3D track candidates found by Hough Transform or r-z Track Filter.
   map<string, TProfile*> profNumTrackCands_;
