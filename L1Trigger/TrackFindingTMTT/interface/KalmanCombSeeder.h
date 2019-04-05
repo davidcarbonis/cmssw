@@ -35,7 +35,6 @@ class KalmanCombSeeder {
                   float etaMinSector, float etaMaxSector, float phiCentreSector);
         void stubBuffer (const Stub* stub);
         void createSeeds();
-//        void run();
         const vector<L1track3D>& trackCands3D() const {return trackCands3D_;}
 
 
@@ -58,6 +57,7 @@ class KalmanCombSeeder {
 
         unsigned int numSubSecs_;
 
+        float invPtToInvR_;
         float invPtToDphi_;
         float chosenRofPhi_;  
 
@@ -87,6 +87,11 @@ class KalmanCombSeeder {
         vector<L1track3D> trackCands3D_;
 
     private:
+
+        // Produce KF track seeds from single stub
+        void createSingleStubSeeds(const vector<const Stub*>& seedStubs, const vector<const Stub*>& otherStubs);
+
+
         // Calculate output opto-link ID from HT, assuming there is no MUX stage.
         unsigned int calcOptoLinkID() const {
         unsigned int numPhiSecPerOct =  settings_->numPhiSectors() / settings_->numPhiOctants();

@@ -81,7 +81,7 @@ private:
   void fillEtaPhiSectors(const InputData& inputData, const matrix<Sector>& mSectors);
   void fillRphiHT(const matrix<HTrphi>& mHtRphis);
   void fillRZfilters(const matrix<Get3Dtracks>& mGet3Dtrks);
-  void fillKFseeds(const matrix<KalmanCombSeeder>& mKfSeeder);
+  void fillKFseeds(const InputData& inputData, const matrix<KalmanCombSeeder>& mKfSeeder);
   void fillStudyBusyEvents(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtRphis, 
     		           const matrix<Get3Dtracks> mGet3Dtrks);
   void fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks> mGet3Dtrks, bool withRZfilter);
