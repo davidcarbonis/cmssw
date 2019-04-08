@@ -7,7 +7,6 @@
 
 #include <TMatrixD.h> 
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
-//#include "L1Trigger/TrackFindingTMTT/interface/kalmanSeed.h"
 #include "L1Trigger/TrackFindingTMTT/interface/kalmanState.h"
 #include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -49,14 +48,17 @@ void KalmanCombSeeder::init(const Settings* settings, unsigned int iPhiSec, unsi
   iEtaReg_ = iEtaReg;
 
     // Rapidity range of sector.
-  etaMinSector_ = etaMinSector;
-  etaMaxSector_ = etaMaxSector;
+  etaMinSector_    = etaMinSector;
+  etaMaxSector_    = etaMaxSector;
+  phiCentreSector_ = phiCentreSector; // Centre of phiTrk sector.
 
-  invPtToInvR_   = settings->invPtToInvR();
-  invPtToDphi_   = settings->invPtToDphi();  // B*c/2E11
- 
-  chosenRofPhi_       = settings->chosenRofPhi();
-  phiCentreSector_    = phiCentreSector; // Centre of phiTrk sector.
+  phiMinSector_    = 2.*M_PI * (float(iPhiSec)) / (float(settings->numPhiSectors())) - M_PI;
+  phiMaxSector_    = 2.*M_PI * (1.0 + float(iPhiSec)) / (float(settings->numPhiSectors())) - M_PI;
+
+  invPtToInvR_     = settings->invPtToInvR();
+  invPtToDphi_     = settings->invPtToDphi();  // B*c/2E11 
+  chosenRofPhi_    = settings->chosenRofPhi();
+  kalmanSeedMinPt_ = settings->kalmanSeedMinPt();
 
   // Used to kill excess stubs or tracks that can't be transmitted within time-multiplexed period.
   nReceivedStubs_ = 0;
@@ -67,6 +69,8 @@ void KalmanCombSeeder::init(const Settings* settings, unsigned int iPhiSec, unsi
 
   // CKF Seeder Options
   seedingOption_           = settings_->kalmanSeedingOption();
+  nBinsKalmanSeedPhiAxis_  = settings_->kalmanSeedNbinsPhiAxis();
+  nBinsKalmanSeedEtaAxis_  = settings_->kalmanSeedNbinsEtaAxis();
 }
 
 void KalmanCombSeeder::stubBuffer( const Stub* stub ) {
@@ -78,21 +82,20 @@ void KalmanCombSeeder::stubBuffer( const Stub* stub ) {
   if ( ( ! busyInputSectorKill_) || (nReceivedStubs_ <  busyInputSectorNumStubs_) ) {
     nReceivedStubs_++;
 
-    unsigned int stubLayer = stub->layerIdReduced();
+    unsigned int reducedStubLayer = stub->layerIdReduced();
 
     //Seeding options:
     // Search for pairs of stubs, thinking about missing layers
     if ( seedingOption_ == 1 ) {
-      if ( stubLayer == 1 ) vSeedStubs_.push_back(stub);
-      else if ( stubLayer == 2 ) vSeedStubs_.push_back(stub);
+      if ( reducedStubLayer == 1 || reducedStubLayer == 2 ) vSeedStubs_.push_back(stub);
       else vOtherStubs_.push_back(stub);
 
-      if ( stubLayer == 1 ) vLayer1Stubs_.push_back(stub);
-      if ( stubLayer == 2 ) vLayer2Stubs_.push_back(stub);
+      if ( reducedStubLayer == 1 ) vLayer1Stubs_.push_back(stub);
+      if ( reducedStubLayer == 2 ) vLayer2Stubs_.push_back(stub);
     }
     //Default option L0 + beamspot
     else {
-      if ( stubLayer == 1 ) vSeedStubs_.push_back(stub);
+      if ( reducedStubLayer == 1 ) vSeedStubs_.push_back(stub);
       else vOtherStubs_.push_back(stub);
     }
   }
@@ -108,61 +111,60 @@ void KalmanCombSeeder::createSeeds() {
 //    KalmanSeed (const Settings* settings, const vector<const Stub*>& seedStubs, pair<float, float> helixRphi,
 //                pair<float, float> helixRz, unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID) :
 
+  // Seeding using phi-eta binning for layer 0 stubs
+  if ( seedingOption_ == 2 ) {
+
+    const vector<const Stub*>& seedStubs = vSeedStubs_;
+    const vector<const Stub*>& otherStubs = vOtherStubs_;
+
+    float phiStep = (phiMaxSector_ - phiMinSector_) / float(nBinsKalmanSeedPhiAxis_);
+    float etaStep = (etaMaxSector_ - etaMinSector_) / float(nBinsKalmanSeedEtaAxis_);
+
+    kfStubArray_.resize(nBinsKalmanSeedPhiAxis_, nBinsKalmanSeedEtaAxis_, false);
+
+    // Fill kf seed stub array
+    for (unsigned int i = 0; i < nBinsKalmanSeedPhiAxis_; i++) {
+      for (unsigned int j = 0; j < nBinsKalmanSeedEtaAxis_; j++) {
+        vector< const Stub* > tempStubs;
+        for ( auto stub : seedStubs ) {
+          float stubPhi = stub->phi();
+          float stubEta = stub->eta();
+
+          float minPhi = phiMinSector_ + phiStep*i;
+          float maxPhi = phiMinSector_ + (phiStep+1.0)*i;
+          float minEta = etaMinSector_ + etaStep*j;
+          float maxEta = etaMinSector_ + (etaStep + 1.0)*j; 
+          if ( stubPhi <  minPhi ) continue;
+          if ( stubPhi >= maxPhi ) continue;
+          if ( stubEta <  minEta ) continue;
+          if ( stubEta >= maxEta ) continue;
+          tempStubs.push_back(stub);
+        }
+          kfStubArray_(i,j) = tempStubs;        
+      }
+    }
+
+    // Now arrays are filled, loop over each cell and create a seed from the stub cluster of stubs
+    for (unsigned int i = 0; i < nBinsKalmanSeedPhiAxis_; i++) {
+      for (unsigned int j = 0; j < nBinsKalmanSeedEtaAxis_; j++) {
+        StubCluster cluster ( kfStubArray_(i,j), iPhiSec_ );
+        //Create L1track3D object and use cluster errors?
+      }
+    }
+
+  }
+
   // Seeding from layers 1+2 (or just 2)
   if ( seedingOption_ == 1 ) {
 
     const vector<const Stub*>& layer1Stubs = vLayer1Stubs_;
     const vector<const Stub*>& layer2Stubs = vLayer2Stubs_;
-    vector<const Stub*>& backupStubs = vLayer2Stubs_;
     const vector<const Stub*>& otherStubs = vOtherStubs_;
 
-    for ( auto innerStub : layer1Stubs ) {
-      if ( layer2Stubs.size() == 0 ) continue;
-      for ( auto outerStub : layer2Stubs ) {
-
-        // compataibility test 1
-        if ( (innerStub->r() - (outerStub->z()-innerStub->z())*innerStub->r()/(outerStub->r()-innerStub->r())) > 30. ) continue; 
-
-        double deltaPhi = wrapRadian( innerStub->phi() - outerStub->phi() );
-        double displacement = sqrt( pow( outerStub->r(), 2 ) + pow( innerStub->r(), 2 )
-                              - 2*outerStub->r()*innerStub->r()*cos(deltaPhi));
-  
-
-        double rInv = 2*sin(deltaPhi)/displacement;
-        // compataibility test 2
-        if ( rInv > 0.0057 ) continue;
-
-        float phi0 = innerStub->beta();
-        double tan_lambda = ( innerStub->z() - outerStub->z() ) * rInv / ( 2 * ( asin( 0.5*rInv*innerStub->r() ) - asin( 0.5*rInv*outerStub->r() ) ) );
-        double z0 = innerStub->z() - tan_lambda * ( 2 * ( asin( 0.5 * rInv * innerStub->r() ) ) ) / rInv;
-        // compataibility test 3
-        if ( z0 > 15. ) continue;
-
-        float qOverPt = rInv*invPtToInvR_;
-
-        const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-        const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-
-        unsigned int optoLinkID = this->calcOptoLinkID();    
-
-        vector<const Stub*> stubs {innerStub,outerStub};
-        stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-
-        const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-
-        L1track3D l1Trk3D(settings_, stubs, cellLocation, helixParamsRphi, helixParamsRz, iPhiSec_, iEtaReg_, optoLinkID, false);
-
-        // push back candidate
-        trackCands3D_.push_back(l1Trk3D);      
-
-        // erase Layer 2 stub from 2nd pass seed collcetion 
-//        vector<const Stub*>::iterator position = std::find(layer2Stubs.begin(), layer2Stubs.end(), outerStub)
-//        if ( position != layer2Stubs.end() ) backupStubs.erase(position);
-      }
-    }
+    createPairStubSeeds( layer1Stubs, layer2Stubs, otherStubs );
 
   // Create seeds from layer 2 stubs not used to make pairs with layer 1
-
+//  createSingleStubSeeds( backupStubs, otherStubs );
   }
 
   // If seeding with just a single stub from Layer 1
@@ -180,18 +182,22 @@ void KalmanCombSeeder::createSeeds() {
 void KalmanCombSeeder::createSingleStubSeeds( const vector<const Stub*>& seedStubs, const vector<const Stub*>& otherStubs ) {
 
   for ( auto stub : seedStubs ) {
-    
-    vector<const Stub*> stubs {stub};
-    //    stubs.push_back(stub);
-    stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-    
-    const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-    
-    float qOverPt = stub->qOverPt();
+        
+    float qOverPt    = stub->qOverPt();
+
+//    float qOverPtRes = stub->qOverPtres();
+//    float maxQoverPt = (qOverPt + qOverPtRes);
+//    if ( fabs(qOverPt) > maxQoverPt ) continue;
+
     float phi0 = stub->beta();
     float z0 = 0;
     float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector_))) + 1/tan(2*atan(exp(-etaMaxSector_))));
     
+    vector<const Stub*> stubs {stub};
+    stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+    
+    const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+
     const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
     const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
     
@@ -201,6 +207,57 @@ void KalmanCombSeeder::createSingleStubSeeds( const vector<const Stub*>& seedStu
     
     trackCands3D_.push_back(l1Trk3D);
   }
+}
+
+// To be replaced with pair< vector<stubs>, vector< stubs> >
+void KalmanCombSeeder::createPairStubSeeds ( const vector<const Stub*>& innerSeedStubs, const vector<const Stub*>& outerSeedStubs, const vector<const Stub*>& otherStubs ) {
+
+//  vector<const Stub*>& innerUnusedStubs = innerSeedStubs;
+//  vector<const Stub*>& outerUnusedStubs = outerSeedStubs;
+
+  for ( auto innerStub : innerSeedStubs ) {
+    if ( outerSeedStubs.size() == 0 ) continue;
+    for ( auto outerStub : outerSeedStubs ) {
+
+      // compataibility test 1
+      if ( (innerStub->r() - (outerStub->z()-innerStub->z())*innerStub->r()/(outerStub->r()-innerStub->r())) > 30. ) continue; 
+
+      double qOverPt = innerStub->qOverPt();
+      double rInv = qOverPt*invPtToInvR_;
+
+      float phi0 = innerStub->beta();
+
+      double tan_lambda = ( innerStub->z() - outerStub->z() ) * rInv / 
+        ( 2 * ( asin( 0.5*rInv*innerStub->r() ) - asin( 0.5*rInv*outerStub->r() ) ) );
+      if ( qOverPt == 0.0 ) tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector_))) + 1/tan(2*atan(exp(-etaMaxSector_))));
+
+      double z0 = innerStub->z() - tan_lambda * ( 2 * ( asin( 0.5 * rInv * innerStub->r() ) ) ) / rInv;
+      if ( qOverPt == 0.0 ) z0 = 0.0;
+        
+      // compataibility test 3
+      if ( z0 > 15. ) continue;
+
+      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+
+      unsigned int optoLinkID = this->calcOptoLinkID();    
+
+      vector<const Stub*> stubs {innerStub,outerStub};
+      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+
+      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+
+      L1track3D l1Trk3D(settings_, stubs, cellLocation, helixParamsRphi, helixParamsRz, iPhiSec_, iEtaReg_, optoLinkID, false);
+
+      // push back candidate
+      trackCands3D_.push_back(l1Trk3D);      
+
+      // erase Layer 2 stub from 2nd pass seed collcetion 
+      //        const vector<const Stub*>::iterator position = std::find(layer2Stubs.begin(), layer2Stubs.end(), outerStub)
+      //        if ( position != layer2Stubs.end() ) backupStubs.erase(position);
+    }
+  }
+
 }
 
 }

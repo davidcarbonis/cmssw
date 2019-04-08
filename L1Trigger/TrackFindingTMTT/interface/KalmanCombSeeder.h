@@ -54,12 +54,15 @@ class KalmanCombSeeder {
         float etaMinSector_;
         float etaMaxSector_;
         float phiCentreSector_;
+        float phiMinSector_;
+        float phiMaxSector_;
 
         unsigned int numSubSecs_;
 
         float invPtToInvR_;
         float invPtToDphi_;
         float chosenRofPhi_;  
+        float kalmanSeedMinPt_;
 
         // Options for killing stubs/tracks that cant be sent within time-multiplexed period.
         bool busyInputSectorKill_; 
@@ -69,6 +72,10 @@ class KalmanCombSeeder {
 
         // CKF Seeder options
         unsigned int seedingOption_;
+        double nBinsKalmanSeedPhiAxis_;
+        double nBinsKalmanSeedEtaAxis_;
+
+        matrix< vector<const Stub*> > kfStubArray_;
 
         // Number of stubs received from GP, irrespective of the number used in the KF (e.g.filtered, truncation)
         unsigned int nReceivedStubs_;
@@ -90,7 +97,8 @@ class KalmanCombSeeder {
 
         // Produce KF track seeds from single stub
         void createSingleStubSeeds(const vector<const Stub*>& seedStubs, const vector<const Stub*>& otherStubs);
-
+        // Produce KF track seeds from pairs of stubs
+        void createPairStubSeeds ( const vector<const Stub*>& innerSeedStubs, const vector<const Stub*>& outerSeedStubs, const vector<const Stub*>& otherStubs );
 
         // Calculate output opto-link ID from HT, assuming there is no MUX stage.
         unsigned int calcOptoLinkID() const {

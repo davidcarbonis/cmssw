@@ -223,6 +223,9 @@ public:
 
   // Parameterisation of the CKF to be used. Several can be run in parallel.
   bool                 runFullKalman()           const   {return runFullKalman_;} 
+  double               kalmanSeedMinPt()         const   {return kalmanSeedMinPt_;}
+  double               kalmanSeedNbinsPhiAxis()  const   {return nBinsKalmanSeedPhiAxis_;}
+  double               kalmanSeedNbinsEtaAxis()  const   {return nBinsKalmanSeedEtaAxis_;}
   vector<string>       kalmanParameterisation()  const   {return kalmanParameterisation_;}
   // Use the offline tracker seedding in lieu of the default L0+beamspot seed
   unsigned int         kalmanSeedingOption()     const   {return kalmanSeedingOption_;}
@@ -580,6 +583,9 @@ private:
   // Kalman Track Finding and Fitting Settings
 
   bool                 runFullKalman_;
+  double               kalmanSeedMinPt_;
+  double               nBinsKalmanSeedPhiAxis_;
+  double               nBinsKalmanSeedEtaAxis_;
   vector<string>       kalmanParameterisation_;
   bool                 kalmanSeedingOption_;
 

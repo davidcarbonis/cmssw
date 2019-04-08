@@ -32,8 +32,9 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 
 #--- Configure Full CKF
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
 #TMTrackProducer.FullKalmanCombSettings.Parameterisation = cms.vstring("vertexParameters","runningParameters")
-TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(0) # 0 uses just layer 1, all others are buggy/non-functional
+TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(1) # 0 uses just layer 1, all others are buggy/non-functional
 
 TMTrackProducer.DupTrkRemoval.DupTrkAlgRphi   = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
@@ -73,7 +74,6 @@ TMTrackProducer.TrackFitSettings.KalmanHOalpha           = cms.uint32(0)
 TMTrackProducer.TrackFitSettings.KalmanHOprojZcorr       = cms.uint32(0)
 # Use dodgy calculation to account for non-radial endcap 2S modules that was used in Dec. 2016 demonstrator & use no special treatment for tilted modules.
 TMTrackProducer.TrackFitSettings.KalmanHOdodgy           = cms.bool(True)
-
 
 
 

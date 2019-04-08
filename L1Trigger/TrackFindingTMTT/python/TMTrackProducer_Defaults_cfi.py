@@ -283,6 +283,9 @@ TMTrackProducer_params = cms.PSet(
      #--- Options for the Full CKF ---
      #
      RunFullKalman = cms.bool(False),
+     KalmanSeedMinPt = cms.double(3.0),
+     KalmanSeedNbinsPhiAxis = cms.double(100),
+     KalmanSeedNbinsEtaAxis = cms.double(100),
      Parameterisation = cms.vstring(
                                     "vertexParameters",
                                     "runningParameters",
@@ -318,10 +321,10 @@ TMTrackProducer_params = cms.PSet(
                                 "SimpleLR"
                               ),
      # Print detailed summary of track fit performance at end of job (as opposed to a brief one). 
-     DetailedFitOutput = cms.bool(False),
+     DetailedFitOutput = cms.bool(True),
      #
      # Use MC truth to eliminate all fake tracks & all incorrect stubs assigned to tracks before doing fit. 
-     TrackFitCheat = cms.bool(False),
+     TrackFitCheat = cms.bool(True),
      #
      #--- Options for chi2 track fitter ---
      #

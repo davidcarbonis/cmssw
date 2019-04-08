@@ -222,7 +222,6 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       } // End iEta iterations
     } // End iPhi iterations
 
-   
     //=== End KF bit
   }
 
@@ -325,11 +324,10 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
 
-
   // Initialize the duplicate track removal algorithm that can optionally be run after the track fit.
   KillDupFitTrks killDupFitTrks;
   killDupFitTrks.init(settings_, settings_->dupTrkAlgFit());
-  
+
   //=== Do a helix fit to all the track candidates.
 
   for (const string& fitterName : trackFitters_) { // Loop over fit algos.
