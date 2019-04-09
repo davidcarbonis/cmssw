@@ -196,8 +196,8 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	    if (inside) {
 	      // Digitize stub if as would be at input to HT, which slightly degrades its coord. & bend resolution, affecting the HT performance.
-              // Do not digitise stub using HT option for KF seeding - this needs understanding first.                
-	      //if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForHTinput(iPhiSec);
+              // Do HT digitization stub using HT option to ensure layer ID + phi is correctly digitized
+	      if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForHTinput(iPhiSec);
 
 	      // Push stubs to the KF initial stub buffer prior to sorting by layer
 	      fullKFs.stubBuffer( stub );

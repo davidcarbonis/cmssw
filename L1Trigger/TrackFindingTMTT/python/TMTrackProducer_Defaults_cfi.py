@@ -284,14 +284,10 @@ TMTrackProducer_params = cms.PSet(
      #
      RunFullKalman = cms.bool(False),
      KalmanSeedMinPt = cms.double(3.0),
+     KalmanSeedEtaPhiBinned = cms.bool(False),
      KalmanSeedNbinsPhiAxis = cms.double(100),
      KalmanSeedNbinsEtaAxis = cms.double(100),
-     Parameterisation = cms.vstring(
-                                    "vertexParameters",
-                                    "runningParameters",
-                                   ),
      SeedingOption = cms.uint32(0),
-
   ),
 
   #=== Track Fitting Algorithm Settings.

@@ -86,7 +86,8 @@ void KalmanCombSeeder::stubBuffer( const Stub* stub ) {
 
     //Seeding options:
     // Search for pairs of stubs, thinking about missing layers
-    if ( seedingOption_ == 1 ) {
+    // Or L0 and L1 separately
+    if ( seedingOption_ == 5 || seedingOption_ == 1 ) {  
       if ( reducedStubLayer == 1 || reducedStubLayer == 2 ) vSeedStubs_.push_back(stub);
       else vOtherStubs_.push_back(stub);
 
@@ -112,7 +113,7 @@ void KalmanCombSeeder::createSeeds() {
 //                pair<float, float> helixRz, unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID) :
 
   // Seeding using phi-eta binning for layer 0 stubs
-  if ( seedingOption_ == 2 ) {
+  if ( seedingOption_ == 10 ) {
 
     const vector<const Stub*>& seedStubs = vSeedStubs_;
     const vector<const Stub*>& otherStubs = vOtherStubs_;
@@ -155,7 +156,7 @@ void KalmanCombSeeder::createSeeds() {
   }
 
   // Seeding from layers 1+2 (or just 2)
-  if ( seedingOption_ == 1 ) {
+  else if ( seedingOption_ == 5 ) {
 
     const vector<const Stub*>& layer1Stubs = vLayer1Stubs_;
     const vector<const Stub*>& layer2Stubs = vLayer2Stubs_;
@@ -165,6 +166,18 @@ void KalmanCombSeeder::createSeeds() {
 
   // Create seeds from layer 2 stubs not used to make pairs with layer 1
 //  createSingleStubSeeds( backupStubs, otherStubs );
+  }
+
+  else if ( seedingOption_ == 1 ) {
+    const vector<const Stub*>& layer1Stubs = vLayer1Stubs_;
+    const vector<const Stub*>& layer2Stubs = vLayer2Stubs_;
+    const vector<const Stub*>& otherStubs = vOtherStubs_;
+
+    vector< const Stub*>& layer2PlusOtherStubs = vLayer2Stubs_;
+    layer2PlusOtherStubs.insert(layer2PlusOtherStubs.end(), vOtherStubs_.begin(), vOtherStubs_.end());
+
+    createSingleStubSeeds( layer1Stubs, layer2PlusOtherStubs );
+    createSingleStubSeeds( layer2Stubs, otherStubs );
   }
 
   // If seeding with just a single stub from Layer 1

@@ -33,8 +33,11 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 #--- Configure Full CKF
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
-#TMTrackProducer.FullKalmanCombSettings.Parameterisation = cms.vstring("vertexParameters","runningParameters")
-TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(1) # 0 uses just layer 1, all others are buggy/non-functional
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedEtaPhiBinned = cms.bool(False)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(100)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(100)
+
+TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(0) # 0 uses just layer 1, 1 uses first and second layers (high duplicates), all others are buggy/non-functional
 
 TMTrackProducer.DupTrkRemoval.DupTrkAlgRphi   = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)

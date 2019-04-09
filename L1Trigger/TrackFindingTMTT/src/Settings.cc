@@ -227,9 +227,9 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
 
   runFullKalman_          ( fullKalmanCombSettings_.getParameter < bool >             ( "RunFullKalman"   )  ),
   kalmanSeedMinPt_        ( fullKalmanCombSettings_.getParameter < double >           ( "KalmanSeedMinPt" )  ),
+  kalmanSeedEtaPhiBinned_ ( fullKalmanCombSettings_.getParameter < bool >             ( "KalmanSeedEtaPhiBinned")),
   nBinsKalmanSeedPhiAxis_ ( fullKalmanCombSettings_.getParameter < double >           ( "KalmanSeedNbinsPhiAxis")),
   nBinsKalmanSeedEtaAxis_ ( fullKalmanCombSettings_.getParameter < double >           ( "KalmanSeedNbinsEtaAxis")),
-  kalmanParameterisation_ ( fullKalmanCombSettings_.getParameter<vector<std::string>> ( "Parameterisation")  ),
   kalmanSeedingOption_    ( fullKalmanCombSettings_.getParameter <unsigned int>       ( "SeedingOption"   )  ),
 
   //=== Track Fitting Settings
