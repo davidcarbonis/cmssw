@@ -363,7 +363,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   	    const vector<const Stub*>& stubsOnTrk = trk.getStubs();
             for (const Stub* s : stubsOnTrk) {
              // Do not digitise stub using HT option for KF seeding - this needs understanding first.
-             if (!settings_->runFullKalman()) (const_cast<Stub*>(s))->digitizeForHTinput(iPhiSec);
+             // if (!settings_->runFullKalman()) (const_cast<Stub*>(s))->digitizeForHTinput(iPhiSec);
 	     // Also digitize stub in way this specific track fitter uses it.
              (const_cast<Stub*>(s))->digitizeForSForTFinput(fitterName);          
 	    }
