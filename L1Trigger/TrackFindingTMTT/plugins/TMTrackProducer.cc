@@ -134,7 +134,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   matrix<HTrphi>  mHtRphis(settings_->numPhiSectors(), settings_->numEtaRegions());
 
   // Create matrix of CKF arrays for TF+TF, with one-to-one correspondence to the sectors
-  matrix<KalmanCombSeeder> mKfSeeder( settings_->numPhiSectors(), settings_->numEtaRegions() );
+  // matrix<KalmanCombSeeder> mKfSeeder( settings_->numPhiSectors(), settings_->numEtaRegions() );
 
   // Create matrix of Get3Dtracks objects, to run optional r-z track filter, with one-to-one correspondence to sectors.
   matrix<Get3Dtracks>  mGet3Dtrks(settings_->numPhiSectors(), settings_->numEtaRegions());
@@ -165,8 +165,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   // Initialize fittedTracks with empty vector in case no fitted tracks found.
   map<string, vector<L1fittedTrack>> fittedTracks;
 
-  if ( settings_->runFullKalman() ) {
-    //=== Do KF track finding and fitting
+/*    //=== Do KF track finding and fitting
 
     // Parallelised to search over each sub-sector to reduce combinatorics
 
@@ -210,7 +209,7 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         get3Dtrk.kalmanCands( fullKFs.trackCands3D() );
 
-	/*#ifdef OutputKF_TTracks
+	#ifdef OutputKF_TTracks
 	// Convert these tracks to EDM format for output (used for collaborative work outside TMTT group).
 	// Do this for tracks output by HT & optionally also for those output by r-z track filter.
 	const vector<L1track3D>& vecTrk3D_kf = fullKFs.trackCands3D();
@@ -218,58 +217,59 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  TTTrack< Ref_Phase2TrackerDigi_ > kfTTTrack = converter.makeTTTrack(trk, iPhiSec, iEtaReg);
 	  kfTTTracksForOutput->push_back( kfTTTrack );
 	}
-	#endif*/
+	#endif
       } // End iEta iterations
     } // End iPhi iterations
 
     //=== End KF bit
   }
+*/
 
-  else {
+  if ( !settings_->runFullKalman() ) {
 
     //=== Do tracking in the r-phi Hough transform within each sector.
-
+    
     // Fill Hough-Transform arrays with stubs.
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
       for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
-
+	
 	Sector& sector = mSectors(iPhiSec, iEtaReg);
 	HTrphi& htRphi = mHtRphis(iPhiSec, iEtaReg);
-
+	
 	// Initialize constants for this sector.
 	sector.init(settings_, iPhiSec, iEtaReg); 
 	htRphi.init(settings_, iPhiSec, iEtaReg, sector.etaMin(), sector.etaMax(), sector.phiCentre());
 
 	// Check sector is enabled (always true, except if user disabled some for special studies).
 	if (settings_->isHTRPhiEtaRegWhitelisted(iEtaReg)) {
-
+	
 	  for (const Stub* stub: vStubs) {
 	    // Digitize stub as would be at input to GP. This doesn't need the octant number, since we assumed an integer number of
 	    // phi digitisation  bins inside an octant. N.B. This changes the coordinates & bend stored in the stub.
 	    // The cast allows us to ignore the "const".
 	    if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForGPinput(iPhiSec);
-
+	  
 	    // Check if stub is inside this sector
 	    bool inside = sector.inside( stub );
-
+	  
 	    if (inside) {
 	      // Check which eta subsectors within the sector the stub is compatible with (if subsectors being used).
 	      const vector<bool> inEtaSubSecs =  sector.insideEtaSubSecs( stub );
-
+	    
 	      // Digitize stub if as would be at input to HT, which slightly degrades its coord. & bend resolution, affecting the HT performance.
 	      if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForHTinput(iPhiSec);
-
+	    
 	      // Store stub in Hough transform array for this sector, indicating its compatibility with eta subsectors with sector.
 	      htRphi.store( stub, inEtaSubSecs );
 	    }
 	  }
 	}
-
+      
 	// Find tracks in r-phi HT array.
 	htRphi.end(); // Calls htArrayRphi_.end() -> HTBase::end()
       }
     }
-
+  
     if (settings_->muxOutputsHT() > 0) {
       // Multiplex outputs of several HT onto one pair of output opto-links.
       // This only affects tracking performance if option busySectorKill is enabled, so that tracks that
@@ -277,31 +277,31 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       MuxHToutputs muxHT(settings_);
       muxHT.exec(mHtRphis);
     }
-
+  
     // Optionally, run 2nd stage mini HT -- WITHOUT TRUNCATION ???
     if ( settings_->miniHTstage() ) {
       MiniHTstage miniHTstage( settings_ );
       miniHTstage.exec( mHtRphis );
     }
-    
+  
     //=== Make 3D tracks, optionally running r-z track filters (such as Seed Filter) & duplicate track removal. 
-
+  
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
       for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
-
+      
 	const Sector& sector = mSectors(iPhiSec, iEtaReg);
-
+      
 	// Get tracks found by r-phi HT.
 	const HTrphi& htRphi = mHtRphis(iPhiSec, iEtaReg);
 	const vector<L1track2D>& vecTracksRphi = htRphi.trackCands2D();
-
+	
 	Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 	// Initialize utility for making 3D tracks from 2D ones.
 	get3Dtrk.init(settings_, iPhiSec, iEtaReg, sector.etaMin(), sector.etaMax(), sector.phiCentre());
-
+	
 	// Convert 2D tracks found by HT to 3D tracks (optionally by running r-z filters & duplicate track removal)
 	get3Dtrk.run(vecTracksRphi);
-
+	
 #ifdef OutputHT_TTracks
 	// Convert these tracks to EDM format for output (used for collaborative work outside TMTT group).
 	// Do this for tracks output by HT & optionally also for those output by r-z track filter.
@@ -321,78 +321,155 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 #endif
       }
     }
+  
   }
-
-
   // Initialize the duplicate track removal algorithm that can optionally be run after the track fit.
   KillDupFitTrks killDupFitTrks;
   killDupFitTrks.init(settings_, settings_->dupTrkAlgFit());
-
+  
   //=== Do a helix fit to all the track candidates.
+/*  
+  if ( settings_->runFullKalman() ) {
 
-  for (const string& fitterName : trackFitters_) { // Loop over fit algos.
-    fittedTracks[fitterName] = vector<L1fittedTrack>(); 
-  }
+    for (const string& fitterName : trackFitters_) { // Loop over kalman filter algos considered.
+      fittedTracks[fitterName] = vector<L1fittedTrack>(); 
+    }
 
-  for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
-    for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
+    for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
+      for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
 
-      const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
+        Sector& sector = mSectors(iPhiSec, iEtaReg);
+	Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 
-      // Loop over all the fitting algorithms we are trying.
-      for (const string& fitterName : trackFitters_) {
-
-	// Does this fitter require r-z track filter to be run before it?
-	bool useRZfilt = (std::count(useRZfilter_.begin(), useRZfilter_.end(), fitterName) > 0);
-
-        // Get 3D track candidates found by Hough transform (plus optional r-z filters/duplicate removal) in this sector.
-        // Or get the KF seed tracks for the KF to fit ...
-        const vector<L1track3D> vecTrk3D = get3Dtrk.trackCands3D(useRZfilt);
-
-        // Fit all tracks in this sector
-	vector<L1fittedTrack> fittedTracksInSec;
-        for (const L1track3D& trk : vecTrk3D) {
-
-	  // IRT
-	  //bool OK = (trk.getMatchedTP() != nullptr && trk.getMatchedTP()->pt() > 50 && fabs(trk.getMatchedTP()->eta()) > 1.4 && fabs(trk.getMatchedTP()->eta()) < 1.8);
-          //if (trk.getNumStubs() != trk.getNumLayers()) OK = false;
-          //if (not OK) continue;
-
-          // Ensure stubs assigned to this track is digitized with respect to the phi sector the track is in.
-	  if (settings_->enableDigitize()) {
-  	    const vector<const Stub*>& stubsOnTrk = trk.getStubs();
-            for (const Stub* s : stubsOnTrk) {
-             // Do not digitise stub using HT option for KF seeding - this needs understanding first.
-             // if (!settings_->runFullKalman()) (const_cast<Stub*>(s))->digitizeForHTinput(iPhiSec);
-	     // Also digitize stub in way this specific track fitter uses it.
-             (const_cast<Stub*>(s))->digitizeForSForTFinput(fitterName);          
+	// Loop over all the fitting algorithms we are trying.
+	for (const string& fitterName : trackFitters_) {
+	  
+	  // Find tracks from all the stubs in this sector and fit them
+	  vector<L1fittedTrack> fittedTracksInSec;
+	  
+	  vector< const Stub* >& compatibleStubs;
+	  
+	  // Check sector is enabled (always true, except if user disabled some for special studies).
+	  if (settings_->isHTRPhiEtaRegWhitelisted(iEtaReg)) {
+	    
+	    for (const Stub* stub: vStubs) {
+	      // Digitize stub as would be at input to GP. This doesn't need the octant number, since we assumed an integer number of
+	      // phi digitisation  bins inside an octant. N.B. This changes the coordinates & bend stored in the stub.
+	      // The cast allows us to ignore the "const".
+	      if (settings_->enableDigitize()) (const_cast<Stub*>(stub))->digitizeForGPinput(iPhiSec);
+	      
+	      // Check if stub is inside this sector
+	      bool inside = sector.inside( stub );
+	      
+	      if (inside) {
+		// Digitize stub if as would be at input to HT, which slightly degrades its coord. & bend resolution, affecting the HT performance.
+		// Do HT digitization stub using HT option to ensure layer ID + phi is correctly digitized
+		// Also digitize stub in way this specific track fitter uses it.
+		if (settings_->enableDigitize()) {
+		  (const_cast<Stub*>(stub))->digitizeForHTinput(iPhiSec);
+		  (const_cast<Stub*>(stub))->digitizeForSForTFinput(fitterName);          
+		}
+		compatibleStubs.push_back( stub );
+	      } // End if inside stub check
+	    } // End stub looping
+	    
+	  } // End whitelist check
+	  
+	  // Do KF magic here!
+	  vector<L1fittedTrack> fittedTracksInSec;
+	  
+	  vector <L1fittedTrack> fitTracks = fitterWorkerMap_[fitterName]->findAndFit(compatibleStubs);
+	  for ( const L1fittedTrack& fitTrack : fitTracks ) {
+	    if (fitTrack.accepted()) { // If fitter accepted track, then store it.
+	      // Optionally digitize fitted track, degrading slightly resolution.
+	      if (settings_->enableDigitize()) fitTrack.digitizeTrack(fitterName);
+	      // Store fitted tracks, such that there is one fittedTracks corresponding to each HT tracks.
+	      // N.B. Tracks rejected by the fit are also stored, but marked.
+	      fittedTracksInSec.push_back(fitTrack);
 	    }
 	  }
 
-	  L1fittedTrack fitTrack = fitterWorkerMap_[fitterName]->fit(trk);
+	  // Run duplicate track removal on the fitted tracks if requested.
+	  const vector<L1fittedTrack> filtFittedTracksInSec = killDupFitTrks.filter( fittedTracksInSec );
 
-	  if (fitTrack.accepted()) { // If fitter accepted track, then store it.
-  	    // Optionally digitize fitted track, degrading slightly resolution.
- 	     if (settings_->enableDigitize()) fitTrack.digitizeTrack(fitterName);
-	    // Store fitted tracks, such that there is one fittedTracks corresponding to each HT tracks.
-	    // N.B. Tracks rejected by the fit are also stored, but marked.
-	    fittedTracksInSec.push_back(fitTrack);
+	  // Store fitted tracks from entire tracker.
+	  for (const L1fittedTrack& fitTrk : filtFittedTracksInSec) {
+	    fittedTracks[fitterName].push_back(fitTrk);
+	    // Convert these fitted tracks to EDM format for output (used for collaborative work outside TMTT group).
+	    TTTrack< Ref_Phase2TrackerDigi_ > fitTTTrack = converter.makeTTTrack(fitTrk, iPhiSec, iEtaReg);
+	    allFitTTTracksForOutput[locationInsideArray[fitterName]]->push_back(fitTTTrack);
 	  }
-	}
-
-	// Run duplicate track removal on the fitted tracks if requested.
-	const vector<L1fittedTrack> filtFittedTracksInSec = killDupFitTrks.filter( fittedTracksInSec );
-
-	// Store fitted tracks from entire tracker.
-	for (const L1fittedTrack& fitTrk : filtFittedTracksInSec) {
-	  fittedTracks[fitterName].push_back(fitTrk);
-	  // Convert these fitted tracks to EDM format for output (used for collaborative work outside TMTT group).
-	  TTTrack< Ref_Phase2TrackerDigi_ > fitTTTrack = converter.makeTTTrack(fitTrk, iPhiSec, iEtaReg);
-	  allFitTTTracksForOutput[locationInsideArray[fitterName]]->push_back(fitTTTrack);
+	  
+	} // End loop over each track finder/fitter/CKF
+      } // End iEta Loop
+    } // End iPhi loop
+  } // End CKF option
+*/  
+//  else {
+    for (const string& fitterName : trackFitters_) { // Loop over fit algos.
+      fittedTracks[fitterName] = vector<L1fittedTrack>(); 
+    }
+    
+    for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
+      for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
+	
+	const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
+	
+	// Loop over all the fitting algorithms we are trying.
+	for (const string& fitterName : trackFitters_) {
+	  
+	  // Does this fitter require r-z track filter to be run before it?
+	  bool useRZfilt = (std::count(useRZfilter_.begin(), useRZfilter_.end(), fitterName) > 0);
+	  
+	  // Get 3D track candidates found by Hough transform (plus optional r-z filters/duplicate removal) in this sector.
+	  // Or get the KF seed tracks for the KF to fit ...
+	  const vector<L1track3D> vecTrk3D = get3Dtrk.trackCands3D(useRZfilt);
+	  
+	  // Fit all tracks in this sector
+	  vector<L1fittedTrack> fittedTracksInSec;
+	  for (const L1track3D& trk : vecTrk3D) {
+	    
+	    // IRT
+	    //bool OK = (trk.getMatchedTP() != nullptr && trk.getMatchedTP()->pt() > 50 && fabs(trk.getMatchedTP()->eta()) > 1.4 && fabs(trk.getMatchedTP()->eta()) < 1.8);
+	    //if (trk.getNumStubs() != trk.getNumLayers()) OK = false;
+	    //if (not OK) continue;
+	    
+	    // Ensure stubs assigned to this track is digitized with respect to the phi sector the track is in.
+	    if (settings_->enableDigitize()) {
+	      const vector<const Stub*>& stubsOnTrk = trk.getStubs();
+	      for (const Stub* s : stubsOnTrk) {
+		// Do not digitise stub using HT option for KF seeding - this needs understanding first.
+		// if (!settings_->runFullKalman()) (const_cast<Stub*>(s))->digitizeForHTinput(iPhiSec);
+		// Also digitize stub in way this specific track fitter uses it.
+		(const_cast<Stub*>(s))->digitizeForSForTFinput(fitterName);          
+	      }
+	    }
+	    
+	    L1fittedTrack fitTrack = fitterWorkerMap_[fitterName]->fit(trk);
+	    
+	    if (fitTrack.accepted()) { // If fitter accepted track, then store it.
+	      // Optionally digitize fitted track, degrading slightly resolution.
+	      if (settings_->enableDigitize()) fitTrack.digitizeTrack(fitterName);
+	      // Store fitted tracks, such that there is one fittedTracks corresponding to each HT tracks.
+	      // N.B. Tracks rejected by the fit are also stored, but marked.
+	      fittedTracksInSec.push_back(fitTrack);
+	    }
+	  }
+	  
+	  // Run duplicate track removal on the fitted tracks if requested.
+	  const vector<L1fittedTrack> filtFittedTracksInSec = killDupFitTrks.filter( fittedTracksInSec );
+	  
+	  // Store fitted tracks from entire tracker.
+	  for (const L1fittedTrack& fitTrk : filtFittedTracksInSec) {
+	    fittedTracks[fitterName].push_back(fitTrk);
+	    // Convert these fitted tracks to EDM format for output (used for collaborative work outside TMTT group).
+	    TTTrack< Ref_Phase2TrackerDigi_ > fitTTTrack = converter.makeTTTrack(fitTrk, iPhiSec, iEtaReg);
+	    allFitTTTracksForOutput[locationInsideArray[fitterName]]->push_back(fitTTTrack);
+	  }
 	}
       }
     }
-  }
+//  }
 
   // Debug printout
   unsigned int static nEvents = 0;
@@ -402,14 +479,14 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     unsigned int numHTtracks = 0;
     for (unsigned int iPhiSec = 0; iPhiSec < settings_->numPhiSectors(); iPhiSec++) {
       for (unsigned int iEtaReg = 0; iEtaReg < settings_->numEtaRegions(); iEtaReg++) {
-        if ( settings_->runFullKalman() ) {
-          const KalmanCombSeeder& fullKFs = mKfSeeder(iPhiSec, iEtaReg);
-          numHTtracks += fullKFs.trackCands3D().size();
-        }
-        else {
+//        if ( settings_->runFullKalman() ) {
+//          const KalmanCombSeeder& fullKFs = mKfSeeder(iPhiSec, iEtaReg);
+//          numHTtracks += fullKFs.trackCands3D().size();
+//        }
+//        else {
   	  const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 	  numHTtracks += get3Dtrk.trackCands3D(false).size();
-        }
+//        }
       }
     }
     if ( settings_->runFullKalman() ) cout<<"Number of tracks after KF seeding = "<<numHTtracks<<endl;
@@ -428,8 +505,9 @@ void TMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // Fill histograms to monitor input data & tracking performance.
   // EDIT TO INCLUDE KF HISTOS
-  if (settings_->runFullKalman()) hists_->fill(inputData, mSectors, mKfSeeder, mGet3Dtrks, fittedTracks);
-  else hists_->fill(inputData, mSectors, mHtRphis, mGet3Dtrks, fittedTracks);
+  //  if (settings_->runFullKalman()) hists_->fill(inputData, mSectors, mKfSeeder, mGet3Dtrks, fittedTracks);
+  //  else
+  hists_->fill(inputData, mSectors, mHtRphis, mGet3Dtrks, fittedTracks);
 
   //=== Store output EDM track and hardware stub collections.
 #ifdef OutputHT_TTracks

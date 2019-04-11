@@ -29,8 +29,23 @@ TrackFitGeneric::TrackFitGeneric( const Settings* settings, const string &fitter
 L1fittedTrack TrackFitGeneric::fit(const L1track3D& l1track3D) {
   return L1fittedTrack (settings_, l1track3D, l1track3D.getStubs(), 0, 0, 0, 0, 0, 999999., 0);
 }
+
+//vector<L1fittedTrack> TrackFitGeneric::findAndFit( const vector< Stub* >& inputStubs ) {
+//  vector<L1fittedTrack> fittedTrack (settings_, ;
+//  return fittedTrack;
+//}
  
 TrackFitGeneric* TrackFitGeneric::create(std::string fitter, const Settings* settings) {
+
+    // Wait a second ...
+    // Need to ensure that when running in CKF for track finding and fitting mode only KF fitters are used
+    if ( settings->runFullKalman() ) {
+      if ( !fitter.compare("KF4ParamsComb")==0 || !fitter.compare("KF5ParamsComb")==0 || 
+           !fitter.compare("KF4ParamsCombHLS")==0 || !!fitter.compare("KF5ParamsCombHLS")==0 ) 
+        throw cms::Exception("TrackFitGeneric: ERROR you requested non-KF track fitter to be used to FIND and FIT tracks!")<<fitter<<endl;
+    }
+
+    // Resume normal business ...
     if (fitter.compare("ChiSquared4ParamsApprox")==0) {
 	return new ChiSquared4ParamsApprox(settings, 4);
     } else if (fitter.compare("KF4ParamsComb")==0) {

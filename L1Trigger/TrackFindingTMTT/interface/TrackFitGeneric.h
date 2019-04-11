@@ -38,6 +38,9 @@ public:
   // Fit a track candidate obtained from the Hough Transform.
   virtual L1fittedTrack fit( const L1track3D& l1track3D );
 
+  // Find and fit a track candidate using the KF
+//  virtual vector<L1fittedTrack> findAndFit( const vector< Stub* >& inputStubs );
+
   // Optional debug printout at end of job.
   virtual void endJob() {}
 
@@ -50,6 +53,7 @@ protected:
   const Settings* settings_;
   const string    fitterName_;
   unsigned nDupStubs_;
+
 };
 
 }
