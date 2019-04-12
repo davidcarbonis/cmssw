@@ -1,3 +1,4 @@
+
 ///=== This is the base class for the Kalman Combinatorial Filter track fit algorithm.
 
 ///=== Written by: S. Summers, K. Uchida, M. Pesaresi
@@ -254,8 +255,10 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 
   std::vector<const StubCluster *> stubcls;
 
+  // Loop over each layer of stubs
   for( unsigned j_layer=0; j_layer < 16; j_layer++ ){
 
+    // Create a vector of all the stubs on layer j_lauyer
     std::vector<const Stub *> layer_stubs;
     for(unsigned i=0; i < stubs.size(); i++ ){
       const Stub *stub = stubs.at(i);
@@ -271,9 +274,12 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
       sort( layer_stubs.begin(), layer_stubs.end(), orderStubsByR ); // endcap
 #endif
 
+
+    std::vector<const Stub *> stubs_for_cls;
+      
+    // Loop over all the stubs in this individual layer
     for(unsigned i=0; i < layer_stubs.size(); i++ ){ // Stubs in single layer, ordered by z or r.
 
-      std::vector<const Stub *> stubs_for_cls;
       stubs_for_cls.push_back(layer_stubs.at(i));
 
 #ifdef MERGE_STUBS
@@ -287,6 +293,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 	else break;
 	}
 #endif
+    } // new end of layers loop
 
       if( getSettings()->kalmanFillInternalHists() ) {
 
@@ -325,16 +332,18 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 		  hEndcapStubMaxDistanceMap[hname]->Fill( drphi, dr );
 		}
 	      }
-	    }
-	  }
-	}
-      }
+	    } // End if s.tps find
+	  } // End if stubs for cluster size check
+	} // End tpa && tpa->useForAlgEff
+      } // End fill internal histos
+
+   if( stubs_for_cls.size() < 1 ) continue;
 
       // dl error now disabled
       StubCluster *stbcl = new StubCluster( stubs_for_cls, sectorPhi(), 0 );
       stbcl_list_.push_back( stbcl );
       stubcls.push_back( stbcl );
-
+      
       if( getSettings()->kalmanFillInternalHists() ) {
 	if( !stbcl->barrel() ){
 	  TString hname = Form( "hphiErrorRatioRing%d", stbcl->endcapRing() );
@@ -346,7 +355,8 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 	  }
 	}
       }
-    }
+
+      //  } // old end for loop over layer stubs
   }
   if( getSettings()->kalmanFillInternalHists() ){ 
     if( tpa && tpa->useForAlgEff() ){
@@ -516,8 +526,17 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
   }
 
 }
+/*
+vector <L1fittedTrack> L1KalmanComb::findAndfit(const vector<Stub*>& inputStubs){
 
+  vector <L1fittedTrack> fittedTracks; // Initialise vector of L1fittedTracks to be returned
 
+  // Time to work magic on input stubs
+
+  return fittedTracks;
+
+}
+*/
 std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa ){
 
 #ifdef RECALC_DEBUG
