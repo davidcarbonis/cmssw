@@ -43,6 +43,7 @@ Settings::Settings() {
   bApprox_intercept_=0.504148;
   handleStripsEtaSec_=false;
   kalmanFillInternalHists_=false;
+  kalmanStubClustering_=false;
   kalmanMultiScattTerm_=0.00075;
   kalmanMultiScattFactor_=0.0;
 
@@ -272,6 +273,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   //
   kalmanDebugLevel_        ( trackFitSettings_.getParameter<unsigned int>     ( "KalmanDebugLevel"       ) ),
   kalmanFillInternalHists_ ( trackFitSettings_.getParameter<bool>             ( "KalmanFillInternalHists") ),
+  kalmanStubClustering_    ( trackFitSettings_.getParameter<bool>             ( "KalmanStubClustering"   ) ),
   kalmanMinNumStubs_       ( trackFitSettings_.getParameter<unsigned int>     ( "KalmanMinNumStubs"      ) ),
   kalmanMaxNumStubs_       ( trackFitSettings_.getParameter<unsigned int>     ( "KalmanMaxNumStubs"      ) ),
   kalmanAddBeamConstr_     ( trackFitSettings_.getParameter<bool>             ( "KalmanAddBeamConstr"    ) ),
