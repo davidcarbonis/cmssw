@@ -306,6 +306,8 @@ public:
   unsigned             kalmanDebugLevel()               const { return kalmanDebugLevel_; }
   // Internal histograms are filled if it is True
   bool                 kalmanFillInternalHists()        const { return kalmanFillInternalHists_;}
+  // KF will cluster multiple stubs found on the same  layer if set to true.
+  bool                 kalmanStubClustering()           const { return kalmanStubClustering_;}
   // Fit will reject fitted tracks unless it can assign at least this number of stubs to them.
   unsigned int         kalmanMinNumStubs()              const { return kalmanMinNumStubs_;}
   // Fit will attempt to add up to this nummber of stubs to each fitted tracks, but won't bother adding more.
@@ -630,6 +632,7 @@ private:
   //
   unsigned             kalmanDebugLevel_;
   bool                 kalmanFillInternalHists_;
+  bool                 kalmanStubClustering_;
   unsigned int         kalmanMinNumStubs_;
   unsigned int         kalmanMaxNumStubs_;
   bool                 kalmanAddBeamConstr_;

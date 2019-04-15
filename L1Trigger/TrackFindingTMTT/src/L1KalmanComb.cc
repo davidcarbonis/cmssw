@@ -1,6 +1,8 @@
+
 ///=== This is the base class for the Kalman Combinatorial Filter track fit algorithm.
 
 ///=== Written by: S. Summers, K. Uchida, M. Pesaresi
+///=== Modifications by A. D. Morton for track finding + fitting
 
 #include "L1Trigger/TrackFindingTMTT/interface/L1KalmanComb.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Utility.h"
@@ -254,8 +256,10 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 
   std::vector<const StubCluster *> stubcls;
 
+  // Loop over each layer of stubs
   for( unsigned j_layer=0; j_layer < 16; j_layer++ ){
 
+    // Create a vector of all the stubs on layer j_lauyer
     std::vector<const Stub *> layer_stubs;
     for(unsigned i=0; i < stubs.size(); i++ ){
       const Stub *stub = stubs.at(i);
@@ -270,30 +274,36 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     else
       sort( layer_stubs.begin(), layer_stubs.end(), orderStubsByR ); // endcap
 #endif
-
-    for(unsigned i=0; i < layer_stubs.size(); i++ ){ // Stubs in single layer, ordered by z or r.
+    
+    // If we are clustering all the stubs on the same layer ...
+    if ( getSettings()->kalmanStubClustering() ) {
 
       std::vector<const Stub *> stubs_for_cls;
-      stubs_for_cls.push_back(layer_stubs.at(i));
+
+      // Loop over all the stubs in this individual layer
+      for(unsigned i=0; i < layer_stubs.size(); i++ ){ // Stubs in single layer, ordered by z or r.
+
+	stubs_for_cls.push_back(layer_stubs.at(i));
 
 #ifdef MERGE_STUBS
 	while( layer_stubs.at(i) != layer_stubs.back() ){
-	if( isOverlap( layer_stubs.at(i), layer_stubs.at(i+1), TYPE_NORMAL ) ){
-	stubs_for_cls.push_back( layer_stubs.at(i+1) );
-	if( getSettings()->kalmanFillInternalHists() ) 
-	hnmergeStub_->Fill(0);
-	i++;
-	}
-	else break;
+	  if( isOverlap( layer_stubs.at(i), layer_stubs.at(i+1), TYPE_NORMAL ) ){
+	    stubs_for_cls.push_back( layer_stubs.at(i+1) );
+	    if( getSettings()->kalmanFillInternalHists() ) 
+	      hnmergeStub_->Fill(0);
+	    i++;
+	  }
+	  else break;
 	}
 #endif
+      } // new end of layers loop - new closing of brackets
 
       if( getSettings()->kalmanFillInternalHists() ) {
 
 	if( tpa && tpa->useForAlgEff() ){
 
 	  if( stubs_for_cls.size() > 1 ){
-
+	    
 	    std::set<const TP*> s_tps = stubs_for_cls.at(0)->assocTPs();
 	    if( s_tps.find( tpa ) != s_tps.end() ){
 
@@ -325,16 +335,18 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 		  hEndcapStubMaxDistanceMap[hname]->Fill( drphi, dr );
 		}
 	      }
-	    }
-	  }
-	}
-      }
+	    } // End if s.tps find
+	  } // End if stubs for cluster size check
+	} // End tpa && tpa->useForAlgEff
+      } // End fill internal histos
+
+      if( stubs_for_cls.size() < 1 ) continue;
 
       // dl error now disabled
       StubCluster *stbcl = new StubCluster( stubs_for_cls, sectorPhi(), 0 );
       stbcl_list_.push_back( stbcl );
       stubcls.push_back( stbcl );
-
+      
       if( getSettings()->kalmanFillInternalHists() ) {
 	if( !stbcl->barrel() ){
 	  TString hname = Form( "hphiErrorRatioRing%d", stbcl->endcapRing() );
@@ -346,8 +358,103 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
 	  }
 	}
       }
+
+      //  } // old closing of brackets for loop over layer stubs
     }
-  }
+
+    // Else we are fitting each stub - i.e. one stub = one stub cluster
+    else {
+      for(unsigned i=0; i < layer_stubs.size(); i++ ){ // Stubs in single layer, ordered by z or r.
+
+	std::vector<const Stub *> stubs_for_cls;
+	stubs_for_cls.push_back(layer_stubs.at(i));
+
+#ifdef MERGE_STUBS
+	while( layer_stubs.at(i) != layer_stubs.back() ){
+	  if( isOverlap( layer_stubs.at(i), layer_stubs.at(i+1), TYPE_NORMAL ) ){
+	    stubs_for_cls.push_back( layer_stubs.at(i+1) );
+	    if( getSettings()->kalmanFillInternalHists() ) 
+	      hnmergeStub_->Fill(0);
+	    i++;
+	  }
+	  else break;
+	}
+#endif
+
+	if( getSettings()->kalmanFillInternalHists() ) {
+
+	  if( tpa && tpa->useForAlgEff() ){
+
+	    if( stubs_for_cls.size() > 1 ){
+
+	      std::set<const TP*> s_tps = stubs_for_cls.at(0)->assocTPs();
+	      if( s_tps.find( tpa ) != s_tps.end() ){
+
+		const Stub *sa = stubs_for_cls.front();
+		const Stub *sb = stubs_for_cls.back();
+
+		double drphi = fabs( sa->r() * wrapRadian( sa->phi() - sectorPhi() ) - sb->r() * wrapRadian( sb->phi() - sectorPhi() ) ); 
+		double dz    = fabs( sa->z() - sb->z() );
+		double dr    = fabs( sa->r() - sb->r() );
+		TString hname;
+		if( LayerId[j_layer] < 10 ){
+
+		  hname = Form( "hBarrelStubMaxDistanceLayer%02d", LayerId[j_layer] );
+
+		  if( hBarrelStubMaxDistanceMap.find( hname ) == hBarrelStubMaxDistanceMap.end() ){
+		    cout << hname << " does not exist." << endl;
+		  }
+		  else{
+		    hBarrelStubMaxDistanceMap[hname]->Fill( drphi, dz );
+		  }
+		}
+		else{
+		  hname = Form( "hEndcapStubMaxDistanceRing%02d", sa->endcapRing()  );
+
+		  if( hEndcapStubMaxDistanceMap.find( hname ) == hEndcapStubMaxDistanceMap.end() ){
+		    cout << hname << " does not exist." << endl;
+		  }
+		  else{
+		    hEndcapStubMaxDistanceMap[hname]->Fill( drphi, dr );
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+
+	// dl error now disabled
+	StubCluster *stbcl = new StubCluster( stubs_for_cls, sectorPhi(), 0 );
+	stbcl_list_.push_back( stbcl );
+	stubcls.push_back( stbcl );
+
+	if( getSettings()->kalmanFillInternalHists() ) {
+	  if( !stbcl->barrel() ){
+	    TString hname = Form( "hphiErrorRatioRing%d", stbcl->endcapRing() );
+	    if( hphiErrorRatioMap.find(hname) == hphiErrorRatioMap.end() ){
+	      cout << hname << " does not exist." << endl;
+	    }
+	    else{
+	      hphiErrorRatioMap[hname]->Fill( fabs( stbcl->deltai() + 0.5 ), fabs( stbcl->dphi_dr() ) / stbcl->dphi_dl() );
+	    }
+	  }
+	}
+      }
+    }
+    if( getSettings()->kalmanFillInternalHists() ){ 
+      if( tpa && tpa->useForAlgEff() ){
+	hTrackEta_->Fill( tpa->eta() ); 
+	static set<const TP *> set_tp;
+	if( iCurrentPhiSec_ < iLastPhiSec_ && iCurrentEtaReg_ < iLastEtaReg_ ) set_tp.clear();
+	if( set_tp.find( tpa ) == set_tp.end() ){
+	  hUniqueTrackEta_->Fill( tpa->eta() );
+	}
+	set_tp.insert( tpa );
+      }
+    }
+    
+  } // end else
+
   if( getSettings()->kalmanFillInternalHists() ){ 
     if( tpa && tpa->useForAlgEff() ){
       hTrackEta_->Fill( tpa->eta() ); 
@@ -516,8 +623,17 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
   }
 
 }
+/*
+vector <L1fittedTrack> L1KalmanComb::findAndfit(const vector<Stub*>& inputStubs){
 
+  vector <L1fittedTrack> fittedTracks; // Initialise vector of L1fittedTracks to be returned
 
+  // Time to work magic on input stubs
+
+  return fittedTracks;
+
+}
+*/
 std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa ){
 
 #ifdef RECALC_DEBUG

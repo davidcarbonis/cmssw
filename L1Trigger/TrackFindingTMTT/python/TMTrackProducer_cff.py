@@ -31,7 +31,7 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 #===================================================================================================
 
 #--- Configure Full CKF
-TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
+TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(False)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedEtaPhiBinned = cms.bool(False)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(100)
@@ -44,6 +44,7 @@ TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
 
 TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
+TMTrackProducer.TrackFitSettings.KalmanStubClustering = cms.bool (True)
 
 #--- Options for Kalman filter track fitters ---
 # Fit will reject fitted tracks unless it can assign at least this number of stubs to them.
