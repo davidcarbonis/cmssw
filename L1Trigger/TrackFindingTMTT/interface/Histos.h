@@ -49,8 +49,8 @@ public:
   void fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtPhis, 
     	    const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
 
-  void fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<KalmanCombSeeder>& mKfSeeder,
-            const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
+  void fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<Get3Dtracks> mGet3Dtrks,
+            const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks);
 
   // Print tracking performance summary & make tracking efficiency histograms.
   void endJobAnalysis();
@@ -71,7 +71,6 @@ private:
   void bookEtaPhiSectors();
   void bookRphiHT();
   void bookRZfilters();
-  void bookKFseeds();
   void bookStudyBusyEvents();
   void bookTrackCands(bool withRZfilter);
   void bookTrackFitting();
@@ -81,7 +80,6 @@ private:
   void fillEtaPhiSectors(const InputData& inputData, const matrix<Sector>& mSectors);
   void fillRphiHT(const matrix<HTrphi>& mHtRphis);
   void fillRZfilters(const matrix<Get3Dtracks>& mGet3Dtrks);
-  void fillKFseeds(const InputData& inputData, const matrix<KalmanCombSeeder>& mKfSeeder);
   void fillStudyBusyEvents(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<HTrphi>& mHtRphis, 
     		           const matrix<Get3Dtracks> mGet3Dtrks);
   void fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks> mGet3Dtrks, bool withRZfilter);
@@ -286,21 +284,6 @@ private:
   TH2F* hisOtherStubPhiVsZ_;
   TH2F* hisOtherStubPhiVsEta_;
   TH2F* hisOtherStubEtaVsZ_;
-
-  TH1F* hisNumKfSeedsPerTP_;
-  TProfile* profMeanKfSeedsPerTP_;
-  TH1F* hisNumDupsPerKfSeed_;
-  TProfile* profMeanDupsPerKfSeed_;
-
-  TH1F* hisNumKfSeedStubsPerLayer_;
-  TProfile* profMeanKfSeedStubsPerLayer_;
-  TH1F* hisNumKfOtherStubsPerLayer_;
-  TProfile* profMeanKfOtherStubsPerLayer_;
-
-  TH1F* hisNumKfMatchedOtherStubsPerLayer_;
-  TProfile* profMeanKfMatchedOtherStubsPerLayer_;
-  TH1F* hisNumKfUnmatchedOtherStubsPerLayer_;
-  TProfile* profMeanKfUnmatchedOtherStubsPerLayer_;
 
   // Histograms studying 3D track candidates found by Hough Transform or r-z Track Filter.
   map<string, TProfile*> profNumTrackCands_;

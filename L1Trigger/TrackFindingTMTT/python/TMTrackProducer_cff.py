@@ -23,7 +23,7 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 #===================================================================================================
 
 #--- Disable internal digitisation of SimpleLR fitter, as it was never retuned for nonants.
-TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
+#TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 
 #===================================================================================================
 #=== All the following parameters already have identical values in TMTrackProducer_Defaults_cfi .
@@ -31,7 +31,7 @@ TMTrackProducer.TrackFitSettings.DigitizeSLR = cms.bool(False)
 #===================================================================================================
 
 #--- Configure Full CKF
-TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(False)
+TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedEtaPhiBinned = cms.bool(False)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(100)
@@ -177,7 +177,7 @@ TMTrackProducer.TrackFitSettings.KalmanHOdodgy           = cms.bool(True)
 
 #--- Stub digitization (switch on/off and/or change defaults).
 
-#TMTrackProducer.StubDigitize.EnableDigitize  = cms.bool(True)
+TMTrackProducer.StubDigitize.EnableDigitize  = cms.bool(True)
 
 #--- Reduce requirement on number of layers a track must have stubs in, either globally or in specific eta regions.
 

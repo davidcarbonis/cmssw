@@ -41,12 +41,12 @@ TrackFitGeneric* TrackFitGeneric::create(std::string fitter, const Settings* set
 
     // Wait a second ...
     // Need to ensure that when running in CKF for track finding and fitting mode only KF fitters are used
-    if ( settings->runFullKalman() ) {
-      if ( !fitter.compare("KF4ParamsComb")==0 || !fitter.compare("KF5ParamsComb")==0 || 
-           !fitter.compare("KF4ParamsCombHLS")==0 || !!fitter.compare("KF5ParamsCombHLS")==0 ) 
+/*    if ( settings->runFullKalman() ) {
+      if ( !fitter.compare("ChiSquared4ParamsApprox")==0 || !fitter.compare("SimpleLR")==0 || 
+           !fitter.compare("KF4ParamsCombHLS")==0 || !fitter.compare("KF5ParamsCombHLS")==0 ) 
         throw cms::Exception("TrackFitGeneric: ERROR you requested non-KF track fitter to be used to FIND and FIT tracks!")<<fitter<<endl;
     }
-
+*/
     // Resume normal business ...
     if (fitter.compare("ChiSquared4ParamsApprox")==0) {
 	return new ChiSquared4ParamsApprox(settings, 4);

@@ -68,13 +68,10 @@ void Histos::book() {
     // Book histograms for studying freak, extra large events at HT. Need CKF track finding and fitting version...
     this->bookStudyBusyEvents();
   }
-  else {
-    this->bookKFseeds();
-  }
   // Book histograms studying 3D track candidates found after HT.
   this->bookTrackCands(false);
   // Book histograms studying 3D track candidates found after r-z track filter.
-  if (ranRZfilter_) this->bookTrackCands(true);
+  if (ranRZfilter_ && !runFullKalman_) this->bookTrackCands(true);
   // Book histograms studying track fitting performance
   this->bookTrackFitting();
 }
@@ -107,25 +104,19 @@ void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors, co
 
 //=== Fill all histograms (minus HT)
 
-void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<KalmanCombSeeder>& mKfSeeder,
-    	          const matrix<Get3Dtracks> mGet3Dtrks, const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks) 
+void Histos::fill(const InputData& inputData, const matrix<Sector>& mSectors, const matrix<Get3Dtracks> mGet3Dtrks,
+                  const std::map<std::string,std::vector<L1fittedTrack>>& fittedTracks) 
 {
   // Don't bother filling histograms if user didn't request them via TFileService in their cfg.
   if ( ! this->enabled() ) return;
 
   // Fill histograms about input data.
   this->fillInputData(inputData);
+
   // Fill histograms checking if (eta,phi) sector definition choices are good.
   this->fillEtaPhiSectors(inputData, mSectors);
-  // Fill histograms studying KF seeds
-  this->fillKFseeds(inputData, mKfSeeder);
-
-  // Fill histograms for studying freak, extra large events at HT.
-//  this->fillStudyBusyEvents(inputData, mSectors, mHtRphis, mGet3Dtrks); // NEED TO FIX
-
-  // Fill histograms studying 3D track candidates found after KF seeding.
+  // Fill histograms studying 3D track candidates/seeds shoved into the HT.
   this->fillTrackCands(inputData, mGet3Dtrks, false);
-	
   // Fill histograms studying track fitting performance
   this->fillTrackFitting(inputData, fittedTracks);
 }
@@ -1833,142 +1824,6 @@ map<const TP*, string> Histos::diagnoseTracking(const vector<TP>& allTPs, const 
   return diagnosis;
 }
 
-//=== Book histograms studying KF seeds.
-
-void Histos::bookKFseeds() {
-
-  TFileDirectory inputDir = fs_->mkdir("KFseeds");
-
-  profSeedingCands_= inputDir.make<TProfile>("Stub seeding candidates", "; class; #stubs", 4, 0.5, 4.5);
-  profSeedingCands_->GetXaxis()->SetBinLabel(4, "Fraction of matched other stubs");
-  profSeedingCands_->GetXaxis()->SetBinLabel(3, "Mean # of TPs to matched seeds");
-  profSeedingCands_->GetXaxis()->SetBinLabel(2, "Fraction of matched seeds");
-  profSeedingCands_->GetXaxis()->SetBinLabel(1, "Mean # of seeds per TP"); 
-
-  hisSeedStubQoverPt_                    = inputDir.make<TH1F>("SeedStubQoverPt", "; Seed stub q/Pt", 50, -0.5, 0.5);
-  hisSeedStubR_                          = inputDir.make<TH1F>("SeedStubR", "; Seed stub radius (cm)", 1200,0.,120.);
-  hisSeedStubPhi_                        = inputDir.make<TH1F>("SeedStubPhi", "; Seed stub #phi", 200,-M_PI,M_PI);
-  hisSeedStubZ_                          = inputDir.make<TH1F>("SeedStubZ", "; Seed stub z (cm)", 1000,-280.,280.);
-  hisSeedStubEta_                        = inputDir.make<TH1F>("SeedStubEta", "; Seed stub #eta", 30,-3.0,3.0);
-
-  hisSeedStubRvsPhi_                     = inputDir.make<TH2F>("SeedStubRvsPhi", "; Seed stub #phi; Seed stub r (cm)", 200,-M_PI,M_PI,1200,0.,120.);
-  hisSeedStubRvsZ_                       = inputDir.make<TH2F>("SeedStubRvsZ", "; Seed stub z (cm); Seed stub r (cm)", 1000,-280.,280.,1200,0.,120.);
-  hisSeedStubRvsEta_                     = inputDir.make<TH2F>("SeedStubRvsEta", "; Seed stub #eta; Seed stub r (cm)", 30,-3.0,3.0,1200,0.,120.);
-  hisSeedStubPhiVsZ_                     = inputDir.make<TH2F>("SeedStubPhiVsZ", "; Seed stub z (cm); Seed stub #phi", 1000,-280.,280.,200,-M_PI,M_PI);
-  hisSeedStubPhiVsEta_                   = inputDir.make<TH2F>("SeedStubPhiVsEta", "; Seed stub #eta; Seed stub #phi", 30,-3.0,3.0,200,-M_PI,M_PI);
-  hisSeedStubEtaVsZ_                     = inputDir.make<TH2F>("SeedStubEtaVsZ", "; Seed stub z (cm); Seed stub #eta", 1000,-280.,280.,30,-3.0,3.0);
-
-  hisOtherStubQoverPt_                   = inputDir.make<TH1F>("OtherStubQoverPt", "; Other stubs q/Pt", 50, -0.5, 0.5);
-  hisOtherStubR_                         = inputDir.make<TH1F>("OtherStubR", "; Other stubs radius (cm)", 1200,0.,120.);
-  hisOtherStubPhi_                       = inputDir.make<TH1F>("OtherStubPhi", "; Other stubs #phi", 200,-M_PI,M_PI);
-  hisOtherStubZ_                         = inputDir.make<TH1F>("OtherStubZ", "; Other stubs z (cm)", 1000,-280,280);
-  hisOtherStubEta_                       = inputDir.make<TH1F>("OtherStubEta", "; Other stubs #eta", 30,-3.0,3.0);
-
-  hisOtherStubRvsPhi_                    = inputDir.make<TH2F>("OtherStubRvsPhi", "; Other stubs #phi; Other stubs r (cm)", 200,-M_PI,M_PI,1200,0.,120.);
-  hisOtherStubRvsZ_                      = inputDir.make<TH2F>("OtherStubRvsZ", "; Other stubs z (cm); Other stubs r (cm)", 1000,-280.,280.,1200,0.,120.);
-  hisOtherStubRvsEta_                    = inputDir.make<TH2F>("OtherStubRvsEta", "; Other stubs #eta; Other stubs r (cm)", 30,-3.0,3.0,1200,0.,120.);
-  hisOtherStubPhiVsZ_                    = inputDir.make<TH2F>("OtherStubPhiVsZ", "; Other stubs z (cm); Other stubs #phi", 1000,-280.,280.,200,-M_PI,M_PI);
-  hisOtherStubPhiVsEta_                  = inputDir.make<TH2F>("OtherStubPhiVsEta", "; Other stubs #eta; Other stubs #phi", 30,-3.0,3.0,200,-M_PI,M_PI);
-  hisOtherStubEtaVsZ_                    = inputDir.make<TH2F>("OtherStubEtaVsZ", "; Other stubs z (cm); Other stubs #eta", 1000,-280.,280.,30,-3.0,3.0);
-/*
-  hisNumKfSeedsPerTP_                    = inputDir.make<TH1F>("NumKfSeedsPerTP", "; #seeds per TP;", 10, -0.5, 9.5);
-  profMeanKfSeedsPerTP_                  = inputDir.make<TProfile>("MeanKfSeedsPerTP", "; Mean #seeds per TP;", 10, -0.5, 9.5);
-  hisNumDupsPerKfSeed_                   = inputDir.make<TH1F>("hisNumDupsPerKfSeed", "; #duplicates per KF seed;", 10, -0.5, 9.5);
-  profMeanDupsPerKfSeed_                 = inputDir.make<TProfile>("profMeanDupsPerKfSeed", "; mean #duplicatess per KF seed;", 10, -0.5, 9.5);
-
-  hisNumKfSeedStubsPerLayer_             = inputDir.make<TH1F>("NumKfSeedStubsPerLayer", "; #stubs used as seed per layer;", 20,-0.5,19.5);
-  profMeanKfSeedStubsPerLayer_           = inputDir.make<TProfile>("MeanKfSeedStubsPerLayer", "; Mean #seed stubs per layer;", 20,-0.5,19.5);
-  hisNumKfOtherStubsPerLayer_            = inputDir.make<TH1F>("NumKfOtherStubsPerLayer", "; #other stubs per layer;", 20,-0.5,19.5);
-  profMeanKfOtherStubsPerLayer_          = inputDir.make<TProfile>("MeanKfOtherStubsPerLayer", "; Mean #other stubs per layer;", 20,-0.5,19.5);
-
-  hisNumKfMatchedOtherStubsPerLayer_     = inputDir.make<TH1F>("NumKfMatchedOtherStubsPerLayer", "; #matched other stubs per layer;", 20,-0.5,19.5);
-  profMeanKfMatchedOtherStubsPerLayer_   = inputDir.make<TProfile>("MeanKfMatchedOtherStubsPerLayer", "; Mean #matched other stubs per layer;", 20,-0.5,19.5);
-  hisNumKfUnmatchedOtherStubsPerLayer_   = inputDir.make<TH1F>("NumKfUnmatchedOtherStubsPerLayer", "; #unmatched other stubs per layer;", 20,-0.5,19.5);
-  profMeanKfUnmatchedOtherStubsPerLayer_ = inputDir.make<TProfile>("MeanKfUnmatchedOtherStubsPerLayer", "; Mean #unmatched other stubs per layer;", 20,-0.5,19.5);
-*/
-}
-
-void Histos::fillKFseeds( const InputData& inputData, const matrix<KalmanCombSeeder>& mKfSeeder ) {
-
-  const vector<TP>&  vTPs = inputData.getTPs();
-
-  for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
-    for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
-
-      const KalmanCombSeeder& fullKFs = mKfSeeder(iPhiSec, iEtaReg);
-      const vector<const Stub*>& vSeedStubs = fullKFs.getSeedStubs();
-      const vector<const Stub*>& vOtherStubs = fullKFs.getOtherStubs();
-
-      for (const TP& tp: vTPs) {
-        const vector<const Stub*> stubs = tp.assocStubs(); // Get stubs assoc with TP
-        for (const Stub* assocStubs : stubs ) {
-          unsigned int nSeeds {0};
-          for (const Stub* seedStub : vSeedStubs ) {
-            if ( assocStubs == seedStub ) nSeeds++;
-          }
-          profSeedingCands_->Fill(1, nSeeds);
-        }
-      }
-
-      for (const Stub* seedStub : vSeedStubs ) {
-
-        profSeedingCands_->Fill( 2, seedStub->genuine() );
-        profSeedingCands_->Fill( 3, seedStub->assocTPs().size() );
-
-        hisSeedStubQoverPt_->Fill(seedStub->qOverPt());
-        hisSeedStubR_->Fill(seedStub->r());
-        hisSeedStubPhi_->Fill(seedStub->phi());
-        hisSeedStubZ_->Fill(seedStub->z());
-        hisSeedStubEta_->Fill(seedStub->eta());
-
-        hisSeedStubRvsPhi_->Fill(seedStub->phi(), seedStub->r());
-        hisSeedStubRvsZ_->Fill(seedStub->z(), seedStub->r());
-        hisSeedStubRvsEta_->Fill(seedStub->eta(), seedStub->r());
-        hisSeedStubPhiVsZ_->Fill(seedStub->z(), seedStub->phi());
-        hisSeedStubPhiVsEta_->Fill(seedStub->eta(), seedStub->phi());
-        hisSeedStubEtaVsZ_->Fill(seedStub->z(), seedStub->eta());
-      }
-
-      for (const Stub* otherStubs : vOtherStubs ) {
-
-        profSeedingCands_->Fill( 4, otherStubs->assocTPs().size() );
-
-        hisOtherStubQoverPt_->Fill(otherStubs->qOverPt());
-        hisOtherStubR_->Fill(otherStubs->r());
-        hisOtherStubPhi_->Fill(otherStubs->phi());
-        hisOtherStubZ_->Fill(otherStubs->z());
-        hisOtherStubEta_->Fill(otherStubs->eta());
-
-        hisOtherStubRvsPhi_->Fill(otherStubs->phi(), otherStubs->r());
-        hisOtherStubRvsZ_->Fill(otherStubs->z(), otherStubs->r());
-        hisOtherStubRvsEta_->Fill(otherStubs->eta(), otherStubs->r());
-        hisOtherStubPhiVsZ_->Fill(otherStubs->z(), otherStubs->phi());
-        hisOtherStubPhiVsEta_->Fill(otherStubs->eta(), otherStubs->phi());
-        hisOtherStubEtaVsZ_->Fill(otherStubs->z(), otherStubs->eta());      
-      }
-      
-    }
-  }
-
-
-//  hisNumKfSeedsPerTP_
-//  profMeanKfSeedsPerTP_
-//  hisNumDupsPerKfSeed_
-//  profMeanDupsPerKfSeed_
-
-//  hisNumKfSeedStubsPerLayer_
-//  profMeanKfSeedStubsPerLayer_
-
-//  hisNumKfOtherStubsPerLayer_
-//  profMeanKfOtherStubsPerLayer_
-
-//  hisNumKfMatchedOtherStubsPerLayer_
-//  profMeanKfMatchedOtherStubsPerLayer_
-//  hisNumKfUnmatchedOtherStubsPerLayer_
-//  profMeanKfUnmatchedOtherStubsPerLayer_
-
-}
-
 //=== Book histograms studying freak, large events with too many stubs.
 
 void Histos::bookStudyBusyEvents() {
@@ -3191,10 +3046,10 @@ void Histos::endJobAnalysis() {
   if ( ! this->enabled() ) return;
 
   // Produce plots of tracking efficiency using track candidates found after HT.
-  this->plotTrackEfficiency(false);
+  if (!runFullKalman_) this->plotTrackEfficiency(false);
 
   // Optionally produce plots of tracking efficiency using track candidates found after r-z track filter.
-  if (ranRZfilter_) this->plotTrackEfficiency(true);
+  if (ranRZfilter_ && !runFullKalman_) this->plotTrackEfficiency(true);
 
   // Produce more plots of tracking efficiency using track candidates after track fit.
   for (auto &fitName : trackFitters_) {
