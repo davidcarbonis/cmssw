@@ -39,7 +39,8 @@ public:
   virtual L1fittedTrack fit( const L1track3D& l1track3D );
 
   // Find and fit a track candidate using the KF
-//  virtual vector<L1fittedTrack> findAndFit( const vector< Stub* >& inputStubs );
+  virtual vector<L1fittedTrack> findAndFit( const vector< const Stub* > inputStubs, const unsigned int iPhiSec, const unsigned int iEtaReg,
+                  const float etaMinSector, const float etaMaxSector, const float phiCentreSector );
 
   // Optional debug printout at end of job.
   virtual void endJob() {}

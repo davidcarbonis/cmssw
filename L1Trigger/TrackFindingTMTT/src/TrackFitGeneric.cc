@@ -30,10 +30,12 @@ L1fittedTrack TrackFitGeneric::fit(const L1track3D& l1track3D) {
   return L1fittedTrack (settings_, l1track3D, l1track3D.getStubs(), 0, 0, 0, 0, 0, 999999., 0);
 }
 
-//vector<L1fittedTrack> TrackFitGeneric::findAndFit( const vector< Stub* >& inputStubs ) {
-//  vector<L1fittedTrack> fittedTrack (settings_, ;
-//  return fittedTrack;
-//}
+vector<L1fittedTrack> TrackFitGeneric::findAndFit( const vector< const Stub* > inputStubs, const unsigned int iPhiSec, const unsigned int iEtaReg,
+                  const float etaMinSector, const float etaMaxSector, const float phiCentreSector ) {
+  L1fittedTrack fittedTrack;
+  vector<L1fittedTrack> fittedTracks {fittedTrack}; 
+  return fittedTracks;
+}
  
 TrackFitGeneric* TrackFitGeneric::create(std::string fitter, const Settings* settings) {
 

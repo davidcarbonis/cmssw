@@ -34,6 +34,9 @@ class L1KalmanComb : public TrackFitGeneric{
 	virtual ~L1KalmanComb() {this->resetStates();}
 
 	L1fittedTrack fit(const L1track3D& l1track3D);
+	std::vector<L1fittedTrack> findAndFit(const vector<const Stub*> inputStubs, const unsigned int iPhiSec, const unsigned int iEtaReg, 
+		  const float etaMinSector, const float etaMaxSector, const float phiCentreSector);
+
 	void bookHists();
 
     protected:
@@ -57,6 +60,9 @@ class L1KalmanComb : public TrackFitGeneric{
 	const kalmanState *mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const kalmanState *last_state, 
 				    const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2 );
 
+    protected:
+        /* Track finding + fitting methods */
+        //
     protected:
 	/* Methods */
 	std::vector<double> Hx( const TMatrixD &pH, const std::vector<double> &x )const;

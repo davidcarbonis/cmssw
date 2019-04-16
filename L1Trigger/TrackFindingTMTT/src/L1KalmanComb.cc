@@ -621,19 +621,81 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
     returnTrk.setInfoKF( 0, numUpdateCalls_ );
     return returnTrk;
   }
-
+  
 }
-/*
-vector <L1fittedTrack> L1KalmanComb::findAndfit(const vector<Stub*>& inputStubs){
 
+std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> inputStubs, const unsigned int iPhiSec, const unsigned int iEtaReg, 
+		  const float etaMinSector, const float etaMaxSector, const float phiCentreSector ){
+
+  iLastPhiSec_ = iCurrentPhiSec_;
+  iLastEtaReg_ = iCurrentEtaReg_;
+  iCurrentEtaReg_ = iEtaReg;
+  iCurrentPhiSec_ = iPhiSec;
+  resetStates();
+  deleteStubClusters();
+  numUpdateCalls_ = 0;
+
+  float phiMinSector    = 2.*M_PI * (float(iCurrentPhiSec_)) / (float(getSettings()->numPhiSectors())) - M_PI;
+  float phiMaxSector    = 2.*M_PI * (1.0 + float(iCurrentPhiSec_)) / (float(getSettings()->numPhiSectors())) - M_PI;
+
+  // Calculate output opto-link ID from HT, assuming there is no MUX stage.
+  // Required for the L1track3D constructor
+  const unsigned numPhiSecPerOct =  settings_->numPhiSectors() / settings_->numPhiOctants();
+  const unsigned optoLinkID = iCurrentEtaReg_ * numPhiSecPerOct + iCurrentPhiSec_;
+
+  vector<const Stub*> seedStubs;
+  vector<const Stub*> otherStubs;
+
+  vector <L1track3D> trackCandidates; // Initialise vector of L1track3D candidates
   vector <L1fittedTrack> fittedTracks; // Initialise vector of L1fittedTracks to be returned
 
   // Time to work magic on input stubs
 
-  return fittedTracks;
+  //  const unsigned seedingOption {settings_->kalmanSeedingOption()};
 
+  // Default seeding option
+  for ( auto stub : inputStubs ) {
+    unsigned int reducedStubLayer = stub->layerIdReduced();
+    if ( reducedStubLayer == 1 ) seedStubs.push_back(stub);
+    else otherStubs.push_back(stub);
+  }
+
+  
+//  if ( seedingOption == 10 ) {
+//  }
+//  else {    
+//  }
+  
+  
+  // create single stub seed
+
+  for ( auto stub : seedStubs ) {
+    float qOverPt = stub->qOverPt();
+    float phi0 = stub->beta();
+    float z0 = 0;
+    float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+
+    vector<const Stub*> stubs {stub};
+    stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+
+    const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+    const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+    const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+
+    L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+    trackCandidates.push_back(l1Trk3D);
+  }
+
+  for ( auto trk : trackCandidates ) {
+    fittedTracks.push_back(L1KalmanComb::fit(trk));
+  }
+  return fittedTracks;
 }
-*/
+  
+
+//std::vector<L1track3D> L1KalmanComb::createSingleStubSeeds( const vector<const Stub*>& seedStubs, const vector<const Stub*>& otherStubs ) {
+//}
+
 std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa ){
 
 #ifdef RECALC_DEBUG

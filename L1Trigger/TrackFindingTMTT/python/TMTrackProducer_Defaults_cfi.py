@@ -320,7 +320,7 @@ TMTrackProducer_params = cms.PSet(
      DetailedFitOutput = cms.bool(True),
      #
      # Use MC truth to eliminate all fake tracks & all incorrect stubs assigned to tracks before doing fit. 
-     TrackFitCheat = cms.bool(True),
+     TrackFitCheat = cms.bool(False),
      #
      #--- Options for chi2 track fitter ---
      #

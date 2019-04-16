@@ -44,7 +44,7 @@ TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
 
 TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
-TMTrackProducer.TrackFitSettings.KalmanStubClustering = cms.bool (True)
+TMTrackProducer.TrackFitSettings.KalmanStubClustering = cms.bool (False)
 
 #--- Options for Kalman filter track fitters ---
 # Fit will reject fitted tracks unless it can assign at least this number of stubs to them.
