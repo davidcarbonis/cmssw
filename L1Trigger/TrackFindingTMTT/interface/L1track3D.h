@@ -7,6 +7,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/Utility.h"
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Stub.h"
+#include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Sector.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HTrphi.h"
 
@@ -38,6 +39,24 @@ public:
     matchedTP_ = Utility::matchingTP(settings, stubs, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate info about match.
   }
 
+  // Alternative constructor using stub clusters!
+  L1track3D(const Settings* settings, const vector<const StubCluster*>& stubClusters,
+            pair<unsigned int, unsigned int> cellLocationHT, pair<float, float> helixRphi, pair<float, float> helixRz,
+            unsigned int iPhiSec, unsigned int iEtaReg, unsigned int optoLinkID, bool mergedHTcell) :
+    L1trackBase(),
+    settings_(settings),
+    stubClusters_(stubClusters),
+    cellLocationHT_(cellLocationHT), helixRphi_(helixRphi), helixRz_  (helixRz),
+    iPhiSec_(iPhiSec), iEtaReg_(iEtaReg), optoLinkID_(optoLinkID), mergedHTcell_(mergedHTcell)
+  {
+    for ( auto cls: stubClusters ) {
+      const vector<const Stub*> clsStubs = cls->stubs();
+      stubs_.insert( stubs_.end(), clsStubs.begin(), clsStubs.end() );
+    }
+    nLayers_   = Utility::countLayers(settings, stubs_); // Count tracker layers these stubs are in
+    matchedTP_ = Utility::matchingTP(settings, stubs_, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate inf$
+  }
+
   L1track3D() : L1trackBase() {}; // Creates track object, but doesn't set any variables.
 
   ~L1track3D() {}
@@ -46,6 +65,8 @@ public:
 
   // Get stubs on track candidate.
   const vector<const Stub*>&        getStubs()              const  {return stubs_;}  
+  // Get the stub clusters assoc with the track cand
+  const vector<const StubCluster*>& getStubClusters()       const  {return stubClusters_;}
   // Get number of stubs on track candidate.
   unsigned int                      getNumStubs()           const  {return stubs_.size();}
   // Get number of tracker layers these stubs are in.
@@ -196,6 +217,7 @@ private:
 
   //--- Information about the reconstructed track.
   vector<const Stub*>                stubs_;
+  vector<const StubCluster*>         stubClusters_;
   unsigned int                       nLayers_;
   pair<unsigned int, unsigned int>   cellLocationHT_; 
   pair<float, float>                 helixRphi_; 

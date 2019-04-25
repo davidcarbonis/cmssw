@@ -589,7 +589,7 @@ private:
   bool                 kalmanSeedEtaPhiBinned_;
   double               nBinsKalmanSeedPhiAxis_;
   double               nBinsKalmanSeedEtaAxis_;
-  bool                 kalmanSeedingOption_;
+  unsigned int         kalmanSeedingOption_;
 
   // Track Fitting Settings
   vector<string>       trackFitters_;
