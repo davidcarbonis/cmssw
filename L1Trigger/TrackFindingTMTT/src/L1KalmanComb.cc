@@ -659,8 +659,8 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
     vector<const StubCluster*> otherClusters;
 
     // number of phi and eta bins
-    float nBinsKalmanSeedPhiAxis_  = settings_->kalmanSeedNbinsPhiAxis();
-    float nBinsKalmanSeedEtaAxis_  = settings_->kalmanSeedNbinsEtaAxis();
+    unsigned int nBinsKalmanSeedPhiAxis_  = settings_->kalmanSeedNbinsPhiAxis();
+    unsigned int nBinsKalmanSeedEtaAxis_  = settings_->kalmanSeedNbinsEtaAxis();
 
     // init matrix
     matrix< vector<const Stub*> > kfStubArray_ (nBinsKalmanSeedPhiAxis_, nBinsKalmanSeedEtaAxis_);
@@ -682,6 +682,13 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       unsigned int phiBin = std::ceil( (stubPhi-phiMinSector)/phiInc ) - 1;
       unsigned int etaBin = std::ceil( (stubEta-etaMinSector)/etaInc ) - 1;
+
+      // overflow given uncert from poor bend resolution
+      if ( phiBin >= nBinsKalmanSeedPhiAxis_ ) phiBin = nBinsKalmanSeedPhiAxis_ - 1;
+      if ( etaBin >= nBinsKalmanSeedEtaAxis_ ) etaBin = nBinsKalmanSeedEtaAxis_ - 1;
+      // underflow given uncert from poor bend resolution
+//      if ( phiBin < 0 ) phiBin = 0;
+//      if ( etaBin < 0 ) etaBin = 0;
 
       vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
       arrayStubs.push_back(stub);
@@ -711,7 +718,10 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
           } // end loop over stubs
 
     std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+    std::cout << "layer_stubs.size(): " << layer_stubs.size() << std::endl;
+    std::cout << "sectorPhi(): " << sectorPhi() << std::endl;
           StubCluster *stbcl = new StubCluster( layer_stubs, sectorPhi(), 0);
+    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
           stubcls.push_back( stbcl );
     std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
