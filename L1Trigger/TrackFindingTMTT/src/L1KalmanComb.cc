@@ -724,7 +724,16 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
     }
 
     for ( auto seed : seedClusters ) {
+
       float qOverPt = seed->stubs()[0]->qOverPt();
+
+      if ( seed->stubs().size() > 1 ) {
+        for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
+          if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
+        }
+      }
+
+
       float phi0 = ( seed->phi()+ seed->dphi() );
       float z0 = 0;
       float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
