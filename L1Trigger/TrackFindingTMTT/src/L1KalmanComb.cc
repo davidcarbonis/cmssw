@@ -652,8 +652,6 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
  
   if ( seedingOption == 10 ) {
 
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-
     vector<const Stub*> otherStubs;
     vector<const StubCluster*> seedClusters;
     vector<const StubCluster*> otherClusters;
@@ -669,11 +667,8 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
     float phiInc = (phiMaxSector - phiMinSector) / float(nBinsKalmanSeedPhiAxis_);
     float etaInc = (etaMaxSector - etaMinSector) / float(nBinsKalmanSeedEtaAxis_);
 
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-
     // Fill kf seed stub array
     for ( auto stub : inputStubs ) {
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
       if ( stub->layerIdReduced() != 1 ) otherStubs.push_back(stub); // Used in l1track3D seed
 
@@ -692,24 +687,20 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
       arrayStubs.push_back(stub);
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
     }
 
     // Create stub clusters for each kf stub array cell
     std::vector<const StubCluster *> stubcls;
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
     for ( unsigned int phiBin = 0; phiBin != nBinsKalmanSeedPhiAxis_; phiBin++ ) {
       for ( unsigned int etaBin = 0; etaBin != nBinsKalmanSeedEtaAxis_; etaBin++ ) {
         // Access stubs in each KF array bin
-        vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
-
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+        const vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
 
         // create vector of stubs for each layer
         for ( unsigned j_layer=0; j_layer < 16; j_layer++ ){
-          std::vector<const Stub *> layer_stubs;
 
+          std::vector<const Stub *> layer_stubs;
           for(unsigned i=0; i < arrayStubs.size(); i++ ){
             const Stub *stub = arrayStubs.at(i);
             if( stub->layerId() == LayerId[j_layer] ){
@@ -717,28 +708,22 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
             } // pushed back stub to layer vector
           } // end loop over stubs
 
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-    std::cout << "layer_stubs.size(): " << layer_stubs.size() << std::endl;
-    std::cout << "sectorPhi(): " << sectorPhi() << std::endl;
+	  if ( layer_stubs.size() == 0 ) continue; // if no stubs in layer, do not make stub cluster! 
+
           StubCluster *stbcl = new StubCluster( layer_stubs, sectorPhi(), 0);
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
           stubcls.push_back( stbcl );
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
         } // end layer loop
       } // end eta loop
     } // end phi loop
 
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
     // Create l1track3D seeds 
     for ( auto cls : stubcls ) {
       if ( cls->layerIdReduced() == 1 ) seedClusters.push_back(cls);
       else otherClusters.push_back(cls);
     }
 
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
     for ( auto seed : seedClusters ) {
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
       float qOverPt = seed->stubs()[0]->qOverPt();
       float phi0 = ( seed->phi()+ seed->dphi() );
       float z0 = 0;
@@ -753,13 +738,11 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
 
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
    // Now cand is all setup ... do KF!
       resetStates();
       deleteStubClusters();
       numUpdateCalls_ = 0;
 
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
       minStubLayersRed_ = Utility::numLayerCut("FIT", getSettings(), l1track3D.iPhiSec(), l1track3D.iEtaReg(), fabs(l1track3D.qOverPt()), l1track3D.eta());
       const TP* tpa(0);
       if( l1track3D.getMatchedTP() ){
@@ -769,11 +752,9 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       //Kalman Filter
       std::vector<const kalmanState *> cands = doKF( l1track3D, cls, tpa );
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
       if( cands.size() ) {
 	const kalmanState *cand = cands[0];
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
 	//cout<<"Final KF candidate eta="<<cand->candidate().iEtaReg()<<" ns="<<cand->nSkippedLayers()<<" klid="<<cand->nextLayer()-1<<" n="<<cand->nStubLayers()<<endl;
 
@@ -828,7 +809,6 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	}
 	*/
 
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 	//candidate dump
 	if( getSettings()->kalmanDebugLevel() >= 3 ){
 	  cout << "------------------------------------" << endl;
@@ -850,7 +830,6 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       }
       else {
-    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 	if (getSettings()->kalmanDebugLevel() >= 1) {
 	  bool goodTrack =  ( tpa && tpa->useForAlgEff() ); // Matches truth particle.
 	  if(goodTrack) {
