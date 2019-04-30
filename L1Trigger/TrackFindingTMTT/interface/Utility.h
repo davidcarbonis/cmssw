@@ -9,6 +9,7 @@ namespace TMTT {
 
 class TP;
 class Stub;
+class StubCluster;
 class Settings;
 
 namespace Utility {
@@ -35,6 +36,8 @@ namespace Utility {
 
   const TP* matchingTP(const Settings* settings, const vector<const Stub*>& vstubs,
   	               unsigned int& nMatchedLayersBest, vector<const Stub*>& matchedStubsBest);
+  void matchingCluster(vector<const Stub*>& matchedStubsBest, const vector<const StubCluster*>& vclusters, 
+                       vector<const StubCluster*>& matchedClustersBest);
 
   // Determine the minimum number of layers a track candidate must have stubs in to be defined as a track.
   // The first argument indicates from what type of algorithm this function is called: "HT", "SEED", "DUP" or "FIT".

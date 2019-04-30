@@ -770,7 +770,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	// Get track helix params.
 	std::map<std::string, double> trackParams = getTrackParams(cand);
 
-	L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
+	L1fittedTrack returnTrk(getSettings(), l1track3D, cand->stubClusters(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, true);
 
 	bool consistentHLS = false;
 	if (this->isHLS()) {
@@ -807,7 +807,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	// Fitted track params must lie in same sector as HT originally found track in.
 	if (! getSettings()->hybrid() ) { // consistentSector() function not yet working for Hybrid.
 	if (! returnTrk.consistentSector()) {
-        L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubs(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
+        L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubClusters(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
         if(this->isHLS() && nPar_ == 4) {
 	failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_, consistentHLS );
         } else {
@@ -892,7 +892,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  }
 	}
 
-	L1fittedTrack returnTrk(getSettings(), l1track3D, l1track3D.getStubs(), l1track3D.qOverPt(), 0, l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 9999, nPar_, false);
+	L1fittedTrack returnTrk(getSettings(), l1track3D, l1track3D.getStubClusters(), l1track3D.qOverPt(), 0, l1track3D.phi0(), l1track3D.z0(), l1track3D.tanLambda(), 9999, nPar_, false);
 	returnTrk.setInfoKF( 0, numUpdateCalls_ );
 
         fittedTracks.push_back(returnTrk);

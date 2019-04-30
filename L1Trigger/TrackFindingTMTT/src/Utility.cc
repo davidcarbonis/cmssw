@@ -1,6 +1,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/Utility.h"
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Stub.h"
+#include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Settings.h"
 #include "L1Trigger/TrackFindingTMTT/interface/DeadModuleDB.h"
 
@@ -134,12 +135,30 @@ const TP* Utility::matchingTP(const Settings* settings, const vector<const Stub*
 	nMatchedLayersBest = nMatchedLayers;
 	matchedStubsBest   = matchedStubsFromTP;
 	tpBest             = tp;
-      }
-    }
-  }
+      } // end tie-break if
+    } // end acceptance if
+  } // end stub iteration for loop
 
   return tpBest;
 }
+
+void Utility::matchingCluster(vector<const Stub*>& matchedStubsBest, const vector<const StubCluster*>& vclusters, 
+                              vector<const StubCluster*>& matchedClustersBest)
+{
+
+  matchedClustersBest.clear();     // initialize
+
+  // Check to see if any of the stubs in the stub cluster meet the matching criteria
+  for (const StubCluster* cls : vclusters) {
+  // Loop over all the stubs in the cluster and if at leas one stub in the cluster matches a matched stub, push cluster back
+    for ( const Stub* stubFromCluster : cls->stubs() ) { // Loop over stubs in cluster
+      for ( const Stub* matchedStub : matchedStubsBest ) { // Loop over matched stubs
+	if ( stubFromCluster == matchedStub ) matchedClustersBest.push_back(cls);
+      }
+    }
+  }
+}
+
 
 //=== Determine the minimum number of layers a track candidate must have stubs in to be defined as a track.
 //=== The first argument indicates from what type of algorithm this function is called: "HT", "SEED", "DUP" or "FIT".

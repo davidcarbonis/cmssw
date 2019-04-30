@@ -54,8 +54,9 @@ public:
       stubs_.insert( stubs_.end(), clsStubs.begin(), clsStubs.end() );
     }
     nLayers_   = Utility::countLayers(settings, stubs_); // Count tracker layers these stubs are in
-    matchedTP_ = Utility::matchingTP(settings, stubs_, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate inf$
-  }
+    matchedTP_ = Utility::matchingTP(settings, stubs_, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate info to match
+    Utility::matchingCluster(matchedStubs_, stubClusters_, matchedClusters_); // Calculate matched stub clusters
+ }
 
   L1track3D() : L1trackBase() {}; // Creates track object, but doesn't set any variables.
 
@@ -69,6 +70,8 @@ public:
   const vector<const StubCluster*>& getStubClusters()       const  {return stubClusters_;}
   // Get number of stubs on track candidate.
   unsigned int                      getNumStubs()           const  {return stubs_.size();}
+  // Get number of stub clusters on track track cand
+  unsigned int                      getNumStubClusters()    const  {return stubClusters_.size();}
   // Get number of tracker layers these stubs are in.
   unsigned int                      getNumLayers()          const  {return nLayers_;}
   // Get cell location of track candidate in r-phi Hough Transform array in units of bin number.
@@ -151,12 +154,18 @@ public:
   const TP*                  getMatchedTP()          const   {return matchedTP_;}
   // Get the matched stubs with this Tracking Particle
   const vector<const Stub*>& getMatchedStubs()       const   {return matchedStubs_;}
+  // Get the matched clusters with this Tracking Particle
+  const vector<const StubCluster*>& getMatchedStubClusters() const   {return matchedClusters_;}
   // Get number of matched stubs with this Tracking Particle
   unsigned int               getNumMatchedStubs()    const   {return matchedStubs_.size();}
+  // Get number of matched clusters with this Tracking Particle
+  unsigned int               getNumMatchedStubClusters()    const   {return matchedClusters_.size();}
   // Get number of tracker layers with matched stubs with this Tracking Particle 
   unsigned int               getNumMatchedLayers()   const   {return nMatchedLayers_;}
   // Get purity of stubs on track candidate (i.e. fraction matching best Tracking Particle)
   float                      getPurity()             const   {return getNumMatchedStubs()/float(getNumStubs());}
+  // Get purity of stub clusters on track candidate (i.e. fraction matching best Tracking Particle)
+  float                      getClusterPurity()      const   {return getNumMatchedStubClusters()/float(getNumStubClusters() + 1e-06);}
 
   //--- For debugging purposes.
 
@@ -230,6 +239,7 @@ private:
   //--- Information about its association (if any) to a truth Tracking Particle.
   const TP*                          matchedTP_;
   vector<const Stub*>                matchedStubs_;
+  vector<const StubCluster*>         matchedClusters_;
   unsigned int                       nMatchedLayers_;
 };
 

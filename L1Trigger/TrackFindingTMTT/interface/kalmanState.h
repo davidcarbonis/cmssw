@@ -53,6 +53,7 @@ class kalmanState{
 	double                   reducedChi2()const;
 	const kalmanState *last_update_state()const;
 	std::vector<const Stub *>      stubs()const;
+	std::vector<const StubCluster *> stubClusters()const;
 	L1KalmanComb                 *fitter()const{ return fitter_; }
 	GET_TRACK_PARAMS     fXtoTrackParams()const{ return fXtoTrackParams_; };
 

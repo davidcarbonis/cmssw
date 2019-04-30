@@ -145,6 +145,20 @@ std::vector<const Stub *> kalmanState::stubs()const
     return all_stubs;
 }
 
+std::vector<const StubCluster *> kalmanState::stubClusters()const
+{
+    std::vector<const StubCluster *> all_stubClusters;
+
+    const kalmanState *state = this;
+    while( state ){
+        const StubCluster *stbcl = state->stubCluster();
+        if( stbcl ) all_stubClusters.push_back( stbcl );
+    	state = state->last_state();
+    }
+  return all_stubClusters;
+
+}
+
 bool kalmanState::order(const kalmanState *left, const kalmanState *right){ return (left->nStubLayers() > right->nStubLayers()); }
 
 bool kalmanState::orderReducedChi2(const kalmanState *left, const kalmanState *right){ 

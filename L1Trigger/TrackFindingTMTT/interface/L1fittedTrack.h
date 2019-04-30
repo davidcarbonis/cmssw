@@ -9,6 +9,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/Utility.h"
 #include "L1Trigger/TrackFindingTMTT/interface/TP.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Stub.h"
+#include "L1Trigger/TrackFindingTMTT/interface/StubCluster.h"
 #include "L1Trigger/TrackFindingTMTT/interface/Sector.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HTrphi.h"
 #include "L1Trigger/TrackFindingTMTT/interface/DigitalTrack.h"
@@ -60,6 +61,42 @@ public:
     }
     this->setConsistentHTcell(); 
   }
+
+  // Constructor using stub clusters instead of stubs
+  L1fittedTrack(const Settings* settings, const L1track3D& l1track3D, const vector<const StubCluster*>& stubClusters,
+                float qOverPt, float d0, float phi0, float z0, float tanLambda,
+                float chi2, unsigned int nHelixParam, bool accepted = true) :
+    L1trackBase(),
+    settings_(settings),
+    l1track3D_(l1track3D), stubClusters_(stubClusters),
+    qOverPt_(qOverPt), d0_(d0), phi0_(phi0), z0_(z0), tanLambda_(tanLambda),
+    chi2_(chi2),
+    done_bcon_(false), qOverPt_bcon_(qOverPt), d0_bcon_(d0), phi0_bcon_(phi0), chi2_bcon_(chi2),
+    nHelixParam_(nHelixParam),
+    iPhiSec_(l1track3D.iPhiSec()), iEtaReg_(l1track3D.iEtaReg()),
+    optoLinkID_(l1track3D.optoLinkID()), accepted_(accepted),
+    nSkippedLayers_(0), numUpdateCalls_(0), numIterations_(0),
+    digitizedTrack_(false), digitalTrack_(settings)
+  {
+    // Doesn't make sense to assign stubs to track if fitter rejected it.
+    if (! accepted) stubs_.clear();
+    // Else get the stubs associated with the fitted clusters
+    else {
+      for ( auto cls : stubClusters ) {
+        const vector< const Stub*> clsStubs = cls->stubs();
+        stubs_.insert( stubs_.end(), clsStubs.begin(), clsStubs.end() );
+      }
+    }
+    nLayers_   = Utility::countLayers(settings, stubs_); // Count tracker layers these stubs are in
+    matchedTP_ = Utility::matchingTP(settings, stubs_, nMatchedLayers_, matchedStubs_); // Find associated truth particle & cal$
+    Utility::matchingCluster(matchedStubs_, stubClusters_, matchedClusters_);
+    if (! settings->hybrid()) {
+      secTmp_.init(settings, iPhiSec_, iEtaReg_); //Sector class used to check if fitted track trajectory is in expected secto$
+      htRphiTmp_.init(settings, iPhiSec_, iEtaReg_, secTmp_.etaMin(), secTmp_.etaMax(), secTmp_.phiCentre()); // HT class used$
+    }
+    this->setConsistentHTcell();
+  }
+
 
   L1fittedTrack() : L1trackBase() {}; // Creates track object, but doesn't set any variables.
 
@@ -113,6 +150,8 @@ public:
   const vector<const Stub*>&  getStubs()              const  {return stubs_;}  
   // Get number of stubs on fitted track.
   unsigned int                getNumStubs()           const  {return stubs_.size();}
+  // Get number of stubs on fitted track.
+  unsigned int                getNumClusters()        const  {return stubClusters_.size();}
   // Get number of tracker layers these stubs are in.
   unsigned int                getNumLayers()          const  {return nLayers_;}
   // Get number of stubs deleted from track candidate by fitter (because they had large residuals)
@@ -134,10 +173,15 @@ public:
   const vector<const Stub*>&  getMatchedStubs()       const  {return matchedStubs_;}
   // Get number of matched stubs with this Tracking Particle
   unsigned int                getNumMatchedStubs()    const  {return matchedStubs_.size();}
+  // Get number of matched stub clusters with this Tracking Particle
+  unsigned int                getNumMatchedClusters() const  {return matchedClusters_.size();}
   // Get number of tracker layers with matched stubs with this Tracking Particle
   unsigned int                getNumMatchedLayers()   const  {return nMatchedLayers_;}
   // Get purity of stubs on track (i.e. fraction matching best Tracking Particle)
   float                       getPurity()             const   {return getNumMatchedStubs()/float(getNumStubs());}
+  // Get purity of the clusters (if used to create L1track3D) on the track (i.e. fraction matching best Tracking Particle)
+  float                       getClusterPurity()      const   {return getNumMatchedClusters()/( float(getNumClusters()) + 1e-06);}
+
   // Get number of stubs matched to correct TP that were deleted from track candidate by fitter.
   unsigned int                getNumKilledMatchedStubs()  const  {
     unsigned int nStubCount = l1track3D_.getNumMatchedStubs();
@@ -265,6 +309,8 @@ private:
   //--- The stubs on the fitted track (can differ from those on HT track if fit kicked off stubs with bad residuals)
   vector<const Stub*>   stubs_;
   unsigned int          nLayers_;
+  //--- The stub clusters on the fitted track (can differ from those on the seeded track if fit kicked off clusters with bad residuals)
+  vector<const StubCluster*>   stubClusters_;
 
   //--- The fitted helix parameters and fit chi-squared.
   float qOverPt_;
@@ -293,6 +339,7 @@ private:
   //--- Information about its association (if any) to a truth Tracking Particle.
   const TP*             matchedTP_;
   vector<const Stub*>   matchedStubs_;
+  vector<const StubCluster*>   matchedClusters_;
   unsigned int          nMatchedLayers_;
 
   //--- Has the track fit declared this to be a valid track?

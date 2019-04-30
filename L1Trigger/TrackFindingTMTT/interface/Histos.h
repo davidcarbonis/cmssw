@@ -357,6 +357,10 @@ private:
   map<string, TH1F*> hisPerfRecoTPinvptForEff_;
   map<string, TH1F*> hisPerfRecoTPptForEff_;
   map<string, TH1F*> hisPerfRecoTPetaForEff_;
+  //
+  map<string, TH1F*> hisPerfRecoTPinvptForClusterEff_;
+  map<string, TH1F*> hisPerfRecoTPptForClusterEff_;
+  map<string, TH1F*> hisPerfRecoTPetaForClusterEff_;
   //  
   map<string, TH1F*> hisTPd0ForEff_;
   map<string, TH1F*> hisRecoTPd0ForEff_;
@@ -384,9 +388,11 @@ private:
   map<string, TH1F*> hisTPphisecForAlgEff_;
   map<string, TH1F*> hisRecoTPphisecForAlgEff_;
   map<string, TH1F*> hisPerfRecoTPphisecForAlgEff_;
+  map<string, TH1F*> hisPerfRecoTPphisecForAlgClusterEff_;
   map<string, TH1F*> hisTPetasecForAlgEff_;
   map<string, TH1F*> hisRecoTPetasecForAlgEff_;
   map<string, TH1F*> hisPerfRecoTPetasecForAlgEff_;
+  map<string, TH1F*> hisPerfRecoTPetasecForAlgClusterEff_;
 
   map<string, TH1F*> hisTPinvptForAlgEff_inJetPtG30_;
   map<string, TH1F*> hisRecoTPinvptForAlgEff_inJetPtG30_;
@@ -535,6 +541,11 @@ private:
   map<string, TH1F*> hisPerfFitTPinvptForEff_;
   map<string, TH1F*> hisPerfFitTPptForEff_;
   map<string, TH1F*> hisPerfFitTPetaForEff_;
+  // For when clustered tracks are used ...
+  map<string, TH1F*> hisPerfFitTPinvptForClusterEff_;
+  map<string, TH1F*> hisPerfFitTPptForClusterEff_;
+  map<string, TH1F*> hisPerfFitTPetaForClusterEff_;
+  //
   map<string, TH1F*> hisFitTPd0ForEff_;
   map<string, TH1F*> hisFitTPz0ForEff_;
   map<string, TH1F*> hisFitTPinvptForAlgEff_;
@@ -553,6 +564,13 @@ private:
   map<string, TH1F*> hisPerfFitTPinvptForAlgEff_inJetPtG30_;
   map<string, TH1F*> hisPerfFitTPinvptForAlgEff_inJetPtG100_;
   map<string, TH1F*> hisPerfFitTPinvptForAlgEff_inJetPtG200_;
+  //
+  map<string, TH1F*> hisPerfFitTPinvptForAlgClusterEff_;
+  map<string, TH1F*> hisPerfFitTPptForAlgClusterEff_;
+  map<string, TH1F*> hisPerfFitTPetaForAlgClusterEff_;
+  map<string, TH1F*> hisFitTPphisecForAlgClusterEff_;
+  map<string, TH1F*> hisFitTPetasecForAlgClusterEff_;
+  //
 
   // Histograms of tracking efficiency & fake rate after Hough transform or after r-z track filter.
   map<string, TEfficiency*> teffEffVsInvPt_;
