@@ -36,8 +36,7 @@ namespace Utility {
 
   const TP* matchingTP(const Settings* settings, const vector<const Stub*>& vstubs,
   	               unsigned int& nMatchedLayersBest, vector<const Stub*>& matchedStubsBest);
-  void matchingCluster(vector<const Stub*>& matchedStubsBest, const vector<const StubCluster*>& vclusters, 
-                       vector<const StubCluster*>& matchedClustersBest);
+  vector<const StubCluster*> matchingCluster(const vector<const Stub*> matchedStubsBest, const vector<const StubCluster*> vclusters);
 
   // Determine the minimum number of layers a track candidate must have stubs in to be defined as a track.
   // The first argument indicates from what type of algorithm this function is called: "HT", "SEED", "DUP" or "FIT".

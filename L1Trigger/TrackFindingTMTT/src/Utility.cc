@@ -142,21 +142,25 @@ const TP* Utility::matchingTP(const Settings* settings, const vector<const Stub*
   return tpBest;
 }
 
-void Utility::matchingCluster(vector<const Stub*>& matchedStubsBest, const vector<const StubCluster*>& vclusters, 
-                              vector<const StubCluster*>& matchedClustersBest)
+vector<const StubCluster*> Utility::matchingCluster(const vector<const Stub*> matchedStubsBest, const vector<const StubCluster*> vclusters)
 {
-
-  matchedClustersBest.clear();     // initialize
+  vector<const StubCluster*> matchedClustersBest;     // initialize
 
   // Check to see if any of the stubs in the stub cluster meet the matching criteria
   for (const StubCluster* cls : vclusters) {
-  // Loop over all the stubs in the cluster and if at leas one stub in the cluster matches a matched stub, push cluster back
+    bool containsMatchedStub {false};
+    // Loop over all the stubs in the cluster and if at leas one stub in the cluster matches a matched stub, push cluster back
     for ( const Stub* stubFromCluster : cls->stubs() ) { // Loop over stubs in cluster
+
       for ( const Stub* matchedStub : matchedStubsBest ) { // Loop over matched stubs
-	if ( stubFromCluster == matchedStub ) matchedClustersBest.push_back(cls);
+	if ( stubFromCluster == matchedStub ) containsMatchedStub = true;
       }
     }
+    if ( containsMatchedStub ) matchedClustersBest.push_back(cls);
   }
+
+  return matchedClustersBest;
+
 }
 
 

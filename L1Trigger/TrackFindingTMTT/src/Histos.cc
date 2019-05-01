@@ -2256,7 +2256,7 @@ void Histos::bookTrackFitting() {
     hisPerfFitTPetaForEff_[fitName]   = inputDir.make<TH1F>(addn("PerfFitTPetaForEff"),"; #eta of TP (used for perfect effi. measurement);",20,-3.,3.);
 
     // Histo for efficiency to reconstruct clustered track perfectly (no incorrect clusters). (Binning must match similar histos in bookTrackCands()).
-    if ( runFullKalman_ ) {
+    if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
       hisPerfFitTPinvptForClusterEff_[fitName] = inputDir.make<TH1F>(addn("PerfFitTPinvptForClusterEff") ,"; 1/Pt of TP (used for perf. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
       hisPerfFitTPptForClusterEff_[fitName]    = inputDir.make<TH1F>(addn("PerfFitTPptForClusterEff") ,"; Pt of TP (used for perf. effi. measurement);",25,0.0,100.0);
       hisPerfFitTPetaForClusterEff_[fitName]   = inputDir.make<TH1F>(addn("PerfFitTPetaForClusterEff"),"; #eta of TP (used for perfect effi. measurement);",20,-3.,3.);

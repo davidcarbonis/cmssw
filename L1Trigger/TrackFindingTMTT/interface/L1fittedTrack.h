@@ -89,7 +89,7 @@ public:
     }
     nLayers_   = Utility::countLayers(settings, stubs_); // Count tracker layers these stubs are in
     matchedTP_ = Utility::matchingTP(settings, stubs_, nMatchedLayers_, matchedStubs_); // Find associated truth particle & cal$
-    Utility::matchingCluster(matchedStubs_, stubClusters_, matchedClusters_);
+    matchedClusters_ = Utility::matchingCluster(matchedStubs_, stubClusters_);
     if (! settings->hybrid()) {
       secTmp_.init(settings, iPhiSec_, iEtaReg_); //Sector class used to check if fitted track trajectory is in expected secto$
       htRphiTmp_.init(settings, iPhiSec_, iEtaReg_, secTmp_.etaMin(), secTmp_.etaMax(), secTmp_.phiCentre()); // HT class used$
@@ -180,7 +180,7 @@ public:
   // Get purity of stubs on track (i.e. fraction matching best Tracking Particle)
   float                       getPurity()             const   {return getNumMatchedStubs()/float(getNumStubs());}
   // Get purity of the clusters (if used to create L1track3D) on the track (i.e. fraction matching best Tracking Particle)
-  float                       getClusterPurity()      const   {return getNumMatchedClusters()/( float(getNumClusters()) + 1e-06);}
+  float                       getClusterPurity()      const   {return getNumMatchedClusters()/( float(getNumClusters()) );}
 
   // Get number of stubs matched to correct TP that were deleted from track candidate by fitter.
   unsigned int                getNumKilledMatchedStubs()  const  {

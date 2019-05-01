@@ -55,7 +55,7 @@ public:
     }
     nLayers_   = Utility::countLayers(settings, stubs_); // Count tracker layers these stubs are in
     matchedTP_ = Utility::matchingTP(settings, stubs_, nMatchedLayers_, matchedStubs_); // Find associated truth particle & calculate info to match
-    Utility::matchingCluster(matchedStubs_, stubClusters_, matchedClusters_); // Calculate matched stub clusters
+    matchedClusters_ = Utility::matchingCluster(matchedStubs_, stubClusters_); // Calculate matched stub clusters
  }
 
   L1track3D() : L1trackBase() {}; // Creates track object, but doesn't set any variables.
@@ -165,7 +165,7 @@ public:
   // Get purity of stubs on track candidate (i.e. fraction matching best Tracking Particle)
   float                      getPurity()             const   {return getNumMatchedStubs()/float(getNumStubs());}
   // Get purity of stub clusters on track candidate (i.e. fraction matching best Tracking Particle)
-  float                      getClusterPurity()      const   {return getNumMatchedStubClusters()/float(getNumStubClusters() + 1e-06);}
+  float                      getClusterPurity()      const   {return getNumMatchedStubClusters()/float(getNumStubClusters() );}
 
   //--- For debugging purposes.
 
