@@ -34,8 +34,8 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
 #TMTrackProducer.FullKalmanCombSettings.KalmanSeedEtaPhiBinned = cms.bool(False) #deprecated
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(128)
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(128)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(64)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(16)
 
 TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(10) # 0 uses just layer 1, 1 uses first and second layers (high duplicates), all others are buggy/non-functional
 
