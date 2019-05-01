@@ -2282,15 +2282,6 @@ void Histos::bookTrackFitting() {
     hisPerfFitTPinvptForAlgEff_inJetPtG100_[fitName] = inputDir.make<TH1F>(addn("PerfFitTPinvptForAlgEff_inJetPtG100") ,"; 1/Pt of TP (used for perf. alg. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
     hisPerfFitTPinvptForAlgEff_inJetPtG200_[fitName] = inputDir.make<TH1F>(addn("PerfFitTPinvptForAlgEff_inJetPtG200") ,"; 1/Pt of TP (used for perf. alg. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
 
-    // Histo for efficiency to reconstruct the clustered track perfectly (no incorrect clusters). (Binning must match similar histos in bookTrackCands()).
-    if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
-      hisPerfFitTPinvptForAlgClusterEff_[fitName] = inputDir.make<TH1F>(addn("PerfFitTPinvptForAlgClusterEff") ,"; 1/Pt of TP (used for perf. alg. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
-      hisPerfFitTPptForAlgClusterEff_[fitName]    = inputDir.make<TH1F>(addn("PerfFitTPptForAlgClusterEff") ,"; Pt of TP (used for perf. alg. effi. measurement);",25,0.0,100.0);
-      hisPerfFitTPetaForAlgClusterEff_[fitName]   = inputDir.make<TH1F>(addn("PerfFitTPetaForAlgClusterEff"),"; #eta of TP (used for perf. alg. effi. measurement);",20,-3.,3.);
-      hisPerfFitTPphisecForClusterAlgEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPphisecForAlgClusterEff") ,"; #phi sector of TP (used for perf. alg. effi. measurement);",nPhi,-0.5,nPhi-0.5);
-      hisPerfFitTPetasecForAlgClusterEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPetasecForAlgClusterEff") ,"; #eta sector of TP (used for perf. alg. effi. measurement);",nEta,-0.5,nEta-0.5);
-    }
-
     // Histos for algorithmic tracking efficiency vs. TP production point. (Binning must match similar histos in bookTrackCands()).
     hisFitTPd0ForAlgEff_[fitName]  = inputDir.make<TH1F>(addn("FitTPd0ForAlgEff") ,"; d0 of TP (used for alg. effi. measurement);",40,0.,4.);
     hisFitTPz0ForAlgEff_[fitName]  = inputDir.make<TH1F>(addn("FitTPz0ForAlgEff") ,"; z0 of TP (used for alg. effi. measurement);",50,0.,25.);
@@ -2302,6 +2293,15 @@ void Histos::bookTrackFitting() {
     hisFitTPetasecForAlgEff_[fitName]  = inputDir.make<TH1F>(addn("FitTPetasecForAlgEff") ,"; #eta sector of TP (used for alg. effi. measurement);",nEta,-0.5,nEta-0.5);
     hisPerfFitTPphisecForAlgEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPphisecForAlgEff") ,"; #phi sector of TP (used for perf. alg. effi. measurement);",nPhi,-0.5,nPhi-0.5);
     hisPerfFitTPetasecForAlgEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPetasecForAlgEff") ,"; #eta sector of TP (used for perf. alg. effi. measurement);",nEta,-0.5,nEta-0.5);
+
+    // Histo for efficiency to reconstruct the clustered track perfectly (no incorrect clusters). (Binning must match similar histos in bookTrackCands()).
+    if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
+      hisPerfFitTPinvptForAlgClusterEff_[fitName] = inputDir.make<TH1F>(addn("PerfFitTPinvptForAlgClusterEff") ,"; 1/Pt of TP (used for perf. alg. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
+      hisPerfFitTPptForAlgClusterEff_[fitName]    = inputDir.make<TH1F>(addn("PerfFitTPptForAlgClusterEff") ,"; Pt of TP (used for perf. alg. effi. measurement);",25,0.0,100.0);
+      hisPerfFitTPetaForAlgClusterEff_[fitName]   = inputDir.make<TH1F>(addn("PerfFitTPetaForAlgClusterEff"),"; #eta of TP (used for perf. alg. effi. measurement);",20,-3.,3.);
+      hisPerfFitTPphisecForAlgClusterEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPphisecForAlgClusterEff") ,"; #phi sector of TP (used for perf. alg. effi. measurement);",nPhi,-0.5,nPhi-0.5);
+      hisPerfFitTPetasecForAlgClusterEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPetasecForAlgClusterEff") ,"; #eta sector of TP (used for perf. alg. effi. measurement);",nEta,-0.5,nEta-0.5);
+    }
   }
 }
 
@@ -2359,7 +2359,7 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
 
     map<const TP*, bool> tpRecoedMap; // Note which truth particles were successfully fitted.
     map<const TP*, bool> tpPerfRecoedMap; // Note which truth particles were successfully fitted with no incorrect hits.
-    map<const TP*, bool> tpPerfClusteredRecoedMap; // Note which truth particles were successfully fitted where the stub clusters include at least one genuine stub.
+    map<const TP*, bool> tpPerfClusterRecoedMap; // Note which truth particles were successfully fitted where the stub clusters include at least one genuine stub.
     map<const TP*, unsigned int> tpRecoedDup; // Note that this TP gave rise to duplicate tracks. 
     for (const TP& tp: vTPs) {
       tpRecoedMap[&tp]     = false;
@@ -2798,7 +2798,7 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
 	  }
 
           // Also plot efficiency to perfectly reconstruct the clustered track (no fake clusters)
-	  if (tpPerfClusteredRecoedMap[&tp]) { // This truth particle was successfully fitted with no incorrect clusters.
+	  if (tpPerfClusterRecoedMap[&tp]) { // This truth particle was successfully fitted with no incorrect clusters.
 	    hisPerfFitTPinvptForClusterEff_[fitName]->Fill(1./tp.pt());
 	    hisPerfFitTPptForClusterEff_[fitName]->Fill(tp.pt());
 	    hisPerfFitTPetaForClusterEff_[fitName]->Fill(tp.eta());
@@ -2836,7 +2836,7 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
 	    }
 
 	    // Also plot efficiency to perfectly reconstruct the clustered track (no fake clusters)
-	    if (tpPerfClusteredRecoedMap[&tp]) { // This truth particle was successfully fitted with no incorrect clusters.
+	    if (tpPerfClusterRecoedMap[&tp]) { // This truth particle was successfully fitted with no incorrect clusters.
 	      hisPerfFitTPinvptForAlgClusterEff_[fitName]->Fill(1./tp.pt());
 	      hisPerfFitTPptForAlgClusterEff_[fitName]->Fill(tp.pt());
 	      hisPerfFitTPetaForAlgClusterEff_[fitName]->Fill(tp.eta());
@@ -2982,7 +2982,7 @@ void Histos::plotTrackEffAfterFit(string fitName) {
   		      addn("PerfClusterEffFitVsInvPt"),"; 1/Pt; Clustered  tracking perfect efficiency");
     makeEfficiencyPlot( inputDir, teffPerfClusterEffFitVsPt_[fitName], hisPerfFitTPptForClusterEff_[fitName], hisTPptForEff_["HT"],
 		      addn("PerfClusterEffFitVsPt"),"; Pt; Clustered tracking perfect efficiency");
-    makeEfficiencyPlot( inputDir, teffPerClusterfEffFitVsEta_[fitName], hisPerfFitTPetaForClusterEff_[fitName], hisTPetaForEff_["HT"], 
+    makeEfficiencyPlot( inputDir, teffPerfClusterEffFitVsEta_[fitName], hisPerfFitTPetaForClusterEff_[fitName], hisTPetaForEff_["HT"], 
   		      addn("PerfClusterEffFitVsEta"),"; #eta; Clustered tracking perfect efficiency");
   }
 
@@ -3078,8 +3078,8 @@ void Histos::printTrackPerformance(bool withRZfilter) {
   float algEffErr = sqrt(algEff*(1-algEff)/(numTPforAlg + 1.0e-6)); // uncertainty
   float algPerfEff = float(numPerfRecoTPforAlg)/(numTPforAlg + 1.0e-6); //protection against demoninator equals zero.
   float algPerfEffErr = sqrt(algPerfEff*(1-algPerfEff)/(numTPforAlg + 1.0e-6)); // uncertainty
-  float algPerfEff = 0;
-  float algPerfEffErr = 0;
+  float algPerfClusterEff = 0;
+  float algPerfClusterEffErr = 0;
   if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
     algPerfClusterEff = float(numPerfRecoTPforClusterAlg)/(numTPforAlg + 1.0e-6); //protection against demoninator equals zero.
     algPerfClusterEffErr = sqrt(algPerfClusterEff*(1-algPerfClusterEff)/(numTPforAlg + 1.0e-6)); // uncertainty

@@ -380,6 +380,10 @@ private:
   map<string, TH1F*> hisPerfRecoTPptForAlgEff_;
   map<string, TH1F*> hisPerfRecoTPetaForAlgEff_;
   //
+  map<string, TH1F*> hisPerfRecoTPinvptForAlgClusterEff_;
+  map<string, TH1F*> hisPerfRecoTPptForAlgClusterEff_;
+  map<string, TH1F*> hisPerfRecoTPetaForAlgClusterEff_;
+  //
   map<string, TH1F*> hisTPd0ForAlgEff_;
   map<string, TH1F*> hisRecoTPd0ForAlgEff_;
   map<string, TH1F*> hisTPz0ForAlgEff_;
@@ -568,8 +572,8 @@ private:
   map<string, TH1F*> hisPerfFitTPinvptForAlgClusterEff_;
   map<string, TH1F*> hisPerfFitTPptForAlgClusterEff_;
   map<string, TH1F*> hisPerfFitTPetaForAlgClusterEff_;
-  map<string, TH1F*> hisFitTPphisecForAlgClusterEff_;
-  map<string, TH1F*> hisFitTPetasecForAlgClusterEff_;
+  map<string, TH1F*> hisPerfFitTPphisecForAlgClusterEff_;
+  map<string, TH1F*> hisPerfFitTPetasecForAlgClusterEff_;
   //
 
   // Histograms of tracking efficiency & fake rate after Hough transform or after r-z track filter.
@@ -605,6 +609,12 @@ private:
   map<string, TEfficiency*> teffPerfAlgEffVsPhiSec_;
   map<string, TEfficiency*> teffPerfAlgEffVsEtaSec_;
 
+  //
+  map<string, TEfficiency*> teffPerfClusterEffVsInvPt_;
+  map<string, TEfficiency*> teffPerfClusterEffVsPt_;
+  map<string, TEfficiency*> teffPerfClusterEffVsEta_;
+  //
+
   // Histograms of tracking efficiency & fake rate after Hough transform based on tracks after the track fit.
   map<string, TEfficiency*> teffEffFitVsInvPt_;
   map<string, TEfficiency*> teffEffFitVsPt_;
@@ -637,6 +647,16 @@ private:
   map<string, TEfficiency*> teffAlgEffFitVsEtaSec_;
   map<string, TEfficiency*> teffPerfAlgEffFitVsPhiSec_;
   map<string, TEfficiency*> teffPerfAlgEffFitVsEtaSec_;
+  //
+  map<string, TEfficiency*> teffPerfClusterEffFitVsInvPt_;
+  map<string, TEfficiency*> teffPerfClusterEffFitVsPt_;
+  map<string, TEfficiency*> teffPerfClusterEffFitVsEta_;
+  //  
+  map<string, TEfficiency*> teffPerfClusterAlgEffFitVsInvPt_;
+  map<string, TEfficiency*> teffPerfClusterAlgEffFitVsPt_;
+  map<string, TEfficiency*> teffPerfClusterAlgEffFitVsEta_;
+  map<string, TEfficiency*> teffPerfClusterAlgEffFitVsPhiSec_;
+  map<string, TEfficiency*> teffPerfClusterAlgEffFitVsEtaSec_;
 
   bool plotFirst_;
 
