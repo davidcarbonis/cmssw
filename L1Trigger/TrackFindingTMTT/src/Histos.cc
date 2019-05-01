@@ -3105,7 +3105,7 @@ void Histos::printTrackPerformance(bool withRZfilter) {
   cout<<"Perfect algorithmic tracking efficiency = "<<numPerfRecoTPforAlg<<"/"<<numTPforAlg<<" = "<<algPerfEff<<" +- "<<algPerfEffErr<<" (no incorrect hits)"<<endl;
   if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
     cout<<"Perfect clustered algorithmic tracking efficiency = "<<numPerfRecoTPforClusterAlg<<"/"<<numTPforAlg<<" = "<<algPerfClusterEff<<" +- "<<algPerfClusterEffErr<<" (no incorrect clusters)"<<endl;
-  }
+ }
 }
 
 //=== Print summary of track-finding performance after helix fit for given track fitter.
@@ -3128,7 +3128,8 @@ void Histos::printFitTrackPerformance(string fitName) {
   // irrespective of whether made after HT or after r-z track filter, so always use the former.
   unsigned int numTPforAlg     = hisTPinvptForAlgEff_["HT"]->GetEntries();
   unsigned int numPerfFitTPforAlg = hisPerfFitTPinvptForAlgEff_[fitName]->GetEntries();
-  unsigned int numPerfFitTPforClusterAlg = hisPerfFitTPinvptForAlgClusterEff_[fitName]->GetEntries();
+  unsigned int numPerfFitTPforClusterAlg = 0;
+  if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) numPerfFitTPforClusterAlg = hisPerfFitTPinvptForAlgClusterEff_[fitName]->GetEntries();
 
   float fitEff = float(numFitTPforAlg)/(numTPforAlg + 1.0e-6); //protection against demoninator equals zero.
   float fitEffErr = sqrt(fitEff*(1-fitEff)/(numTPforAlg + 1.0e-6)); // uncertainty
@@ -3330,3 +3331,4 @@ void Histos::trackerGeometryAnalysis( const TrackerGeometryInfo trackerGeometryI
 
 
 }
+
