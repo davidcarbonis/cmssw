@@ -46,6 +46,8 @@ Histos::Histos(const Settings* settings) : settings_(settings), plotFirst_(true)
   ranRZfilter_      = (useRZfilter_.size() > 0); // Was any r-z track filter run?
   resPlotOpt_       = settings->resPlotOpt(); // Only use signal events for helix resolution plots?
   runFullKalman_    = settings->runFullKalman(); // Running KF for track finding and fitting
+  if ( settings_->kalmanStubClustering() || (runFullKalman_ && settings_->kalmanSeedingOption() == 10) ) stubClustering_ = true;
+  else stubClustering_ = false;
 }
 
 //=== Book all histograms
@@ -1015,6 +1017,7 @@ void Histos::bookTrackCands(bool withRZfilter) {
 
   profStubsOnTracks_[tName] = inputDir.make<TProfile>(addn("StubsOnTracks"),"; ; No. of stubs on tracks per event",1,0.5,1.5);
   profStubsOnTracksVsEta_[tName] = inputDir.make<TProfile>(addn("StubsOnTracksVsEta"),"; #eta region; No. of stubs on tracks per event", nEta, -0.5, nEta - 0.5); 
+  profClustersOnTracks_[tName] = inputDir.make<TProfile>(addn("ClustersOnTracks"),"; ; No. of stubs on clusters per event",1,0.5,1.5);
   hisStubsOnTracksPerSect_[tName] = inputDir.make<TH1F>(addn("StubsOnTracksPerSect"),"; No. of stubs on tracks per sector", 500,-0.5,499.5); 
   hisStubsOnTracksPerOct_[tName]  = inputDir.make<TH1F>(addn("StubsOnTracksPerOct"),"; No. of stubs on tracks per octant", 1000,-0.5,999.5); 
   hisUniqueStubsOnTrksPerSect_[tName] = inputDir.make<TH1F>(addn("UniqueStubsOnTrksPerSect"),"; No. of unique stubs on tracks per sector", 500,-0.5,499.5); 
@@ -1202,23 +1205,28 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
   //=== Count stubs per event assigned to track candidates in the Tracker
 
   unsigned int nStubsOnTracks = 0;
+  unsigned int nClustersOnTracks = 0;
   vector<unsigned int> nStubsOnTracksInOctant(numPhiOctants, 0);
   map< unsigned int, set<const Stub*> > uniqueStubsOnTracksInOctant;
   for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
     unsigned int nStubsOnTracksInEtaReg = 0;
+    unsigned int nClustersOnTracksInEtaReg = 0;
     for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
       unsigned int iOctant = floor(iPhiSec*numPhiOctants/(numPhiSectors_)); // phi octant number
       const Get3Dtracks& get3Dtrk = mGet3Dtrks(iPhiSec, iEtaReg);
 
       // Count stubs on all tracks in this sector.
       unsigned int nStubsOnTrksInSec = 0;
+      unsigned int nClustersOnTrksInSec = 0;
       for (const L1track3D& trk : get3Dtrk.trackCands3D(withRZfilter)) {
 	nStubsOnTrksInSec += trk.getStubs().size();
+	if ( stubClustering_ ) nClustersOnTrksInSec += trk.getStubClusters().size();
       }
 
       hisStubsOnTracksPerSect_[tName]->Fill(nStubsOnTrksInSec); // Number of stubs assigned to tracks in this sector.
       nStubsOnTracksInOctant[iOctant] += nStubsOnTrksInSec; // Number of stubs assigned to tracks in this octant.
       nStubsOnTracksInEtaReg += nStubsOnTrksInSec;
+      nClustersOnTracksInEtaReg += nClustersOnTrksInSec;
       set<const Stub*> uniqueStubsOnTracksInSector;
       // Loop over all stubs on all tracks in this sector, and add to std::set(), so each individual stub recorded at most once.
       for (const L1track3D& trk : get3Dtrk.trackCands3D(withRZfilter) ) {
@@ -1231,8 +1239,10 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
     }
     nStubsOnTracks += nStubsOnTracksInEtaReg;
     profStubsOnTracksVsEta_[tName]->Fill(iEtaReg, nStubsOnTracksInEtaReg);
+    nClustersOnTracks += nClustersOnTracksInEtaReg;
   }
   profStubsOnTracks_[tName]->Fill(1.0, nStubsOnTracks);
+  profClustersOnTracks_[tName]->Fill(1.0, nClustersOnTracks);
   for (unsigned int k = 0; k < numPhiOctants; k++) {
     hisStubsOnTracksPerOct_[tName]->Fill(nStubsOnTracksInOctant[k]); // Plots stubs on tracks in each phi octant.
     hisUniqueStubsOnTrksPerOct_[tName]->Fill(uniqueStubsOnTracksInOctant[k].size());
@@ -1545,7 +1555,7 @@ void Histos::fillTrackCands(const InputData& inputData, const matrix<Get3Dtracks
 	    // Also note if TP was reconstructed perfectly (no incorrect hits on reco track).
 	    for (const L1track3D* assTrk : assTrkVec) {
 	      if (assTrk->getPurity() == 1.) tpRecoedPerfect = true;
-              if ( assTrk->getClusterPurity() == 1. && runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) tpRecoedPerfectCluster = true;
+              if ( assTrk->getClusterPurity() == 1. && stubClustering_ ) tpRecoedPerfectCluster = true;
 	    }
 	  }
 	}
@@ -2103,6 +2113,8 @@ void Histos::bookTrackFitting() {
 
     hisStubsPerFitTrack_[fitName]  = inputDir.make<TH1F>(addn("StubsPerFitTrack"), "; No. of stubs per fitted track",20,-0.5,19.5);
     profStubsOnFitTracks_[fitName] = inputDir.make<TProfile>(addn("StubsOnFitTracks"), "; ; No. of stubs on all fitted tracks per event",1,0.5,1.5);
+
+    profClustersOnFitTracks_[fitName] = inputDir.make<TProfile>(addn("ClustersOnFitTracks"), "; ; No. of clusters on all fitted tracks per event",1,0.5,1.5);
  
     hisFitQinvPtMatched_[fitName] = inputDir.make<TH1F>(addn("FitQinvPtMatched"),"Fitted q/p_{T} for matched tracks", 120, -0.6, 0.6 );
     hisFitPhi0Matched_[fitName]   = inputDir.make<TH1F>(addn("FitPhi0Matched"), "Fitted #phi_{0} for matched tracks", 70, -3.5, 3.5 );
@@ -2256,7 +2268,7 @@ void Histos::bookTrackFitting() {
     hisPerfFitTPetaForEff_[fitName]   = inputDir.make<TH1F>(addn("PerfFitTPetaForEff"),"; #eta of TP (used for perfect effi. measurement);",20,-3.,3.);
 
     // Histo for efficiency to reconstruct clustered track perfectly (no incorrect clusters). (Binning must match similar histos in bookTrackCands()).
-    if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
+    if ( stubClustering_ ) {
       hisPerfFitTPinvptForClusterEff_[fitName] = inputDir.make<TH1F>(addn("PerfFitTPinvptForClusterEff") ,"; 1/Pt of TP (used for perf. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
       hisPerfFitTPptForClusterEff_[fitName]    = inputDir.make<TH1F>(addn("PerfFitTPptForClusterEff") ,"; Pt of TP (used for perf. effi. measurement);",25,0.0,100.0);
       hisPerfFitTPetaForClusterEff_[fitName]   = inputDir.make<TH1F>(addn("PerfFitTPetaForClusterEff"),"; #eta of TP (used for perfect effi. measurement);",20,-3.,3.);
@@ -2295,7 +2307,7 @@ void Histos::bookTrackFitting() {
     hisPerfFitTPetasecForAlgEff_[fitName]  = inputDir.make<TH1F>(addn("PerfFitTPetasecForAlgEff") ,"; #eta sector of TP (used for perf. alg. effi. measurement);",nEta,-0.5,nEta-0.5);
 
     // Histo for efficiency to reconstruct the clustered track perfectly (no incorrect clusters). (Binning must match similar histos in bookTrackCands()).
-    if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
+    if ( stubClustering_ ) {
       hisPerfFitTPinvptForAlgClusterEff_[fitName] = inputDir.make<TH1F>(addn("PerfFitTPinvptForAlgClusterEff") ,"; 1/Pt of TP (used for perf. alg. effi. measurement);",24,0.,1.5*maxAbsQoverPt);
       hisPerfFitTPptForAlgClusterEff_[fitName]    = inputDir.make<TH1F>(addn("PerfFitTPptForAlgClusterEff") ,"; Pt of TP (used for perf. alg. effi. measurement);",25,0.0,100.0);
       hisPerfFitTPetaForAlgClusterEff_[fitName]   = inputDir.make<TH1F>(addn("PerfFitTPetaForAlgClusterEff"),"; #eta of TP (used for perf. alg. effi. measurement);",20,-3.,3.);
@@ -2346,14 +2358,21 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
       hisNumFitTrksPerSect_[fitName]->Fill(p.second);
     }
 
-    // Count stubs assigned to fitted tracks.
+    // Count stubs/clusters assigned to fitted tracks.
     unsigned int nTotStubs = 0;
+    unsigned int nTotClusters = 0;
     for (const L1fittedTrack& fitTrk : fittedTracks) {
       unsigned int nStubs = fitTrk.getNumStubs();
+      unsigned int nClusters = 0 ;
       hisStubsPerFitTrack_[fitName]->Fill(nStubs);
       nTotStubs += nStubs;
+      if ( stubClustering_ ) {
+        nClusters = fitTrk.getNumClusters();
+        nTotClusters += nClusters;
+      }
     }
     profStubsOnFitTracks_[fitName]->Fill(1., nTotStubs);
+    profClustersOnFitTracks_[fitName]->Fill(1., nTotClusters);
 
     // Note truth particles that are successfully fitted. And which give rise to duplicate tracks.
 
@@ -2371,7 +2390,7 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
 	if (assocTP == &tp) {
 	  tpRecoedMap[&tp] = true; 
 	  if (fitTrk.getPurity() == 1.) tpPerfRecoedMap[&tp] = true;
-          if ( fitTrk.getClusterPurity() == 1. && runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) tpPerfClusterRecoedMap[&tp] = true;
+          if ( fitTrk.getClusterPurity() == 1. && stubClustering_ ) tpPerfClusterRecoedMap[&tp] = true;
 	  nMatch++;
 	}
       }
@@ -2977,7 +2996,7 @@ void Histos::plotTrackEffAfterFit(string fitName) {
 		      addn("PerfEffFitVsEta"),"; #eta; Tracking perfect efficiency");
 
   // Also plot efficiency to reconstruct clustered track perfectly.
-  if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
+  if ( stubClustering_ ) {
     makeEfficiencyPlot( inputDir, teffPerfClusterEffFitVsInvPt_[fitName], hisPerfFitTPinvptForClusterEff_[fitName], hisTPinvptForEff_["HT"],
   		      addn("PerfClusterEffFitVsInvPt"),"; 1/Pt; Clustered  tracking perfect efficiency");
     makeEfficiencyPlot( inputDir, teffPerfClusterEffFitVsPt_[fitName], hisPerfFitTPptForClusterEff_[fitName], hisTPptForEff_["HT"],
@@ -3026,7 +3045,7 @@ void Histos::plotTrackEffAfterFit(string fitName) {
 		      addn("PerfAlgEffFitVsEtaSec"),"; #eta sector; Tracking perfect efficiency");
 
   // Also plot algorithmic efficiency to reconstruct the clustered track perfectly.
-  if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
+  if ( stubClustering_ ) {
     makeEfficiencyPlot( inputDir, teffPerfClusterAlgEffFitVsInvPt_[fitName], hisPerfFitTPinvptForAlgClusterEff_[fitName], hisTPinvptForAlgEff_["HT"],
   		      addn("PerfClusterAlgEffFitVsInvPt"),"; 1/Pt; Clustered tracking perfect efficiency");
     makeEfficiencyPlot( inputDir, teffPerfClusterAlgEffFitVsPt_[fitName], hisPerfFitTPptForAlgClusterEff_[fitName], hisTPptForAlgEff_["HT"],
@@ -3065,6 +3084,10 @@ void Histos::printTrackPerformance(bool withRZfilter) {
 
   float numStubsOnTracks = profStubsOnTracks_[tName]->GetBinContent(1);
   float meanStubsPerTrack = numStubsOnTracks/(numTrackCands + 1.0e-6); //protection against demoninator equals zero.
+
+  float numClustersOnTracks = profClustersOnTracks_[tName]->GetBinContent(1);
+  float meanClustersPerTrack = numClustersOnTracks/(numTrackCands + 1.0e-6); //protection against demoninator equals zero.
+
   unsigned int numRecoTPforAlg = hisRecoTPinvptForAlgEff_[tName]->GetEntries();
 
   // Histograms of input truth particles (e.g. hisTPinvptForAlgEff_), used for denominator of efficiencies, are identical, 
@@ -3072,7 +3095,7 @@ void Histos::printTrackPerformance(bool withRZfilter) {
   unsigned int numTPforAlg     = hisTPinvptForAlgEff_["HT"]->GetEntries();
   unsigned int numPerfRecoTPforAlg = hisPerfRecoTPinvptForAlgEff_[tName]->GetEntries();
   unsigned int numPerfRecoTPforClusterAlg = 0;
-  if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) numPerfRecoTPforClusterAlg = hisPerfRecoTPinvptForAlgClusterEff_[tName]->GetEntries();
+  if ( stubClustering_ ) numPerfRecoTPforClusterAlg = hisPerfRecoTPinvptForAlgClusterEff_[tName]->GetEntries();
 
   float algEff = float(numRecoTPforAlg)/(numTPforAlg + 1.0e-6); //protection against demoninator equals zero.
   float algEffErr = sqrt(algEff*(1-algEff)/(numTPforAlg + 1.0e-6)); // uncertainty
@@ -3080,7 +3103,7 @@ void Histos::printTrackPerformance(bool withRZfilter) {
   float algPerfEffErr = sqrt(algPerfEff*(1-algPerfEff)/(numTPforAlg + 1.0e-6)); // uncertainty
   float algPerfClusterEff = 0;
   float algPerfClusterEffErr = 0;
-  if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
+  if ( stubClustering_ ) {
     algPerfClusterEff = float(numPerfRecoTPforClusterAlg)/(numTPforAlg + 1.0e-6); //protection against demoninator equals zero.
     algPerfClusterEffErr = sqrt(algPerfClusterEff*(1-algPerfClusterEff)/(numTPforAlg + 1.0e-6)); // uncertainty
   }
@@ -3099,11 +3122,12 @@ void Histos::printTrackPerformance(bool withRZfilter) {
   }
   cout<<"Number of track candidates found per event = "<<numTrackCands<<" +- "<<numTrackCandsErr<<endl;
   cout<<"                     with mean stubs/track = "<<meanStubsPerTrack<<endl; 
+  if ( stubClustering_ ) cout<<"                     with mean clusters/track = "<<meanClustersPerTrack<<endl; 
   cout<<"Fraction of track cands that are fake = "<<fracFake<<endl;
   cout<<"Fraction of track cands that are genuine, but extra duplicates = "<<fracDup<<endl;
   cout<<"Algorithmic tracking efficiency = "<<numRecoTPforAlg<<"/"<<numTPforAlg<<" = "<<algEff<<" +- "<<algEffErr<<endl;
   cout<<"Perfect algorithmic tracking efficiency = "<<numPerfRecoTPforAlg<<"/"<<numTPforAlg<<" = "<<algPerfEff<<" +- "<<algPerfEffErr<<" (no incorrect hits)"<<endl;
-  if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
+  if ( stubClustering_ ) {
     cout<<"Perfect clustered algorithmic tracking efficiency = "<<numPerfRecoTPforClusterAlg<<"/"<<numTPforAlg<<" = "<<algPerfClusterEff<<" +- "<<algPerfClusterEffErr<<" (no incorrect clusters)"<<endl;
  }
 }
@@ -3123,13 +3147,17 @@ void Histos::printFitTrackPerformance(string fitName) {
 
   float numStubsOnFitTracks = profStubsOnFitTracks_[fitName]->GetBinContent(1);
   float meanStubsPerFitTrack = numStubsOnFitTracks/(numFitTracks + 1.0e-6); //protection against demoninator equals zero.
+
+  float numClustersOnFitTracks = profClustersOnFitTracks_[fitName]->GetBinContent(1);
+  float meanClustersPerFitTrack = numClustersOnFitTracks/(numFitTracks + 1.0e-6); //protection against demoninator equals zero.
+
   unsigned int numFitTPforAlg = hisFitTPinvptForAlgEff_[fitName]->GetEntries();
   // Histograms of input truth particles (e.g. hisTPinvptForAlgEff_), used for denominator of efficiencies, are identical, 
   // irrespective of whether made after HT or after r-z track filter, so always use the former.
   unsigned int numTPforAlg     = hisTPinvptForAlgEff_["HT"]->GetEntries();
   unsigned int numPerfFitTPforAlg = hisPerfFitTPinvptForAlgEff_[fitName]->GetEntries();
   unsigned int numPerfFitTPforClusterAlg = 0;
-  if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) numPerfFitTPforClusterAlg = hisPerfFitTPinvptForAlgClusterEff_[fitName]->GetEntries();
+  if ( stubClustering_ ) numPerfFitTPforClusterAlg = hisPerfFitTPinvptForAlgClusterEff_[fitName]->GetEntries();
 
   float fitEff = float(numFitTPforAlg)/(numTPforAlg + 1.0e-6); //protection against demoninator equals zero.
   float fitEffErr = sqrt(fitEff*(1-fitEff)/(numTPforAlg + 1.0e-6)); // uncertainty
@@ -3145,11 +3173,12 @@ void Histos::printFitTrackPerformance(string fitName) {
   cout << "                    TRACK FIT SUMMARY FOR: " << fitName << endl;
   cout<<"Number of fitted track candidates found per event = "<<numFitTracks<<" +- "<<numFitTracksErr<<endl;
   cout<<"                     with mean stubs/track = "<<meanStubsPerFitTrack<<endl; 
+  if ( stubClustering_ ) cout<<"                     with mean clusters/track = "<<meanClustersPerFitTrack<<endl; 
   cout<<"Fraction of fitted tracks that are fake = "<<fracFakeFit<<endl;
   cout<<"Fraction of fitted tracks that are genuine, but extra duplicates = "<<fracDupFit<<endl;
   cout<<"Algorithmic fitting efficiency = "<<numFitTPforAlg<<"/"<<numTPforAlg<<" = "<<fitEff<<" +- "<<fitEffErr<<endl;
   cout<<"Perfect algorithmic fitting efficiency = "<<numPerfFitTPforAlg<<"/"<<numTPforAlg<<" = "<<fitPerfEff<<" +- "<<fitPerfEffErr<<" (no incorrect hits)"<<endl;
-  if ( runFullKalman_ && settings_->kalmanSeedingOption() == 10 ) {
+  if ( stubClustering_ ) {
     cout<<"Perfect clustered algorithmic tracking efficiency = "<<numPerfFitTPforClusterAlg<<"/"<<numTPforAlg<<" = "<<fitPerfClusterEff<<" +- "<<fitPerfClusterEffErr<<" (no incorrect clusters)"<<endl;
   }
   if (useRZfilt) cout<<"(The above fitter used the '"<<settings_->rzFilterName()<<"' r-z track filter.)"<<endl;

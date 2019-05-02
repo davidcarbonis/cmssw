@@ -119,6 +119,7 @@ private:
   vector<string> trackFitters_;
   vector<string> useRZfilter_;
   bool runFullKalman_;
+  bool stubClustering_;
   bool ranRZfilter_;
   bool resPlotOpt_;
 
@@ -293,6 +294,7 @@ private:
   map<string, TH1F*>     hisNumTrksPerOct_;
   map<string, TProfile*> profStubsOnTracks_;
   map<string, TProfile*> profStubsOnTracksVsEta_;
+  map<string, TProfile*> profClustersOnTracks_;
   map<string, TH1F*>     hisStubsOnTracksPerSect_;
   map<string, TH1F*>     hisStubsOnTracksPerOct_;
   map<string, TH1F*>     hisUniqueStubsOnTrksPerSect_;
@@ -414,6 +416,7 @@ private:
 
   map<string, TH1F*>     hisStubsPerFitTrack_;
   map<string, TProfile*> profStubsOnFitTracks_;
+  map<string, TProfile*> profClustersOnFitTracks_;
 
   map<string, TH1F*> hisFitQinvPtMatched_;
   map<string, TH1F*> hisFitPhi0Matched_;
