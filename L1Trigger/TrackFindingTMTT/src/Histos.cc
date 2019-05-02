@@ -987,6 +987,7 @@ void Histos::bookTrackCands(bool withRZfilter) {
   // Now book histograms for studying tracking in general.
 
   string tName = withRZfilter  ?  "RZ"  :  "HT";
+  if ( runFullKalman_ ) tName = "CKF";
 
   // Define lambda function to facilitate adding "tName" to directory & histogram names.
   //auto addn = [tName](string s){ return TString::Format("%s_%s", s.c_str(), tName.c_str()).Data(); };
