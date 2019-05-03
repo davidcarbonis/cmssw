@@ -6,7 +6,6 @@
 #include <L1Trigger/TrackFindingTMTT/interface/HTrphi.h>
 #include <L1Trigger/TrackFindingTMTT/interface/Get3Dtracks.h>
 #include <L1Trigger/TrackFindingTMTT/interface/KillDupFitTrks.h>
-#include <L1Trigger/TrackFindingTMTT/interface/KalmanCombSeeder.h>
 #include <L1Trigger/TrackFindingTMTT/interface/TrackFitGeneric.h>
 #include <L1Trigger/TrackFindingTMTT/interface/L1fittedTrack.h>
 #include <L1Trigger/TrackFindingTMTT/interface/L1fittedTrk4and5.h>
