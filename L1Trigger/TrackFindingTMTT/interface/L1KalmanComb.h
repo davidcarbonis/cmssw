@@ -62,6 +62,9 @@ class L1KalmanComb : public TrackFitGeneric{
 
     protected:
         /* Track finding + fitting methods */
+        L1track3D singleStubSeed ( const Stub* stub );
+        L1track3D singleStubClusterSeed ( const StubCluster* stub );
+        L1fittedTrack fitClusteredTrack ( const L1track3D& l1track3D );
         //
     protected:
 	/* Methods */
