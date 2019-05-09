@@ -831,7 +831,6 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
  
   if ( seedingOption == 10 ) {
 
-    vector<const Stub*> otherStubs;
     vector<const StubCluster*> seedClusters;
     vector<const StubCluster*> otherClusters;
 
@@ -848,8 +847,6 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
     // Fill kf seed stub array
     for ( auto stub : inputStubs ) {
-
-      if ( stub->layerIdReduced() != 1 ) otherStubs.push_back(stub); // Used in l1track3D seed
 
       float stubPhi = stub->phi();
       float stubEta = stub->eta();
@@ -898,8 +895,9 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
     // Create l1track3D seeds 
     for ( auto cls : stubcls ) {
-      if ( cls->layerIdReduced() == 1 ) seedClusters.push_back(cls);
-      else otherClusters.push_back(cls);
+      unsigned int layerId = cls->layerId();
+      if ( layerId == 1 || layerId == 11 || layerId == 21 ) seedClusters.push_back(cls);
+      else if ( layerId != 1 ) otherClusters.push_back(cls);
     }
 
     for ( auto seed : seedClusters ) {
@@ -1018,63 +1016,49 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
   // Seeding (no clustering) from layers 1+2  
   else if ( seedingOption == 1 ) {
 
-    vector<const Stub*> layer1Stubs;
-    vector<const Stub*> layer2Stubs;
+    vector<const Stub*> seedStubs;
+
+    vector<const Stub*> otherStubs;
+    vector<const Stub*> otherStubs2;
+
     vector<const Stub*> posDiskStubs;
     vector<const Stub*> negDiskStubs;
-
-    vector<const Stub*> layer2PlusOtherStubs;
-    vector<const Stub*> otherStubs;
-    vector<const Stub*> otherPosDiskStubs;
-    vector<const Stub*> otherNegDiskStubs;
+    vector<const Stub*> posDiskStubs2;
+    vector<const Stub*> negDiskStubs2;
 
     // Default seeding option
     for ( auto stub : inputStubs ) {
-//      unsigned int reducedStubLayer = stub->layerIdReduced();
-//      if ( reducedStubLayer == 1 ) layer1Stubs.push_back(stub);
-//      else if ( reducedStubLayer == 2 ) layer2Stubs.push_back(stub);
-//      else otherStubs.push_back(stub);
 
       unsigned int stubLayer = stub->layerId();
-      bool barrel = stub->barrel();
 
-      if ( stubLayer == 1 ) layer1Stubs.push_back(stub);
-      else if ( stubLayer == 2 ) layer2Stubs.push_back(stub);
-      else if ( !barrel && stubLayer < 20 ) posDiskStubs.push_back(stub);
-      else if ( !barrel && stubLayer > 20 ) negDiskStubs.push_back(stub);
+      if ( stubLayer == 1 || stubLayer == 11 || stubLayer == 21 ) seedStubs.push_back(stub);
+      if ( stubLayer == 2 || stubLayer == 12 || stubLayer == 22 ) seedStubs.push_back(stub);
+ 
+      if ( stubLayer != 1 ) otherStubs.push_back(stub);
+      if ( stubLayer > 2 ) otherStubs2.push_back(stub);
+      if ( stubLayer > 11 && stubLayer < 20 ) posDiskStubs.push_back(stub);
+      if ( stubLayer > 12 && stubLayer < 20 ) posDiskStubs2.push_back(stub);
+      if ( stubLayer > 21 ) negDiskStubs.push_back(stub);
+      if ( stubLayer > 22 ) negDiskStubs2.push_back(stub);
 
-      else if ( stubLayer == 2 || stubLayer == 11 || stubLayer == 21 || stubLayer == 12 || stubLayer == 22 ) layer2Stubs.push_back(stub);
-      else if ( stubLayer != 1 ) otherStubs.push_back(stub);
    }
 
-    // Create seeds from layer 1 + all layer 2+ stubs
-    for ( auto stub : layer1Stubs ) {
+    // Create seeds 
+    for ( auto stub : seedStubs ) {
       float qOverPt = stub->qOverPt();
       float phi0 = stub->beta();
       float z0 = 0;
       float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
       
       vector<const Stub*> stubs {stub};
-      stubs.insert( stubs.end(), layer2Stubs.begin(), layer2Stubs.end() );
-      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-      
-      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-      
-      L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-      trackCandidates.push_back(l1Trk3D);
-    }
+      const unsigned int layerId {stub->layerId()};
 
-    // Create seeds from layer 2 + all layer 3+ stubs
-    for ( auto stub : layer2Stubs ) {
-      float qOverPt = stub->qOverPt();
-      float phi0 = stub->beta();
-      float z0 = 0;
-      float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-      
-      vector<const Stub*> stubs {stub};
-      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+      if ( layerId == 1 )  stubs.insert( stubs.end(), otherStubs.begin(),    otherStubs.end() );
+      if ( layerId == 11 ) stubs.insert( stubs.end(), posDiskStubs.begin(),  posDiskStubs.end() );
+      if ( layerId == 21 ) stubs.insert( stubs.end(), negDiskStubs.begin(),  negDiskStubs.end() );
+      if ( layerId == 2 )  stubs.insert( stubs.end(), otherStubs2.begin(),   otherStubs2.end() );
+      if ( layerId == 12 ) stubs.insert( stubs.end(), posDiskStubs2.begin(), posDiskStubs2.end() );
+      if ( layerId == 22 ) stubs.insert( stubs.end(), negDiskStubs2.begin(), negDiskStubs2.end() );
       
       const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
       const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
@@ -1096,21 +1080,19 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
     vector<const Stub*> seedStubs;
     vector<const Stub*> otherStubs;
-    vector<const Stub*> otherPosDiskStubs;
-    vector<const Stub*> otherNegDiskStubs;
+    vector<const Stub*> posDiskStubs;
+    vector<const Stub*> negDiskStubs;
 
     // Default seeding option
     for ( auto stub : inputStubs ) {
-//      unsigned int reducedStubLayer = stub->layerIdReduced();
-//      if ( reducedStubLayer == 1 ) seedStubs.push_back(stub);
-//      else otherStubs.push_back(stub);
 
-      unsigned int stubLayer = stub->layerId();
+      const unsigned int stubLayer {stub->layerId()};
       if ( stubLayer == 1 || stubLayer == 11 || stubLayer == 21 ) seedStubs.push_back(stub);
-      else if ( stubLayer != 1 ) otherStubs.push_back(stub);
+      if ( stubLayer != 1 ) otherStubs.push_back(stub);
+//      otherStubs.push_back(stub);
+      if ( stubLayer > 11 && stubLayer < 20 ) posDiskStubs.push_back(stub);
+      if ( stubLayer > 21 ) negDiskStubs.push_back(stub);
 
-      else if ( !stub->barrel() && stubLayer >= 12 && stubLayer < 20 ) otherPosDiskStubs.push_back(stub);
-      else if ( !stub->barrel() && stubLayer >= 22 ) otherNegDiskStubs.push_back(stub);
     }
 
     // create single stub seed
@@ -1124,9 +1106,9 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       unsigned int stubLayer = stub->layerId();
 
       vector<const Stub*> stubs {stub};
-      if ( stubLayer == 1 || stubLayer == 11 || stubLayer == 21 ) stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-      else if ( !stub->barrel() && stubLayer < 20 )  stubs.insert( stubs.end(), otherPosDiskStubs.begin(), otherPosDiskStubs.end() );
-      else if ( !stub->barrel() && stubLayer > 20 )  stubs.insert( stubs.end(), otherNegDiskStubs.begin(), otherNegDiskStubs.end() );
+      if ( stubLayer == 1 ) stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+      if ( stubLayer == 11 ) stubs.insert( stubs.end(), posDiskStubs.begin(), posDiskStubs.end() );
+      if ( stubLayer == 21 ) stubs.insert( stubs.end(), negDiskStubs.begin(), negDiskStubs.end() );
 
       const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
       const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
@@ -2277,3 +2259,4 @@ float L1KalmanComb::getApproxB(float z, float r) const {
 }
 
 }
+

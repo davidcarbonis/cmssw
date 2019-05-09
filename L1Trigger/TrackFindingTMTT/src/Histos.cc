@@ -18,6 +18,7 @@
 #include <TF1.h>
 #include <TPad.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
 #include <TGraphAsymmErrors.h>
 #include <TGraph.h>
 #include <TEfficiency.h>
@@ -236,6 +237,28 @@ void Histos::bookInputData() {
 
   hisStubB_ = inputDir.make<TH1F>("StubB","Variable B for all stubs on TP",100,0.9,10);
   hisStubBApproxDiff_tilted_ = inputDir.make<TH1F>("StubBApproxDiff_tilted_","Difference between exact and approximate values for B",100,-1,1);
+ 
+  vector<std::string> binSizes = {"1","2","4","8","16","32","64","128","256","512"};
+  for ( unsigned int i = 1; i != 7; i++ ) {
+    std::stringstream layerNum;
+    layerNum << i;
+    profLayerOccupancyVsBinSize_[i] = inputDir.make<TProfile2D>( ("Layer " + layerNum.str() + " occupancy").c_str(), "; # #phi bins per sector; # #eta bins per region", binSizes.size(), 0.5, binSizes.size()+.5, binSizes.size(), 0.5, binSizes.size()+.5);
+    for ( unsigned int j = 0; j != binSizes.size(); j++ ) {
+      profLayerOccupancyVsBinSize_[i]->GetXaxis()->SetBinLabel( j+1, binSizes[j].c_str()); 
+      profLayerOccupancyVsBinSize_[i]->GetYaxis()->SetBinLabel( j+1, binSizes[j].c_str()); 
+    }
+  }
+  for ( unsigned int i = 11; i != 16; i++ ) {
+    std::stringstream layerNum;
+    layerNum << i;
+    profLayerOccupancyVsBinSize_[i] = inputDir.make<TProfile2D>( ("Layer " + layerNum.str() + " occupancy").c_str(), "; # #phi bins per sector; # #eta bins per region", binSizes.size(), 0.5, binSizes.size()+.5, binSizes.size(), 0.5, binSizes.size()+.5);
+    for ( unsigned int j = 0; j != binSizes.size(); j++ ) {
+      profLayerOccupancyVsBinSize_[i]->GetXaxis()->SetBinLabel( j+1, binSizes[j].c_str()); 
+      profLayerOccupancyVsBinSize_[i]->GetYaxis()->SetBinLabel( j+1, binSizes[j].c_str()); 
+    }
+  }
+
+  hisInnermostStubLayer_ = inputDir.make<TH1F>("InnermostStubLayer", "Innermost stub layer; Layer number", 15, 0.5, 15.5);
 }
 
 //=== Fill histograms using input stubs and tracking particles.
@@ -312,17 +335,99 @@ void Histos::fillInputData(const InputData& inputData) {
   }
 
   // Study efficiency for good stubs of tightened front end-electronics cuts.
+  // Also study which layers the innermost stub comes from ...
   for (const TP& tp : vTPs) {
     if (tp.useForAlgEff()) {// Only bother for stubs that are on TP that we have a chance of reconstructing.
       const vector<const Stub*> stubs = tp.assocStubs();
+      unsigned int innermostStubLayer {999};
       for (const Stub* s : stubs) {
         hisStubIneffiVsInvPt_->Fill(1./tp.pt()    , (! s->frontendPass()) );
         hisStubIneffiVsEta_->Fill  (fabs(tp.eta()), (! s->frontendPass()) );
+        unsigned int layerId = s->layerId();
+        if ( layerId > 20 ) layerId -= 10;
+        if ( layerId < innermostStubLayer ) innermostStubLayer = layerId;
       }
+      hisInnermostStubLayer_->Fill ( innermostStubLayer );
     }
   }
 
-  // Plot stub bend-derived information.
+  // Plot phi/eta bin stub occupancy 
+
+  vector<unsigned int> binSizes{1,2,4,8,16,32,64,128,256,512};
+  
+  for ( unsigned int phiBinSize = 0; phiBinSize != binSizes.size(); phiBinSize++ ) {
+    for ( unsigned int etaBinSize = 0; etaBinSize != binSizes.size(); etaBinSize++ ) {
+
+      // number of phi and eta bins globally
+      unsigned int nBinsKalmanSeedPhiAxis_  = binSizes[phiBinSize] * numPhiSectors_;
+      unsigned int nBinsKalmanSeedEtaAxis_  = binSizes[etaBinSize] * numEtaRegions_;
+
+      // init matrix
+      matrix< vector<const Stub*> > kfStubArray_ (nBinsKalmanSeedPhiAxis_, nBinsKalmanSeedEtaAxis_);
+
+      for (unsigned int iPhiSec = 0; iPhiSec < numPhiSectors_; iPhiSec++) {
+	for (unsigned int iEtaReg = 0; iEtaReg < numEtaRegions_; iEtaReg++) {
+	  Sector sector;
+          sector.init(settings_, iPhiSec, iEtaReg);
+      
+	  float phiMinSector    = 2.*M_PI * (float(iPhiSec)) / (float(numPhiSectors_)) - M_PI;
+
+	  // binning increments
+	  float phiInc = ( (2.*M_PI)/(numPhiSectors_) )/float(binSizes[phiBinSize]);
+	  float etaInc = ( sector.etaMax() - sector.etaMin() ) /float(binSizes[etaBinSize]) ;
+
+	  for (const TP& tp : vTPs) {
+	    if (tp.useForAlgEff()) {// Only bother for stubs that are on TP that we have a chance of reconstructing.
+	      const vector<const Stub*> stubs = tp.assocStubs();
+	      for (const Stub* s : stubs) {
+		double stubPhi = s->phi();
+		double stubEta = s->eta();
+
+		// local bin
+		unsigned int phiBin = std::ceil( (stubPhi-phiMinSector)/phiInc ) - 1;
+		unsigned int etaBin = std::ceil( (stubEta-sector.etaMin())/etaInc ) - 1;
+          
+	    	// overflow given uncert from poor bend resolution
+		if ( phiBin >= binSizes[phiBinSize] ) phiBin = binSizes[phiBinSize] - 1;
+		if ( etaBin >= binSizes[etaBinSize] ) etaBin = binSizes[etaBinSize] - 1;
+
+		// translate local bin numbering to global bin numbering
+		unsigned int globalPhiBin = phiBin + (iPhiSec* binSizes[phiBinSize]);
+		unsigned int globalEtaBin = etaBin + (iEtaReg* binSizes[etaBinSize]);
+
+		vector<const Stub*>& arrayStubs = kfStubArray_(globalPhiBin, globalEtaBin);
+		arrayStubs.push_back(s);
+
+	      }
+	    }
+	  } // End TP loop
+	} 
+      } // End iPhiSec and iEtaReg loops
+
+      // Loop over all phi/eta bins
+      for ( unsigned int phiBin = 0; phiBin < binSizes[phiBinSize]; phiBin++ ) {
+	for ( unsigned int etaBin = 0; etaBin < binSizes[etaBinSize]; etaBin++ ) {
+          // Get all the stubs in this bin
+	  vector<const Stub*>& arrayStubs = kfStubArray_(phiBin, etaBin);
+          // Prepare to count how many stubs are found in each layer for this bin!
+          unsigned int numStubsPerLayer[11] {0};
+	  for ( const Stub* s : arrayStubs ) {
+	    unsigned int layerId = s->layerId();
+            if ( layerId > 20 ) layerId -= 10; 
+            if ( layerId > 10 ) layerId -= 4;
+            numStubsPerLayer[layerId-1] += 1;
+	  } // End looping over all stubs in the cell
+          for ( unsigned int layer = 0; layer < 11; layer++ ) {
+            unsigned int index = (layer) < 6 ? (layer + 1) : (layer + 5);
+            profLayerOccupancyVsBinSize_[index]->Fill( phiBinSize+1, etaBinSize+1, numStubsPerLayer[layer]);
+          }
+	} // End eta Loop
+      } // End phi loop
+      kfStubArray_.clear();
+    } // End Eta bin loop
+  } // End Phi bin loop
+  // End occupancy plots
+
   for (const Stub* stub : vStubs) {
     hisPtStub_->Fill(stub->qOverPt()); 
     hisDelPhiStub_->Fill(stub->dphi()); 

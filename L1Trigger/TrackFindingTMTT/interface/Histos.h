@@ -20,6 +20,7 @@ class TH2F;
 class TH2Poly;
 class TF1;
 class TProfile;
+class TProfile2D;
 class TGraphAsymmErrors;
 class TGraph;
 class TEfficiency;
@@ -206,6 +207,10 @@ private:
   TH1F* hisStubB_;
   TH1F* hisStubBApproxDiff_tilted_;
   TGraph* graphBVsZoverR_;
+
+  // Histograms for CKF work
+  map<unsigned int, TProfile2D*> profLayerOccupancyVsBinSize_;
+  TH1F*                          hisInnermostStubLayer_;
 
   // Histograms checking that (eta,phi) sector definition is good.
   TH1F* hisFracStubsInSec_;
