@@ -111,6 +111,16 @@ static void printStubLayers( std::ostream &os, std::vector<const Stub *> &stubs 
   }
 }
 
+static void printClusterLayers( std::ostream &os, std::vector<const StubCluster*> cls ){
+
+  if( cls.size() == 0 ) os << "stub cluster layers = []" << endl;
+  else{
+    os << "cluster layers = [ ";
+    for( unsigned i=0; i<cls.size()-1; i++ ) os << cls[i]->layerId() << ", ";
+    os << cls.back()->layerId() << " ]" << endl;
+  }
+}
+
 static void printStubCluster( std::ostream &os, const StubCluster * stubCluster, bool addReturn=true ){
   os << "stub: ";
   //   os << "addr=" << stub << " "; 
@@ -131,7 +141,7 @@ static void printStubCluster( std::ostream &os, const StubCluster * stubCluster,
   else os << " | ";
 }
 
-static void printStubClusters( std::ostream &os, std::vector<const StubCluster *> &stubClusters ){
+static void printStubClusters( std::ostream &os, std::vector<const StubCluster *> stubClusters ){
 
   for( auto &stubcl : stubClusters ){
     printStubCluster( os, stubcl );
@@ -208,31 +218,7 @@ L1KalmanComb::L1KalmanComb(const Settings* settings, const uint nPar, const stri
   iLastPhiSec_ = 999;
   iLastEtaReg_ = 999;
 }
-  /*
-L1track3D L1KalmanComb::singleStubSeed( const Stub* seed ) {
-}
 
-L1track3D L1KalmanComb::singleStubClusterSeed( const StubCluster* seed, const StubCluster* ){
-
-  float qOverPt = seed->stubs()[0]->qOverPt();
-
-  if ( seed->stubs().size() > 1 ) {
-    for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
-      if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
-    }
-  }
-
-  float phi0 = ( seed->phi()+ seed->dphi() );
-  float z0 = 0;
-  float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-
-  const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-  const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-  const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-
- 
-}
-  */
 L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D ){
   resetStates();
   deleteStubClusters();
@@ -246,6 +232,20 @@ L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D ){
   tpa_ = tpa;
 
   const vector<const StubCluster*> cls = l1track3D.getStubClusters();
+
+  if ( getSettings()->kalmanDebugLevel() >= 1 ) {
+    std::cout << "===============================================================================" << endl;
+    std::cout << "Input track cand: [phiSec,etaReg]=[" << l1track3D.iPhiSec() << "," << l1track3D.iEtaReg() << "]";
+    std::cout <<" HT(m,c)=("<<l1track3D.getCellLocationHT().first << "," 
+	                        <<l1track3D.getCellLocationHT().second << ") q/pt="
+	      <<l1track3D.qOverPt()<<" tanL="<<l1track3D.tanLambda()<< " z0="<<l1track3D.z0()<< " phi0="<<l1track3D.phi0()
+                                <<" nStubClusters="<<l1track3D.getNumStubClusters()<<std::endl;
+    if (not getSettings()->hybrid()) printTP( cout, tpa );
+    if( getSettings()->kalmanDebugLevel() >= 2 ){
+      printClusterLayers( cout, cls );
+      printStubClusters( cout, cls );
+    }
+  }
 
   //Kalman Filter
   std::vector<const kalmanState *> cands = doKF( l1track3D, cls, tpa );
@@ -290,21 +290,22 @@ L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D ){
       }
     }
 
-    // Currently not setup for full CKF
     // Fitted track params must lie in same sector as HT originally found track in.
-    /*	if ( ! ( getSettings()->hybrid() ) || ( settings_->runFullKalman() ) ) { // consistentSector() function not yet working for Hybrid.
+    if ( ! settings_->runFullKalman() ) { // consistentSector() function not yet working for Hybrid.
+      if ( ! getSettings()->hybrid() ) { // consistentSector() function not yet working for Hybrid.
 	if (! returnTrk.consistentSector()) {
-	L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubClusters(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
-	if(this->isHLS() && nPar_ == 4) {
-	failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_, consistentHLS );
-	} else {
-	failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
+	  L1fittedTrack failedTrk(getSettings(), l1track3D, cand->stubClusters(), trackParams["qOverPt"], trackParams["d0"], trackParams["phi0"], trackParams["z0"], trackParams["t"], cand->chi2(), nPar_, false);
+	  if(this->isHLS() && nPar_ == 4) {
+	    failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_, consistentHLS );
+	  } else {
+	    failedTrk.setInfoKF( cand->nSkippedLayers(), numUpdateCalls_ );
+	  }
+	  return failedTrk;
 	}
-	fittedTracks.push_back(failedTrk);
-	}
-	}
-    */	
-
+      }
+    }
+    	
+ 
     //candidate dump
     if( getSettings()->kalmanDebugLevel() >= 3 ){
       cout << "------------------------------------" << endl;
@@ -346,7 +347,7 @@ L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D ){
 	}
 	cout<<"---------------------"<<endl;
 	/*				
-					for( it_last = last_states.begin(); it_last != last_states.end(); it_last++ ){
+				for( it_last = last_states.begin(); it_last != last_states.end(); it_last++ ){
 					const kalmanState *state = *it_last;
 				
 					//std::map<std::string, double> trackParams = getTrackParams(state);
@@ -1167,7 +1168,8 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
     }
     
     for ( auto trk : trackCandidates ) {
-      fittedTracks.push_back(L1KalmanComb::fit(trk));
+      L1fittedTrack fitTrk = L1KalmanComb::fit(trk);
+      fittedTracks.push_back(fitTrk);
     }
     return fittedTracks;
   }
