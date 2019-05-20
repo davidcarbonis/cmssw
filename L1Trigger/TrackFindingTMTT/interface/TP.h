@@ -25,7 +25,7 @@ class TP : public TrackingParticlePtr {
 
 public:
   // Fill useful info about tracking particle.
-  TP(const TrackingParticlePtr& tpPtr, unsigned int index_in_vTPs, const Settings* settings);
+  TP(const TrackingParticlePtr& tpPtr, unsigned int index_in_vTPs, const Settings* settings, unsigned int eventNum, unsigned int eventRun);
   ~TP(){}
 
   bool operator==(const TP& tpOther) {return (this->index() == tpOther.index());}
@@ -37,6 +37,9 @@ public:
 
   // Location in InputData::vTPs_
   unsigned int                           index() const { return     index_in_vTPs_; }
+  unsigned int                        eventNum() const { return          eventNum_; }
+  unsigned int                        eventRun() const { return          eventRun_; }
+
   // Basic TP properties
   int                                    pdgId() const { return             pdgId_; }
   // Did TP come from in-time or out-of-time bunch crossing?
@@ -102,6 +105,8 @@ private:
 private:
 
   unsigned int                      index_in_vTPs_; // location of this TP in InputData::vTPs
+  unsigned int                           eventNum_; // event number which this TP was produced in
+  unsigned int                           eventRun_; // event run which this TP was produced in
 
   const Settings*                        settings_; // Configuration parameters
 

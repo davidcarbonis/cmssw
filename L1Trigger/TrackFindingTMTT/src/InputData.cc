@@ -60,7 +60,7 @@ InputData::InputData(const edm::Event& iEvent, const edm::EventSetup& iSetup, Se
       if (tPart.pt() > ptMin) {
 	TrackingParticlePtr tpPtr(tpHandle, i);
 	// Store the TrackingParticle info, using class TP to provide easy access to the most useful info.
-	TP tp(tpPtr, tpCount, settings);
+	TP tp(tpPtr, tpCount, settings, iEvent.id().event(), iEvent.id().run());
 	// Only bother storing tp if it could be useful for tracking efficiency or fake rate measurements.
 	if (tp.use()) {
 

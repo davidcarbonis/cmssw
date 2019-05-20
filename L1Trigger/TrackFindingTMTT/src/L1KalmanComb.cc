@@ -46,6 +46,10 @@ static bool orderStubsByLayer(const Stub* a, const Stub* b){
   return (a->layerId() < b->layerId());
 }
 
+static bool orderClustersByLayer(const StubCluster* a, const StubCluster* b){
+  return (a->layerId() < b->layerId());
+}
+
 static bool orderStubsByZ(const Stub* a, const Stub* b){
   return (a->z() < b->z());
 }
@@ -84,6 +88,7 @@ void L1KalmanComb::printTP( std::ostream &os, const TP *tp )const{
     tpParams["d0"] = tp->d0();
   }
   if( tp ){
+    os << "  eventNum = " << tp->eventNum();
     os << "  TP index = " << tp->index() << " useForAlgEff = " << useForAlgEff << " ";
     for( auto pair : tpParams ){
       os << pair.first << ":" << pair.second << ", "; 
@@ -111,6 +116,9 @@ static void printStubCluster( std::ostream &os, const StubCluster * stubCluster,
   //   os << "addr=" << stub << " "; 
   os << "layer=" << stubCluster->layerId() << " ";
   os << "ring=" << stubCluster->endcapRing() << " ";
+  os << "TPids="; 
+  std::set<const TP*> tps = stubCluster->assocTPs();
+  for( auto tp : tps ) os << tp->index() << ","; 
   os << "r=" << stubCluster->r() << " ";
   os << "phi=" << stubCluster->phi() << " ";
   os << "z=" << stubCluster->z() << " ";
@@ -118,9 +126,7 @@ static void printStubCluster( std::ostream &os, const StubCluster * stubCluster,
   os << "sigmaZ=" << stubCluster->sigmaZ() << " ";
   os << "dphi_dr=" << stubCluster->dphi_dr() << " ";
   os << "#stubs= " << stubCluster->nStubs() << " ";
-  os << "TPids="; 
-  std::set<const TP*> tps = stubCluster->assocTPs();
-  for( auto tp : tps ) os << tp->index() << ","; 
+  if ( stubCluster->nStubs() > 0 ) os << " indices: ";for ( const Stub* s : stubCluster->stubs() ) os << s->index() << " ";
   if( addReturn ) os << endl;
   else os << " | ";
 }
@@ -137,14 +143,14 @@ static void printStub( std::ostream &os, const Stub * stub, bool addReturn=true 
   os << "index=" << stub->index() << " ";
   os << "layerId=" << stub->layerId() << " ";
   os << "endcapRing=" << stub->endcapRing() << " ";
+  std::set<const TP*> tps = stub->assocTPs();
+  for( auto tp : tps ) os << tp->index() << ","; 
   os << "r=" << stub->r() << " ";
   os << "phi=" << stub->phi() << " ";
   os << "z=" << stub->z() << " ";
   os << "sigmaX=" << stub->sigmaX() << " ";
   os << "sigmaZ=" << stub->sigmaZ() << " ";
   os << "TPids="; 
-  std::set<const TP*> tps = stub->assocTPs();
-  for( auto tp : tps ) os << tp->index() << ","; 
   if( addReturn ) os << endl;
   else os << " | ";
 
@@ -829,10 +835,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
   const unsigned int seedingOption {settings_->kalmanSeedingOption()};
  
-  if ( seedingOption == 10 ) {
-
-    vector<const StubCluster*> seedClusters;
-    vector<const StubCluster*> otherClusters;
+  if ( seedingOption >= 10 ) {
 
     // number of phi and eta bins
     unsigned int nBinsKalmanSeedPhiAxis_  = settings_->kalmanSeedNbinsPhiAxis();
@@ -858,190 +861,189 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       if ( phiBin >= nBinsKalmanSeedPhiAxis_ ) phiBin = nBinsKalmanSeedPhiAxis_ - 1;
       if ( etaBin >= nBinsKalmanSeedEtaAxis_ ) etaBin = nBinsKalmanSeedEtaAxis_ - 1;
       // underflow given uncert from poor bend resolution
-//      if ( phiBin < 0 ) phiBin = 0;
-//      if ( etaBin < 0 ) etaBin = 0;
+      //      if ( phiBin < 0 ) phiBin = 0;
+      //      if ( etaBin < 0 ) etaBin = 0;
 
       vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
       arrayStubs.push_back(stub);
     }
 
     // Create stub clusters for each kf stub array cell
-    std::vector<const StubCluster *> stubcls;
+    std::vector<const StubCluster*> stubcls;
 
     for ( unsigned int phiBin = 0; phiBin != nBinsKalmanSeedPhiAxis_; phiBin++ ) {
       for ( unsigned int etaBin = 0; etaBin != nBinsKalmanSeedEtaAxis_; etaBin++ ) {
-        // Access stubs in each KF array bin
-        const vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
+	// Access stubs in each KF array bin
+	const vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
 
-        // create vector of stubs for each layer
-        for ( unsigned j_layer=0; j_layer < 16; j_layer++ ){
+	// create vector of stubs for each layer
+	for ( unsigned j_layer=0; j_layer < 16; j_layer++ ){
 
-          std::vector<const Stub *> layer_stubs;
-          for(unsigned i=0; i < arrayStubs.size(); i++ ){
-            const Stub *stub = arrayStubs.at(i);
-            if( stub->layerId() == LayerId[j_layer] ){
-              layer_stubs.push_back( stub );
-            } // pushed back stub to layer vector
-          } // end loop over stubs
+	  std::vector<const Stub *> layer_stubs;
+	  for(unsigned i=0; i < arrayStubs.size(); i++ ){
+	    const Stub *stub = arrayStubs.at(i);
+	    if( stub->layerId() == LayerId[j_layer] ){
+	      layer_stubs.push_back( stub );
+	    } // pushed back stub to layer vector
+	  } // end loop over stubs
 
 	  if ( layer_stubs.size() == 0 ) continue; // if no stubs in layer, do not make stub cluster! 
 
-          StubCluster *stbcl = new StubCluster( layer_stubs, sectorPhi(), 0);
-          stubcls.push_back( stbcl );
+	  StubCluster *stbcl = new StubCluster( layer_stubs, sectorPhi(), 0);
+	  stubcls.push_back( stbcl );
 
-        } // end layer loop
+	} // end layer loop
       } // end eta loop
     } // end phi loop
 
-    // Create l1track3D seeds 
-    for ( auto cls : stubcls ) {
-      unsigned int layerId = cls->layerId();
-      if ( layerId == 1 || layerId == 11 || layerId == 21 ) seedClusters.push_back(cls);
-      else if ( layerId != 1 ) otherClusters.push_back(cls);
-    }
+    if ( seedingOption == 11 ) {
 
-    for ( auto seed : seedClusters ) {
+      vector<const StubCluster*> seedClusters;
+      vector<const StubCluster*> otherClusters;
+      vector<const StubCluster*> otherClusters2;
 
-      float qOverPt = seed->stubs()[0]->qOverPt();
+      vector<const StubCluster*> posDiskClusters;
+      vector<const StubCluster*> negDiskClusters;
 
-      if ( seed->stubs().size() > 1 ) {
-        for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
-          if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
-        }
+      // Create l1track3D seeds
+      for ( auto cls : stubcls ) {
+        unsigned int clusterLayer = cls->layerId();
+        bool isMatched {true};
+//        if ( stub->assocTP() == nullptr ) isMatched = false;
+
+        if ( (clusterLayer == 1 || clusterLayer == 11 || clusterLayer == 21) && isMatched) seedClusters.push_back(cls);
+        if ( clusterLayer == 2 && isMatched ) seedClusters.push_back(cls);
+
+        if ( clusterLayer > 1 && isMatched ) otherClusters.push_back(cls);
+        if ( clusterLayer > 2 && isMatched ) otherClusters2.push_back(cls);
+        if ( clusterLayer > 11 && clusterLayer < 20 && isMatched ) posDiskClusters.push_back(cls);
+        if ( clusterLayer > 21 && isMatched ) negDiskClusters.push_back(cls);
+
       }
 
+      // order seeds by layer
+      sort (seedClusters.begin(), seedClusters.end(), orderClustersByLayer);
 
-      float phi0 = ( seed->phi()+ seed->dphi() );
-      float z0 = 0;
-      float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+      // Create seeds
+      for ( auto seed : seedClusters ) { 
 
-      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+	float qOverPt = seed->stubs()[0]->qOverPt();
 
-      vector<const StubCluster*> cls {seed};
-      cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
+	if ( seed->stubs().size() > 1 ) {
+	  for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
+	    if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
+	  }
+	}
 
-      L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+	float phi0 = ( seed->phi()+ seed->dphi() );
+	float z0 = 0;
+	float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
 
-      // Now cand is all setup ... do KF!
-      fittedTracks.push_back( L1KalmanComb::fitClusteredTrack(l1track3D) );
+	const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+
+	vector<const StubCluster*> cls {seed};
+
+	const unsigned int layerId {seed->layerId()};
+
+	//      if ( layerId == 1 ) continue;
+	if ( layerId == 1 )  cls.insert( cls.end(), otherClusters.begin(),   otherClusters.end() );
+	if ( layerId == 11 ) cls.insert( cls.end(), posDiskClusters.begin(), posDiskClusters.end() );
+	if ( layerId == 21 ) cls.insert( cls.end(), negDiskClusters.begin(), negDiskClusters.end() );
+	if ( layerId == 2 )  cls.insert( cls.end(), otherClusters2.begin(),  otherClusters2.end() );
+
+	L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+
+	// Now cand is all setup ... do KF!
+	fittedTracks.push_back( L1KalmanComb::fitClusteredTrack(l1track3D) );
+      }
+      
+      // Fit each seed and return fitted track!
+      return fittedTracks;
+
+//        L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, $
+//        L1fittedTrack fittedTrk ( L1KalmanComb::fit(l1Trk3D) );
+        
     }
 
-    // Fit each seed and return fitted track!
-    return fittedTracks;
-  }
+    else { // ( seedingOption == 10 )
 
-  // seeding (no clustering) using layer 1+2+3
-  else if ( seedingOption == 5 ) {
+      vector<const StubCluster*> seedClusters;
+      vector<const StubCluster*> otherClusters;
 
-    vector<const Stub*> layer1Stubs;
-    vector<const Stub*> layer2Stubs;
-    vector<const Stub*> layer3Stubs;
-    vector<const Stub*> otherStubs;
+      // Create l1track3D seeds 
+      for ( auto cls : stubcls ) {
+	unsigned int layerId = cls->layerId();
+	if ( layerId == 1 ) seedClusters.push_back(cls);
+	else if ( layerId != 1 ) otherClusters.push_back(cls);
+      }
 
-    // Default seeding option
-    for ( auto stub : inputStubs ) {
-      unsigned int reducedStubLayer = stub->layerIdReduced();
-      if ( reducedStubLayer == 1 ) layer1Stubs.push_back(stub);
-      else if ( reducedStubLayer == 2 ) layer2Stubs.push_back(stub);
-      else if ( reducedStubLayer == 2 ) layer3Stubs.push_back(stub);
-      else otherStubs.push_back(stub);
+      // order seeds by layer
+      sort (seedClusters.begin(), seedClusters.end(), orderClustersByLayer);
+
+      for ( auto seed : seedClusters ) {
+
+	float qOverPt = seed->stubs()[0]->qOverPt();
+
+	if ( seed->stubs().size() > 1 ) {
+	  for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
+	    if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
+	  }
+	}
+
+	float phi0 = ( seed->phi()+ seed->dphi() );
+	float z0 = 0;
+	float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+
+	const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+
+	vector<const StubCluster*> cls {seed};
+	cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
+
+	L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+
+	// Now cand is all setup ... do KF!
+	fittedTracks.push_back( L1KalmanComb::fitClusteredTrack(l1track3D) );
+      }
+
+      // Fit each seed and return fitted track!
+      return fittedTracks;
     }
-
-    // Create seeds from layer 1 + all layer 2+ stubs
-    for ( auto stub : layer1Stubs ) {
-      float qOverPt = stub->qOverPt();
-      float phi0 = stub->beta();
-      float z0 = 0;
-      float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-      
-      vector<const Stub*> stubs {stub};
-      stubs.insert( stubs.end(), layer2Stubs.begin(), layer2Stubs.end() );
-      stubs.insert( stubs.end(), layer3Stubs.begin(), layer3Stubs.end() );
-      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-      
-      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-      
-      L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-      trackCandidates.push_back(l1Trk3D);
-    }
-
-    // Create seeds from layer 2 + all layer 3+ stubs
-    for ( auto stub : layer2Stubs ) {
-      float qOverPt = stub->qOverPt();
-      float phi0 = stub->beta();
-      float z0 = 0;
-      float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-      
-      vector<const Stub*> stubs {stub};
-      stubs.insert( stubs.end(), layer3Stubs.begin(), layer3Stubs.end() );
-      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-      
-      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-      
-      L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-      trackCandidates.push_back(l1Trk3D);
-    }
-
-    // Create seeds from layer 3+ stubs
-    for ( auto stub : layer3Stubs ) {
-      float qOverPt = stub->qOverPt();
-      float phi0 = stub->beta();
-      float z0 = 0;
-      float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-      
-      vector<const Stub*> stubs {stub};
-      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-      
-      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-      
-      L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-      trackCandidates.push_back(l1Trk3D);
-    }
-
-    for ( auto trk : trackCandidates ) {
-      fittedTracks.push_back(L1KalmanComb::fit(trk));
-    }
-    return fittedTracks;
-
   }
 
   // Seeding (no clustering) from layers 1+2  
   else if ( seedingOption == 1 ) {
-
+    
     vector<const Stub*> seedStubs;
-
+    
     vector<const Stub*> otherStubs;
     vector<const Stub*> otherStubs2;
-
+    
     vector<const Stub*> posDiskStubs;
     vector<const Stub*> negDiskStubs;
-    vector<const Stub*> posDiskStubs2;
-    vector<const Stub*> negDiskStubs2;
-
+    
     // Default seeding option
     for ( auto stub : inputStubs ) {
-
+      
       unsigned int stubLayer = stub->layerId();
-
-      if ( stubLayer == 1 || stubLayer == 11 || stubLayer == 21 ) seedStubs.push_back(stub);
-      if ( stubLayer == 2 || stubLayer == 12 || stubLayer == 22 ) seedStubs.push_back(stub);
+      bool isMatched {true};
+      //      if ( stub->assocTP() == nullptr ) isMatched = false;
+      
+      if ( (stubLayer == 1 || stubLayer == 11 || stubLayer == 21) && isMatched) seedStubs.push_back(stub);
+      if ( stubLayer == 2 && isMatched ) seedStubs.push_back(stub);
  
-      if ( stubLayer != 1 ) otherStubs.push_back(stub);
-      if ( stubLayer > 2 ) otherStubs2.push_back(stub);
-      if ( stubLayer > 11 && stubLayer < 20 ) posDiskStubs.push_back(stub);
-      if ( stubLayer > 12 && stubLayer < 20 ) posDiskStubs2.push_back(stub);
-      if ( stubLayer > 21 ) negDiskStubs.push_back(stub);
-      if ( stubLayer > 22 ) negDiskStubs2.push_back(stub);
+      if ( stubLayer > 1 && isMatched ) otherStubs.push_back(stub);
+      if ( stubLayer > 2 && isMatched ) otherStubs2.push_back(stub);
+      if ( stubLayer > 11 && stubLayer < 20 && isMatched ) posDiskStubs.push_back(stub);
+      if ( stubLayer > 21 && isMatched ) negDiskStubs.push_back(stub);
+      
+    }
 
-   }
+    // order seeds by layer
+    sort (seedStubs.begin(), seedStubs.end(), orderStubsByLayer);
 
     // Create seeds 
     for ( auto stub : seedStubs ) {
@@ -1052,32 +1054,58 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       
       vector<const Stub*> stubs {stub};
       const unsigned int layerId {stub->layerId()};
-
+      
+//      if ( layerId == 1 ) continue;
       if ( layerId == 1 )  stubs.insert( stubs.end(), otherStubs.begin(),    otherStubs.end() );
       if ( layerId == 11 ) stubs.insert( stubs.end(), posDiskStubs.begin(),  posDiskStubs.end() );
       if ( layerId == 21 ) stubs.insert( stubs.end(), negDiskStubs.begin(),  negDiskStubs.end() );
       if ( layerId == 2 )  stubs.insert( stubs.end(), otherStubs2.begin(),   otherStubs2.end() );
-      if ( layerId == 12 ) stubs.insert( stubs.end(), posDiskStubs2.begin(), posDiskStubs2.end() );
-      if ( layerId == 22 ) stubs.insert( stubs.end(), negDiskStubs2.begin(), negDiskStubs2.end() );
       
       const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
       const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
       const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
       
       L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-      trackCandidates.push_back(l1Trk3D);
-    }
+      L1fittedTrack fittedTrk ( L1KalmanComb::fit(l1Trk3D) );
 
-    for ( auto trk : trackCandidates ) {
-      fittedTracks.push_back(L1KalmanComb::fit(trk));
+      // If track is fitted using seed from layer 1, remove stubs 2, 11 and 21 from vector of seed stubs
+      if ( fittedTrk.accepted() ) {
+//        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//	for ( const Stub* seed : seedStubs ) cout << "currentSeeds->index() / currentSeeds->layerId(): " << seed->index() << " / " << seed->layerId() << std::endl; 
+//	std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//       unsigned int stubIndex {0};
+//        if ( stub->assocTP() != nullptr ) stubIndex = stub->assocTP()->index();
+//        std::cout << "stub->index() / stub->layerId() / TP : " << stub->index() << " / " << stub->layerId() << " / " << stubIndex  << std::endl;
+        const vector<const Stub*>& fitTrkStubs = fittedTrk.getStubs();
+        for ( const Stub* s : fitTrkStubs ) {
+//	  std::cout << __LINE__ << " / " << __FILE__ << std::endl;
+//	  unsigned int sIndex {0};
+//	  if ( s->assocTP() != nullptr ) sIndex =  s->assocTP()->index();
+//	  std::cout << "fitted track's stubs layer index / layerId / TP : " << s->index() << " / " << s->layerId() << " / " << sIndex << std::endl;
+          if ( s->layerId() == 2 || s->layerId() == 11 || s->layerId() == 21 ) {
+//            std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+            std::vector<const Stub*>::iterator it = std::find(seedStubs.begin(), seedStubs.end(), s);
+            if ( it != seedStubs.end() ) 
+              { seedStubs.erase( seedStubs.begin() + std::distance(seedStubs.begin(),it) );
+//              std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//              for ( const Stub* seed : seedStubs ) cout << "newSeeds->index() / newSeeds->layerId(): " << seed->index() << " / " << seed->layerId() << std::endl; 
+//              std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+            }
+            else continue;
+          }
+        }
+      }
+
+      fittedTracks.push_back ( fittedTrk );
     }
+    
     return fittedTracks;
-
+    
   }
   
   // option 0 - seeding with layer 1 only and no clustering
   else {
-
+    
     vector<const Stub*> seedStubs;
     vector<const Stub*> otherStubs;
     vector<const Stub*> posDiskStubs;
@@ -1104,7 +1132,27 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
       
       unsigned int stubLayer = stub->layerId();
-
+      /*
+      std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+      
+      const set<const TP*> assocTPs = stub->assocTPs();
+      if ( assocTPs.size() > 0 ) {
+      std::cout << "assocTPs.size(): " << assocTPs.size() << std::endl;
+      if ( assocTPs.size() > 1 ) {
+      std::cout << "stub->index(): " << stub->index() << std::endl;
+      for ( const TP* tp : assocTPs ) {
+      std::cout << "tp->index(): " << tp->index() << std::endl;
+      const vector<const Stub*> assocStubs = tp->assocStubs();
+      for ( const Stub* s : assocStubs ) {
+      std::cout << "s->index(): " << s->index() << std::endl;
+      std::cout << "s->layerId(): " << s->layerId() << std::endl;
+      }
+      }
+      }
+      }
+      
+      std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+      */
       vector<const Stub*> stubs {stub};
       if ( stubLayer == 1 ) stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
       if ( stubLayer == 11 ) stubs.insert( stubs.end(), posDiskStubs.begin(), posDiskStubs.end() );
@@ -1151,6 +1199,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   std::vector<const kalmanState *> new_states;
   std::vector<const kalmanState *> prev_states;
   prev_states.push_back( state0 );
+
+  // internal containers for if 2nd parallel search is done?
 	
 
   // === Layer Mapping (i.e. layer order in which stubs should be processed) ===
@@ -1192,6 +1242,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   bool remove2PSCut = getSettings()->kalmanRemove2PScut();
   set<unsigned> kalmanDeadLayers = getKalmanDeadLayers( layerMap, remove2PSCut );
 
+  // Fill layerStubs map
   for( auto stubCluster : stubClusters ){
 		
     int kalmanLayer = layerMap[etaReg][stubCluster->layerIdReduced()];
@@ -1221,6 +1272,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       if (kalmanLayer != 7) layerStubs[kalmanLayer].push_back( stubCluster );
     }
   }
+  // Filled layerStubs map
+
 
   // iterate using state->nextLayer() to determine next Kalman layer(s) to add stubs from
   const unsigned int maxIterations = 6;       // Increase if you want to allow 7 stubs per fitted track.
@@ -1449,6 +1502,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 		
   }
 
+  //// Now select the best state(s)
+  // If there is at least one state, select 1 with the largest number of stubs
   if (best_state_by_nstubs.size()) {
     // Select state with largest number of stubs.
     const kalmanState* stateFinal = best_state_by_nstubs.begin()->second; // First element has largest number of stubs.
@@ -1456,12 +1511,19 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     if ( getSettings()->kalmanDebugLevel() >= 1 ) {
       cout<<"Track found! final state selection: nLay="<<stateFinal->nStubLayers()<<" etaReg="<<l1track3D.iEtaReg();
       std::map<std::string, double> y = getTrackParams( stateFinal );
-      cout<<" q/pt="<<y["qOverPt"]<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"];
-      cout<<" chosen from states:";
-      for (const auto& p : best_state_by_nstubs) cout<<" "<<p.second->chi2()<<"/"<<p.second->nStubLayers();
+      cout<<" q/pt="<<y["qOverPt"]<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"] << " chi2ndf="<<stateFinal->reducedChi2()<< endl;
+      cout <<" contains stubs: " << std::endl;
+      for ( const Stub* stateStubs : stateFinal->stubs() ) {
+        std::cout << "index / layerId / TP: " << stateStubs->index() << " / " << stateStubs->layerId();
+        if ( stateStubs->assocTP() != nullptr ) std::cout << " / " << stateStubs->assocTP()->index() << std::endl;
+        else std::cout << " / no matching TP " << std::endl;
+      }
+      cout << "best_state_by_nstubs.size(): " << best_state_by_nstubs.size() << std::endl;
       cout<<endl;
     }
-  } else {
+  } 
+  // Else if there are no found states ... print debug stuff
+  else {
     if ( getSettings()->kalmanDebugLevel() >= 1 ) {
       cout<<"Track lost"<<endl;
     }

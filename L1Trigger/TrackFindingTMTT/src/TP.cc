@@ -11,9 +11,11 @@ namespace TMTT {
 
 //=== Store useful info about this tracking particle
 
-TP::TP(const TrackingParticlePtr& tpPtr, unsigned int index_in_vTPs, const Settings* settings) :
+TP::TP(const TrackingParticlePtr& tpPtr, unsigned int index_in_vTPs, const Settings* settings, unsigned int eventNum, unsigned int eventRun) :
   TrackingParticlePtr(tpPtr),
   index_in_vTPs_(index_in_vTPs),
+  eventNum_( eventNum ),
+  eventRun_( eventRun ),
   settings_(settings),
   pdgId_(tpPtr->pdgId()),
   charge_(tpPtr->charge()),
