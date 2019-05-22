@@ -46,7 +46,7 @@ Histos::Histos(const Settings* settings) : settings_(settings), plotFirst_(true)
   ranRZfilter_      = (useRZfilter_.size() > 0); // Was any r-z track filter run?
   resPlotOpt_       = settings->resPlotOpt(); // Only use signal events for helix resolution plots?
   runFullKalman_    = settings->runFullKalman(); // Running KF for track finding and fitting
-  if ( settings_->kalmanStubClustering() || (runFullKalman_ && settings_->kalmanSeedingOption() == 10) ) stubClustering_ = true;
+  if ( settings_->kalmanStubClustering() || (runFullKalman_ && settings_->kalmanSeedingOption() >= 10) ) stubClustering_ = true;
   else stubClustering_ = false;
 }
 
