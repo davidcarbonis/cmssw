@@ -282,6 +282,7 @@ TMTrackProducer_params = cms.PSet(
      #
      #--- Options for the Full CKF ---
      #
+     DebugPrintout = cms.bool(False),
      RunFullKalman = cms.bool(False),
      KalmanSeedMinPt = cms.double(3.0),
      KalmanSeedEtaPhiBinned = cms.bool(False),

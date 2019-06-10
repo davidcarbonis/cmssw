@@ -12,6 +12,7 @@ using  boost::numeric::ublas::matrix;
 #include <vector>
 #include <map>
 #include <string>
+#include <set>
 
 using namespace std;
 
@@ -707,6 +708,8 @@ private:
   map<unsigned int, float> mapExtraDModuleTypeMaxZ_;
 
   bool bApproxMistake_;
+
+  set< std::pair<unsigned int,unsigned int> > listOfTps_;
 };
 
 }

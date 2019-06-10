@@ -222,6 +222,7 @@ public:
   //=== Kalman Track Finding and Fitting Settings
 
   // Parameterisation of the CKF to be used. Several can be run in parallel.
+  bool                 debugPrintout()           const   {return debugPrintout_;} 
   bool                 runFullKalman()           const   {return runFullKalman_;} 
   double               kalmanSeedMinPt()         const   {return kalmanSeedMinPt_;}
   bool                 kalmanSeedEtaPhiBinned()  const   {return kalmanSeedEtaPhiBinned_;}
@@ -584,6 +585,7 @@ private:
 
   // Kalman Track Finding and Fitting Settings
 
+  bool                 debugPrintout_;
   bool                 runFullKalman_;
   double               kalmanSeedMinPt_;
   bool                 kalmanSeedEtaPhiBinned_;

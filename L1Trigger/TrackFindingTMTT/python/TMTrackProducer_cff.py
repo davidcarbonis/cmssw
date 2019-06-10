@@ -31,20 +31,23 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 #===================================================================================================
 
 #--- Configure Full CKF
+TMTrackProducer.FullKalmanCombSettings.DebugPrintout = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
-#TMTrackProducer.FullKalmanCombSettings.KalmanSeedEtaPhiBinned = cms.bool(False) #deprecated
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(64)
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(16)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedEtaPhiBinned = cms.bool(False) #deprecated
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(1024)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(1024)
 
-TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(10) # 0 uses just layer 1, 1 uses first and second layers (high duplicates), all others are buggy/non-functional
+TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(5) # 0 uses just layer 1, 1 uses first and second layers (high duplicates), all others are buggy/non-functional
 
 TMTrackProducer.DupTrkRemoval.DupTrkAlgRphi   = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
 
+#TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF4ParamsComb")
 TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
-TMTrackProducer.TrackFitSettings.KalmanStubClustering = cms.bool (False)
+TMTrackProducer.TrackFitSettings.KalmanStubClustering = cms.bool (False) #Only applies to HT+KF and CKF option 0
+TMTrackProducer.TrackFitSettings.KalmanMaxStubsPerLayer  = cms.uint32(20) #(40)
 
 #--- Options for Kalman filter track fitters ---
 # Fit will reject fitted tracks unless it can assign at least this number of stubs to them.
@@ -60,7 +63,7 @@ TMTrackProducer.TrackFitSettings.KalmanMaxSkipLayersHard = cms.uint32(1) # For H
 TMTrackProducer.TrackFitSettings.KalmanMaxSkipLayersEasy = cms.uint32(2) # For HT tracks with few stubs (2)
 TMTrackProducer.TrackFitSettings.KalmanMaxStubsEasy      = cms.uint32(10) # Max stubs an HT track can have to be "easy". (10)
 # KF will consider at most this #stubs per layer to save time.
-TMTrackProducer.TrackFitSettings.KalmanMaxStubsPerLayer  = cms.uint32(15) #(4)
+#TMTrackProducer.TrackFitSettings.KalmanMaxStubsPerLayer  = cms.uint32(4) 
 # Multiple scattering term - inflate hit phi errors by this divided by Pt
 # (0.00075 gives best helix resolution & 0.00450 gives best chi2 distribution).
 TMTrackProducer.TrackFitSettings.KalmanMultiScattTerm    = cms.double(0.00075)
@@ -119,8 +122,8 @@ TMTrackProducer.TrackFitSettings.KalmanHOdodgy           = cms.bool(True)
 #TMTrackProducer.HTFillingRphi.MaxStubsInCell       = cms.uint32(16) 
 #TMTrackProducer.HTArraySpecRphi.HoughNbinsPt       = cms.uint32(27)
 #TMTrackProducer.HTArraySpecRphi.HoughNbinsPhi      = cms.uint32(32) 
-#TMTrackProducer.GenCuts.GenMinPt                   = cms.double(2.0)
-#TMTrackProducer.HTArraySpecRphi.HoughMinPt         = cms.double(2.0)
+##TMTrackProducer.GenCuts.GenMinPt                   = cms.double(2.0)
+##TMTrackProducer.HTArraySpecRphi.HoughMinPt         = cms.double(2.0)
 #TMTrackProducer.HTFillingRphi.BusySectorMbinRanges = cms.vuint32(2,2,2,2,2,2,2,2,2,2,2,2,2,1)   
 #TMTrackProducer.HTFillingRphi.BusySectorMbinOrder  = cms.vuint32(0,14, 1,15, 2,16, 3,17, 4,18, 5,19, 6,20, 7,21, 8,22, 9,23, 10,24, 11,25, 12,26, 13)
 

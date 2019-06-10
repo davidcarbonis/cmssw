@@ -317,6 +317,16 @@ void Histos::fillInputData(const InputData& inputData) {
   for (const TP& tp: vTPs) {
     if (tp.useForEff())  nTPforEff++; 
     if (tp.useForAlgEff()) nTPforAlgEff++; 
+/*    if (tp.pt() >= 3.00 && tp.pt() < 3.01) {
+      std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+      std::cout << "tp.pt(): " << tp.pt() << std::endl;
+      const vector <const Stub*> assocStubs = tp.assocStubs();
+      for (const Stub* s : assocStubs) {
+        std::cout << "layer = " << s->layerId() << std::endl;
+        std::cout << "r = " << s->r() << std::endl;
+        std::cout << "track r = " << tp.trkRAtStub(s) << std::endl;
+      }
+    }*/
   }
   profNumTPs_->Fill(1, vTPs.size());
   profNumTPs_->Fill(2, nTPforEff);
@@ -2449,6 +2459,17 @@ void Histos::fillTrackFitting( const InputData& inputData, const map<string,vect
       unsigned int iOctant = floor(fitTrk.iPhiSec()*numPhiOctants/(numPhiSectors_)); // phi octant number
       nFitTracksPerOctant[iOctant]++;
       nFitTracksPerSector[pair<unsigned int, unsigned int>(fitTrk.iPhiSec(), fitTrk.iEtaReg())]++;
+
+      if (tp != nullptr && tp->useForAlgEff() && settings_->debugPrintout()) {
+//        std::cout << "Found TP: " << tp->index() << " in event  " << tp->eventNum() << " useForAlgEff = " << tp->useForAlgEff() << std::endl;
+        listOfTps_.emplace( std::make_pair( tp->eventNum(), tp->index() ) );
+        std::cout << "Found TP: " << tp->index() << " in event  " << tp->eventNum() << std::endl;;
+        std::cout << "TP assoc stubs: " << std::endl;
+        for ( const Stub* stub : tp->assocStubs() ) std::cout << stub->index() << " / layer " << stub->layerId() << "; ";
+        std::cout << "\n Fitted track stubs: " << std::endl;
+        for ( const Stub* stub : fitTrk.getStubs() ) std::cout << stub->index() << " / layer " << stub->layerId() << "; ";
+        std::cout << "\n" << std::endl;
+      }
     }
 
     profNumFitTracks_[fitName]->Fill(1, nFitTracks);
@@ -3460,6 +3481,10 @@ void Histos::trackerGeometryAnalysis( const TrackerGeometryInfo trackerGeometryI
     }
   }
 
+  if ( settings_->debugPrintout() ) {
+    std::cout << "List of TPs found: " << std::endl;
+    for ( std::pair< unsigned int, unsigned int > index : listOfTps_ ) std::cout << index.first << " : " << index.second << std::endl;
+  }
 }
 
 

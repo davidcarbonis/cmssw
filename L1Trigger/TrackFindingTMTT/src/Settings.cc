@@ -226,6 +226,7 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
 
   //=== Full Kalman Track Finding and Fitting Settings
 
+  debugPrintout_          ( fullKalmanCombSettings_.getParameter < bool >             ( "DebugPrintout"   )  ),
   runFullKalman_          ( fullKalmanCombSettings_.getParameter < bool >             ( "RunFullKalman"   )  ),
   kalmanSeedMinPt_        ( fullKalmanCombSettings_.getParameter < double >           ( "KalmanSeedMinPt" )  ),
   kalmanSeedEtaPhiBinned_ ( fullKalmanCombSettings_.getParameter < bool >             ( "KalmanSeedEtaPhiBinned")),
