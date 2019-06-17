@@ -31,14 +31,17 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 #===================================================================================================
 
 #--- Configure Full CKF
-TMTrackProducer.FullKalmanCombSettings.DebugPrintout = cms.bool(True)
+
+#TMTrackProducer.FullKalmanCombSettings.DebugPrintout = cms.bool(True)
+#TMTrackProducer.TrackFitSettings.KalmanDebugLevel = cms.uint32(2)
+
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedEtaPhiBinned = cms.bool(False) #deprecated
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(1024)
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(1024)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(64)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(16)
 
-TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(5) # 0 uses just layer 1, 1 uses first and second layers (high duplicates), all others are buggy/non-functional
+TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(15) 
+#TMTrackProducer.TrackFitSettings.KalmanStubClustering = cms.bool (True) #Only applies to HT+KF and CKF option 0, 1 and 5
 
 TMTrackProducer.DupTrkRemoval.DupTrkAlgRphi   = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
@@ -46,8 +49,8 @@ TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
 
 #TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF4ParamsComb")
 TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
-TMTrackProducer.TrackFitSettings.KalmanStubClustering = cms.bool (False) #Only applies to HT+KF and CKF option 0
 TMTrackProducer.TrackFitSettings.KalmanMaxStubsPerLayer  = cms.uint32(20) #(40)
+
 
 #--- Options for Kalman filter track fitters ---
 # Fit will reject fitted tracks unless it can assign at least this number of stubs to them.

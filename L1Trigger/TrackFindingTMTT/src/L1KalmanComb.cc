@@ -947,56 +947,57 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       // Create layer 1+2 seeds
       for ( auto cls1 : layer0Clusters ) {
         for ( auto cls2 : layer1Clusters ) {
-          // Min pT check
-          if ( std::abs(cls1->phi() - cls2->phi() ) < ( settings_->invPtToInvR() * std::abs( cls1->r() * cls2->r() ) / ( 2 * settings_->houghMinPt() ) ) ) {
-            // Crude z check;
-            float z1 = cls1->z();
-            float z2 = cls2->z();
-            float r1 = cls1->r();
-            float r2 = cls2->r();
 
-            float zcrude=z1-(z2-z1)*r1/(r2-r1);
-            if ( std::abs(zcrude) > 30. ) continue;
-
-            float phi1 = cls1->phi();
-            float phi2 = cls2->phi();
-
-            float deltaPhi = reco::deltaPhi ( phi1, phi2 );
-            float displacement = std::sqrt( r2*r2 + r1*r1 - 2*r2*r1*cos( deltaPhi ) );
-            float rInv = 2*sin( deltaPhi )/displacement;
-
-  //          float qOverPt = cls1->qOverPt();
-  //          float rInv = qOverPt * settings_->invPtToInvR();
-            float qOverPt = rInv / settings_->invPtToInvR();
-
-            float phi0 = ( cls1->phi()+ cls1->dphi() );
-  //          float phi0 = phi1 + asin( 0.5*r1*rInv ); // worse than using stub beta
-
-            float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-  //          float tan_lambda = ( z1 - z2 ) * rInv / ( 2 * ( asin(0.5*rInv*r1) - asin(0.5*rInv*r2) ) );
-  //          if ( rInv == 0 ) tan_lambda = ( z1 - z2 ) / ( r1 - r2 );
-  
-            float z0 = z1;
-            if ( rInv != 0 ) z0 -= ( 2/rInv * tan_lambda * asin( 0.5 * rInv * r1 ) );
-            else z0 -= r1 * tan_lambda;
-
-            const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-            const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-            const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-
-            vector<const StubCluster*> cls {cls1};
-            cls.push_back(cls2);
-            cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
-            
-            L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-
-            // Some further checks - pT and z0
-            if ( std::abs( l1track3D.pt() ) < 0.5 * settings_->houghMinPt() ) continue;
-            if ( std::abs( l1track3D.z0() ) > 15.0 ) continue;
-
-            trackCandidates.push_back(l1track3D);
-
+          if ( cls1->barrel() && !cls2->barrel() ) {
+            if ( cls2->r() > 50. ) continue; // No other condition as stub is always layer 0
           }
+
+	  // Crude z check;
+	  float z1 = cls1->z();
+	  float z2 = cls2->z();
+	  float r1 = cls1->r();
+	  float r2 = cls2->r();
+
+	  float zcrude=z1-(z2-z1)*r1/(r2-r1);
+	  if ( std::abs(zcrude) > 30. ) continue;
+
+	  float phi1 = cls1->phi();
+	  float phi2 = cls2->phi();
+
+	  float deltaPhi = reco::deltaPhi ( phi1, phi2 );
+	  float displacement = std::sqrt( r2*r2 + r1*r1 - 2*r2*r1*cos( deltaPhi ) );
+	  float rInv = 2*sin( deltaPhi )/displacement;
+
+	  //          float qOverPt = cls1->qOverPt();
+	  //          float rInv = qOverPt * settings_->invPtToInvR();
+	  float qOverPt = rInv / settings_->invPtToInvR();
+
+	  float phi0 = ( cls1->phi()+ cls1->dphi() );
+	  //          float phi0 = phi1 + asin( 0.5*r1*rInv ); // worse than using stub beta
+
+	  float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+	  //          float tan_lambda = ( z1 - z2 ) * rInv / ( 2 * ( asin(0.5*rInv*r1) - asin(0.5*rInv*r2) ) );
+	  //          if ( rInv == 0 ) tan_lambda = ( z1 - z2 ) / ( r1 - r2 );
+  
+	  float z0 = z1;
+	  if ( rInv != 0 ) z0 -= ( 2/rInv * tan_lambda * asin( 0.5 * rInv * r1 ) );
+	  else z0 -= r1 * tan_lambda;
+
+	  const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	  const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	  const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+
+	  vector<const StubCluster*> cls {cls1};
+	  cls.push_back(cls2);
+	  cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
+            
+	  L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+
+	  // Some further checks - pT and z0
+	  if ( std::abs( l1track3D.pt() ) < 0.5 * settings_->houghMinPt() ) continue;
+	  if ( std::abs( l1track3D.z0() ) > 15.0 ) continue;
+
+	  trackCandidates.push_back(l1track3D);
         }
       }
 
@@ -1138,62 +1139,85 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
     // Create layer 0+1 seeds
     for ( auto stub1 : layer0Stubs ) {
       for ( auto stub2 : layer1Stubs ) {
-        // Min pT check
-        if ( std::abs(stub1->phi() - stub2->phi() ) < ( settings_->invPtToInvR() * std::abs( stub1->r() * stub2->r() ) / ( 2 * settings_->houghMinPt() ) ) ) {
-          // Crude z check;
-          float z1 = stub1->z();
-          float z2 = stub2->z();
-          float r1 = stub1->r();
-          float r2 = stub2->r();
 
-          float zcrude=z1-(z2-z1)*r1/(r2-r1);
-          if ( std::abs(zcrude) > 30. ) continue;
-
-          float phi1 = stub1->phi();
-          float phi2 = stub2->phi();
-
-          float deltaPhi = reco::deltaPhi ( phi1, phi2 );
-          float displacement = std::sqrt( r2*r2 + r1*r1 - 2*r2*r1*cos( deltaPhi ) );
-          float rInv = 2*sin( deltaPhi )/displacement;
-
-//          float qOverPt = stub1->qOverPt();
-//          float rInv = qOverPt * settings_->invPtToInvR();
-          float qOverPt = rInv / settings_->invPtToInvR();
-
-          float phi0 = stub1->beta();
-//          float phi0 = phi1 + asin( 0.5*r1*rInv ); // worse than using stub beta
-
-          float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-//          float tan_lambda = ( z1 - z2 ) * rInv / ( 2 * ( asin(0.5*rInv*r1) - asin(0.5*rInv*r2) ) );
-//          if ( rInv == 0 ) tan_lambda = ( z1 - z2 ) / ( r1 - r2 );
-
-          float z0 = z1;
-          if ( rInv != 0 ) z0 -= ( 2/rInv * tan_lambda * asin( 0.5 * rInv * r1 ) );
-          else z0 -= r1 * tan_lambda;
-
-          vector<const Stub*> stubs {stub1};
-          stubs.push_back(stub2);
-          stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-
-          const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-          const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-          const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-
-          L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-
-          // Some further checks - pT and z0
-          if ( std::abs( l1Trk3D.pt() ) < 0.5 * settings_->houghMinPt() ) continue;
-          if ( std::abs( l1Trk3D.z0() ) > 15.0 ) continue;
-
-          std::vector<const Stub*>::iterator it = std::find(layer1Stubs_2.begin(), layer1Stubs_2.end(), stub2);
-          if ( it != layer1Stubs_2.end() ) layer1Stubs_2.erase( layer1Stubs_2.begin() + std::distance(layer1Stubs_2.begin(),it) );
-
-          trackCandidates.push_back(l1Trk3D);
-
+        // Crude checks
+        // both barrel stubs - no extra checks
+        // barrel + disk stubs 
+        if ( stub1->barrel() && !stub2->barrel() ) {
+          if ( stub2->r() > 50. ) continue; // No other condition as stub is always layer 0
         }
+        // both disk stubs - layer 0 is always barrel ...
+
+	// Crude z check;
+	float z1 = stub1->z();
+	float z2 = stub2->z();
+	float r1 = stub1->r();
+	float r2 = stub2->r();
+
+	float zcrude=z1-(z2-z1)*r1/(r2-r1);
+	if ( std::abs(zcrude) > 30. ) continue;
+
+	float phi1 = stub1->phi();
+	float phi2 = stub2->phi();
+
+	float deltaPhi = reco::deltaPhi ( phi1, phi2 );
+	float displacement = std::sqrt( r2*r2 + r1*r1 - 2*r2*r1*cos( deltaPhi ) );
+	float rInv = 2*sin( deltaPhi )/displacement;
+
+	//          float qOverPt = stub1->qOverPt();
+	//          float rInv = qOverPt * settings_->invPtToInvR();
+	float qOverPt = rInv / settings_->invPtToInvR();
+
+	float phi0 = stub1->beta();
+	//          float phi0 = phi1 + asin( 0.5*r1*rInv ); // worse than using stub beta
+
+	float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+	//          float tan_lambda = ( z1 - z2 ) * rInv / ( 2 * ( asin(0.5*rInv*r1) - asin(0.5*rInv*r2) ) );
+	//          if ( rInv == 0 ) tan_lambda = ( z1 - z2 ) / ( r1 - r2 );
+
+	float z0 = z1;
+	if ( rInv != 0 ) z0 -= ( 2/rInv * tan_lambda * asin( 0.5 * rInv * r1 ) );
+	else z0 -= r1 * tan_lambda;
+
+	vector<const Stub*> stubs {stub1};
+	stubs.push_back(stub2);
+	stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+
+	const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+
+	L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+
+	// Some further checks - pT and z0
+	if ( std::abs( l1Trk3D.pt() ) < 0.75 * settings_->houghMinPt() ) continue;
+	if ( std::abs( l1Trk3D.z0() ) > 15.0 ) continue;
+
+//        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//        std::cout << "layer1Stubs_2.size() : " << layer1Stubs_2.size() << std::endl;
+//	std::vector<const Stub*>::iterator it = std::find(layer1Stubs_2.begin(), layer1Stubs_2.end(), stub2);
+//	if ( it != layer1Stubs_2.end() ) layer1Stubs_2.erase( layer1Stubs_2.begin() + std::distance(layer1Stubs_2.begin(),it) );
+
+//        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//        std::cout << "layer1Stubs_2.size() : " << layer1Stubs_2.size() << std::endl;
+
+	trackCandidates.push_back(l1Trk3D);
+/*        L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
+        if ( fitTrk.accepted() ) {
+          bool containsLayer1 {false};
+          for ( const Stub* stub : fitTrk.getStubs() ) if ( layerMap[iCurrentEtaReg_][stub->layerIdReduced()] == 1 ) containsLayer1 = true;
+          if ( containsLayer1 ) {
+            std::vector<const Stub*>::iterator it = std::find(layer1Stubs_2.begin(), layer1Stubs_2.end(), stub2);
+            if ( it != layer1Stubs_2.end() ) layer1Stubs_2.erase( layer1Stubs_2.begin() + std::distance(layer1Stubs_2.begin(),it) );
+          }
+        }*/
+//        fittedTracks.push_back(fitTrk);
       }
     }
 
+//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//    std::cout << "layer1Stubs_2.size() : " << layer1Stubs_2.size() << std::endl;
+/*
     // Create layer 1 seeds
     for ( auto stub : layer1Stubs_2 ) {
       float qOverPt = stub->qOverPt();
@@ -1209,9 +1233,12 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
       
       L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-      trackCandidates.push_back(l1Trk3D);
+//      trackCandidates.push_back(l1Trk3D);
+      L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
+      fittedTracks.push_back(fitTrk);
 
     }
+*/
 
     for ( auto trk : trackCandidates ) {
       L1fittedTrack fitTrk = L1KalmanComb::fit(trk);

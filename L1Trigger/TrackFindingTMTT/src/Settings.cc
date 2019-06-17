@@ -229,7 +229,6 @@ Settings::Settings(const edm::ParameterSet& iConfig) :
   debugPrintout_          ( fullKalmanCombSettings_.getParameter < bool >             ( "DebugPrintout"   )  ),
   runFullKalman_          ( fullKalmanCombSettings_.getParameter < bool >             ( "RunFullKalman"   )  ),
   kalmanSeedMinPt_        ( fullKalmanCombSettings_.getParameter < double >           ( "KalmanSeedMinPt" )  ),
-  kalmanSeedEtaPhiBinned_ ( fullKalmanCombSettings_.getParameter < bool >             ( "KalmanSeedEtaPhiBinned")),
   nBinsKalmanSeedPhiAxis_ ( fullKalmanCombSettings_.getParameter < double >           ( "KalmanSeedNbinsPhiAxis")),
   nBinsKalmanSeedEtaAxis_ ( fullKalmanCombSettings_.getParameter < double >           ( "KalmanSeedNbinsEtaAxis")),
   kalmanSeedingOption_    ( fullKalmanCombSettings_.getParameter <unsigned int>       ( "SeedingOption"   )  ),

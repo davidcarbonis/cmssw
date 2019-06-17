@@ -209,8 +209,32 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
       p(D0,D0) = d0Sigma * d0Sigma; 
     } 
 
-  } else {
+  } else if ( getSettings()->runFullKalman() ) {
 
+    double cov = 1.;
+/*    if ( getSettings()->kalmanSeedingOption() >= 10 ) {
+      double alpha = 1000.;
+      unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
+      cov = alpha * w;
+    }
+*/
+    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4 * cov; // 250;
+    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4 * 4;
+    p(Z0,Z0) = 5.0 * 5.0;
+    p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
+    if (nPar_ == 5) {
+      p(D0,D0) = d0Sigma * d0Sigma;
+    }
+    if ( getSettings()->numEtaRegions() <= 12 ) {
+      // Inflate eta errors
+      p(T,T) = p(T,T) * 2 * 2;
+    }
+
+//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//    std::cout << "p(INV2R,INV2R): " << p(INV2R,INV2R) << std::endl;
+//    std::cout << "p(PHI0,PHI0): " << p(PHI0,PHI0) << std::endl;
+
+  } else {
     // optimised for 18x2 with additional error factor in pt/phi to avoid pulling towards wrong HT params
     p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4;  // Base on HT cell size
     p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; // Based on HT cell size.
@@ -219,6 +243,10 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
     if (nPar_ == 5) {
       p(D0,D0) = d0Sigma * d0Sigma; 
     } 
+
+//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//    std::cout << "p(INV2R,INV2R): " << p(INV2R,INV2R) << std::endl;
+//    std::cout << "p(PHI0,PHI0): " << p(PHI0,PHI0) << std::endl;
 
     if ( getSettings()->numEtaRegions() <= 12 ) {    
       // Inflate eta errors
@@ -394,7 +422,6 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
   d0Cut       = { 999.,  999.,  999.,  10.,   5.,    5.,   5.};  // Only used for 5 param helix fit
 
 //  chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
-//  chi2Cut     = { 999.,  999.,   999.,  999., 999.,  999.,  999.};  // Consider reducing chi2 cut 2 to 7.
   chi2Cut     = { 999.,  999.,  200.,  300., 300.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
 
   unsigned nStubLayers = state.nStubLayers();

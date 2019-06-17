@@ -225,7 +225,6 @@ public:
   bool                 debugPrintout()           const   {return debugPrintout_;} 
   bool                 runFullKalman()           const   {return runFullKalman_;} 
   double               kalmanSeedMinPt()         const   {return kalmanSeedMinPt_;}
-  bool                 kalmanSeedEtaPhiBinned()  const   {return kalmanSeedEtaPhiBinned_;}
   double               kalmanSeedNbinsPhiAxis()  const   {return nBinsKalmanSeedPhiAxis_;}
   double               kalmanSeedNbinsEtaAxis()  const   {return nBinsKalmanSeedEtaAxis_;}
   // Use the offline tracker seedding in lieu of the default L0+beamspot seed
@@ -588,7 +587,6 @@ private:
   bool                 debugPrintout_;
   bool                 runFullKalman_;
   double               kalmanSeedMinPt_;
-  bool                 kalmanSeedEtaPhiBinned_;
   double               nBinsKalmanSeedPhiAxis_;
   double               nBinsKalmanSeedEtaAxis_;
   unsigned int         kalmanSeedingOption_;
