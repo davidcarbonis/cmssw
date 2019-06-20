@@ -1406,6 +1406,25 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   }
   // Filled layerStubs map with stub clusters
 
+/*
+  if ( seedingOption_ == 15 || seedingOption_ == 5 ) {
+    // Update base Kalman State with the two seed stubs	...
+    unsigned int skipped = 0;
+    unsigned int layer = 0;
+    const StubCluster* seed0 = layerStubs[0].front();
+    const StubCluster* seed1 = layerStubs[1].front();
+
+    std::vector< const kalmanState * > seedStates;
+
+    const kalmanState * new_state0 = kalmanUpdate( skipped, layer+0, seed0, *state0, tpa );
+    seedStates.push_back(new_state0);
+    const kalmanState * new_state1 = kalmanUpdate( skipped, layer+1, seed1, *new_state0, tpa );
+    seedStates.push_back(new_state1);
+    
+    prev_states = seedStates;
+    seedStates.clear();
+  }
+*/
 
   // iterate using state->nextLayer() to determine next Kalman layer(s) to add stubs from
   const unsigned int maxIterations = 6;       // Increase if you want to allow 7 stubs per fitted track.
@@ -1420,8 +1439,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     std::vector<const kalmanState *>::const_iterator i_state = prev_states.begin();
     for(; i_state != prev_states.end(); i_state++ ){ 
 		
-      const kalmanState *the_state = *i_state;
-			
+      const kalmanState *the_state = *i_state;			
 
       unsigned layer = the_state->nextLayer();
       unsigned skipped = the_state->nSkippedLayers();
@@ -1490,12 +1508,15 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       for( unsigned i=0; i < stubs.size()  ; i++ ){
 	
 	const StubCluster * next_stubCluster = stubs[i];
+        const unsigned int stubLayer = layerMap[etaReg][next_stubCluster->layerIdReduced()];
+        std::cout << "iteration: " << iteration << std::endl;
+        std::cout << "stubLayer: " << stubLayer << std::endl;
 				
 	// Update helix params by adding this stub.
 	const kalmanState * new_state = kalmanUpdate( skipped, layer+1, next_stubCluster, *the_state, tpa );
-				
+
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
-			
+	std::cout << "isGoodState: " << isGoodState( *new_state ) << std::endl;
 	// Cut on track chi2, pt etc. 
         if (isGoodState( *new_state ) ) next_states.push_back( new_state );
 /*	
@@ -1611,6 +1632,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     sort( new_states.begin(), new_states.end(), kalmanState::orderMinSkipChi2); // Sort by chi2*(skippedLayers+1)
 
     unsigned int nStubs = iteration + 1;
+    if ( seedingOption_ == 15 ) nStubs += 2;
     // Success. We have at least one state that passes all cuts. Save best state found with this number of stubs.
     if (nStubs >= getSettings()->kalmanMinNumStubs() && new_states.size() > 0) best_state_by_nstubs[nStubs] = new_states[0]; 
 

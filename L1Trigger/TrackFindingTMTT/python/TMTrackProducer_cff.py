@@ -32,8 +32,8 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 
 #--- Configure Full CKF
 
-TMTrackProducer.FullKalmanCombSettings.DebugPrintout = cms.bool(True)
-TMTrackProducer.TrackFitSettings.KalmanDebugLevel = cms.uint32(2)
+#TMTrackProducer.FullKalmanCombSettings.DebugPrintout = cms.bool(True)
+#TMTrackProducer.TrackFitSettings.KalmanDebugLevel = cms.uint32(2)
 
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
@@ -47,8 +47,8 @@ TMTrackProducer.DupTrkRemoval.DupTrkAlgRphi   = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
 
-#TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF4ParamsComb")
-TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
+TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF4ParamsComb")
+#TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
 TMTrackProducer.TrackFitSettings.KalmanMaxStubsPerLayer  = cms.uint32(20) #(40)
 
 
