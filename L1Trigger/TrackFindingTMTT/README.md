@@ -1,3 +1,18 @@
+## Setup to checkout personal branch
+
+```
+cmsrel CMSSW_10_2_5
+cd CMSSW_10_2_5/src
+cmsenv
+
+git remote add origin https://github.com/davidcarbonis/cmssw.git
+git checkout -b TMTT_CKF_v2
+git cms-checkout-topic davidcarbonis:TMTT_CKF_v2
+scram b -j 8
+
+cd L1Trigger/TrackFindingTMTT
+```
+
 # Setup instructions to just run
 
 To checkout and run, or if your modifications won't need to be put into the central repository, do:
