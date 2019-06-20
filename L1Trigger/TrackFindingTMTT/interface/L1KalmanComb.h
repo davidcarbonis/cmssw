@@ -166,6 +166,8 @@ class L1KalmanComb : public TrackFitGeneric{
         unsigned int      numUpdateCalls_;
 
        const TP* tpa_;
+
+       unsigned int seedingOption_;
 };
 
 }

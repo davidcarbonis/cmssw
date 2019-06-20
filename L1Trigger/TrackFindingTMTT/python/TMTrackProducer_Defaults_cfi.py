@@ -388,7 +388,7 @@ TMTrackProducer_params = cms.PSet(
      # Larger number has more debug printout. "1" is useful for understanding why tracks are lost, best combined with TrackFitCheat=True.
      KalmanDebugLevel        = cms.uint32(0),
      # Internal histograms are filled if it is True
-     KalmanFillInternalHists  = cms.bool(False),
+     KalmanFillInternalHists  = cms.bool(True),
      # Cluster stubs on the same layer. Best performance when set to false.
      KalmanStubClustering = cms.bool(False),
      # Fit will reject fitted tracks unless it can assign at least this number of stubs to them.

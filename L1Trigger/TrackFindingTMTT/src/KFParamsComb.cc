@@ -418,17 +418,17 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
   z0Cut       = { 999.,  15.,   15.,  15.,  15.,   15.,   15.};
 
-  ptTolerance = { 999.,  0.1,   0.01,  0.001,  0.001, 0.001,  0.001};
+  ptTolerance = { 999.,  0.1,  0.005,  0.001,  0.001, 0.001,  0.001};
 
-//  ptTolerance = { 999.,  999.,   0.1,  0.1,  0.05, 0.05,  0.05};
+//  ptTolerance = { 999.,  0.1,  0.005,  0.001,  0.001, 0.001,  0.001};
 //  ptTolerance = { 999., 999., 0.3, 0.1, 0.05, 0.05, 0.05}; /// optimum for Full CKF 5 params
 
   d0Cut       = { 999.,  999.,  999.,  10.,   5.,    5.,   5.};  // Only used for 5 param helix fit
 
 //  chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
-//  chi2Cut     = { 999.,  500.,  120.,  140., 160.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
+//  chi2Cut     = { 999.,  500.,  120.,  140., 160.,  10.,  10.};  // Consider reducing chi2 cut 2 to 7.
 
-  chi2Cut     = { 999.,  150.,  120.,  140., 160.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
+  chi2Cut     = { 999.,  150.,  120.,  140., 155.,  1.,  1.};  // Consider reducing chi2 cut 2 to 7.
 
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );
@@ -477,7 +477,7 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
   const bool countUpdateCalls = false; // Print statement to count calls to Updator.
 
   if ( countUpdateCalls ||
-       (getSettings()->kalmanDebugLevel() >= 2 && tpa_ != nullptr) ||
+       (getSettings()->kalmanDebugLevel() >= 2 && tpa_ != nullptr && tpa_->useForAlgEff() ) ||
        (getSettings()->kalmanDebugLevel() >= 2 && getSettings()->hybrid()) ) {
     if (not goodState) cout<<"State veto:"; 
     if (goodState)     cout<<"State kept:";

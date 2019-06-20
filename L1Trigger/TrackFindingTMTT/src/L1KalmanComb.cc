@@ -246,6 +246,9 @@ L1KalmanComb::L1KalmanComb(const Settings* settings, const uint nPar, const stri
 
   iLastPhiSec_ = 999;
   iLastEtaReg_ = 999;
+
+  if ( getSettings()->runFullKalman() ) seedingOption_ = getSettings()->kalmanSeedingOption();
+  else seedingOption_ = 0;
 }
 
 L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D ){
@@ -863,9 +866,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
   // Time to work magic on input stubs
 
-  const unsigned int seedingOption {settings_->kalmanSeedingOption()};
- 
-  if ( seedingOption >= 10 ) {
+  if ( seedingOption_ >= 10 ) {
 
     // number of phi and eta bins
     unsigned int nBinsKalmanSeedPhiAxis_  = settings_->kalmanSeedNbinsPhiAxis();
@@ -926,7 +927,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       } // end eta loop
     } // end phi loop
 
-    if ( seedingOption == 15 ) {
+    if ( seedingOption_ == 15 ) {
 
       vector< const StubCluster* > layer0Clusters;
       vector< const StubCluster* > layer1Clusters;
@@ -1010,7 +1011,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
     }
 
-    else if ( seedingOption == 11 ) {
+    else if ( seedingOption_ == 11 ) {
 
       vector<const StubCluster*> seedClusters;
       vector<const StubCluster*> otherClusters;
@@ -1067,7 +1068,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
         
     }
 
-    else { // ( seedingOption == 10 )
+    else { // ( seedingOption_ == 10 )
 
       vector<const StubCluster*> seedClusters;
       vector<const StubCluster*> otherClusters;
@@ -1115,7 +1116,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
   }
 
   // Seeding (no clustering) from layers 1+2 using pairs of stubs for layers 1+2/3
-  else if ( seedingOption == 5 ) {
+  else if ( seedingOption_ == 5 ) {
 
     vector< const Stub* > layer0Stubs;
     vector< const Stub* > layer1Stubs;
@@ -1249,7 +1250,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
   }
 
   // Seeding (no clustering) from layers 1+2  
-  else if ( seedingOption == 1 ) {
+  else if ( seedingOption_ == 1 ) {
     
     vector<const Stub*> seedStubs;    
     vector<const Stub*> otherStubs;
@@ -1366,7 +1367,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 
   // arrange stubs into Kalman layers according to eta region
   int etaReg = l1track3D.iEtaReg();
-  std::map<int, std::vector<const StubCluster *> > layerStubs;
+  std::map<int, std::vector<const StubCluster *> > layerStubs; // contains stub clusters
 
   // Get dead layers, if any.
   // They are assumed to be idetnical to those defined in StubKiller.cc
@@ -1403,7 +1404,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       if (kalmanLayer != 7) layerStubs[kalmanLayer].push_back( stubCluster );
     }
   }
-  // Filled layerStubs map
+  // Filled layerStubs map with stub clusters
 
 
   // iterate using state->nextLayer() to determine next Kalman layer(s) to add stubs from
@@ -1440,7 +1441,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       std::vector<const kalmanState *> next_states_skipped;
 
 			
-      // find stubs for this layer
+      // find stub clusters for this layer
       std::vector<const StubCluster *> stubs = layerStubs[layer]; // If layer > 6, this will return empty vector, so safe.
 
       // find stubs for next layer if we skip a layer, except when we are on the penultimate layer,
@@ -1495,8 +1496,14 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 				
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
 			
-	// Cut on track chi2, pt etc.
-	if(isGoodState( *new_state ) ) next_states.push_back( new_state );
+	// Cut on track chi2, pt etc. 
+        if (isGoodState( *new_state ) ) next_states.push_back( new_state );
+/*	
+        if ( seedingOption_ == 15 && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 2 ) {
+          next_states.push_back( new_state );
+        }
+        else if (isGoodState( *new_state ) ) next_states.push_back( new_state );
+*/
       }
 
       // loop over each stub in next layer if we skip, and check for compatibility with this state
@@ -1509,6 +1516,12 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
 				
 	if(isGoodState( *new_state ) ) next_states_skipped.push_back( new_state );
+/*
+        if ( seedingOption_ == 15 && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 2 ) {
+          next_states_skipped.push_back( new_state );
+        }
+        else if (isGoodState( *new_state ) ) next_states_skipped.push_back( new_state );
+*/
       }		
 			
       // post Kalman filter local sorting per state

@@ -32,8 +32,8 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 
 #--- Configure Full CKF
 
-#TMTrackProducer.FullKalmanCombSettings.DebugPrintout = cms.bool(True)
-#TMTrackProducer.TrackFitSettings.KalmanDebugLevel = cms.uint32(2)
+TMTrackProducer.FullKalmanCombSettings.DebugPrintout = cms.bool(True)
+TMTrackProducer.TrackFitSettings.KalmanDebugLevel = cms.uint32(2)
 
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
