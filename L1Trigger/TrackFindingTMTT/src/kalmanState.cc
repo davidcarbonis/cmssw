@@ -111,6 +111,24 @@ bool kalmanState::good( const TP *tp )const{
     return true;
 }
 
+unsigned kalmanState::layerIdReduced() const {
+  // Don't bother distinguishing two endcaps, as no track can have stubs in both.
+  unsigned int lay = (layerId_ < 20) ? layerId_ : layerId_ - 10; 
+
+  // No genuine track can have stubs in both barrel layer 6 and endcap disk 11 etc., so merge their layer IDs.
+  // WARNING: This is tracker geometry dependent, so may need changing in future ...
+  if (lay == 6) lay = 11; 
+  if (lay == 5) lay = 12; 
+  if (lay == 4) lay = 13; 
+  if (lay == 3) lay = 15; 
+  // At this point, the reduced layer ID can have values of 1, 2, 11, 12, 13, 14, 15. So correct to put in range 1-7.
+  if (lay > 10) lay -= 8;
+
+  if (lay < 1 || lay > 7) throw cms::Exception("Stub: Reduced layer ID out of expected range");
+
+  return lay;
+}
+
 double kalmanState::reducedChi2() const
 { 
     if( 2 * n_stubs_ - xa_.size() > 0 ) return chi2_ / ( 2 * n_stubs_ - xa_.size() ); 

@@ -27,7 +27,8 @@ class kalmanState{
 	kalmanState & operator=( const kalmanState &other );
 
 	unsigned             nextLayer()const{ return      kLayerNext_; }
-	unsigned               layerId()const{ return         layerId_; }
+	unsigned              layerId()const{ return         layerId_; }
+	unsigned              layerIdReduced() const;
 	unsigned            endcapRing()const{ return      endcapRing_; }
 	bool                    barrel()const{ return          barrel_; }
 	unsigned        nSkippedLayers()const{ return       n_skipped_; }
