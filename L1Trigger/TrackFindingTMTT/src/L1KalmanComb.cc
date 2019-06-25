@@ -1000,6 +1000,9 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  if ( std::abs( l1track3D.pt() ) < 0.5 * settings_->houghMinPt() ) continue;
 	  if ( std::abs( l1track3D.z0() ) > 15.0 ) continue;
 
+          std::vector<const StubCluster*>::iterator it = std::find(layer1Clusters_2ndPass.begin(), layer1Clusters_2ndPass.end(), cls2);
+          if ( it != layer1Clusters_2ndPass.end() ) layer1Clusters_2ndPass.erase( layer1Clusters_2ndPass.begin() + std::distance(layer1Clusters_2ndPass.begin(),it) );
+
 //	  trackCandidates.push_back(l1track3D);
           L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, 1);
           fittedTracks.push_back(fitTrk);
@@ -1008,7 +1011,6 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       // Create layer 1 only seeds
       for ( auto seed : layer1Clusters_2ndPass ) {
-
 	float qOverPt = seed->stubs()[0]->qOverPt();
 
 	if ( seed->stubs().size() > 1 ) {
@@ -1026,13 +1028,13 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
 
 	vector<const StubCluster*> cls {seed};
-        cls.insert( cls.end(), otherClusters.begin(),   otherClusters.end() );
+        cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
 
 	L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-	L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, 1);
+	L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D);
 	fittedTracks.push_back(fitTrk);
       }
-  
+
       return fittedTracks;
 
     }
@@ -1220,6 +1222,9 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	if ( std::abs( l1Trk3D.pt() ) < 0.75 * settings_->houghMinPt() ) continue;
 	if ( std::abs( l1Trk3D.z0() ) > 15.0 ) continue;
 
+        std::vector<const Stub*>::iterator it = std::find(layer1Stubs_2.begin(), layer1Stubs_2.end(), stub2);
+        if ( it != layer1Stubs_2.end() ) layer1Stubs_2.erase( layer1Stubs_2.begin() + std::distance(layer1Stubs_2.begin(),it) );
+
 //	trackCandidates.push_back(l1Trk3D);
         L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D, 1);
         fittedTracks.push_back(fitTrk);
@@ -1243,7 +1248,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       
       L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
 //      trackCandidates.push_back(l1Trk3D);
-      L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D, 0);
+      L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
       fittedTracks.push_back(fitTrk);
 
     }
