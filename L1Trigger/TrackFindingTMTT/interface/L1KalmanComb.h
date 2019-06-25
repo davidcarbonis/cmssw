@@ -33,7 +33,7 @@ class L1KalmanComb : public TrackFitGeneric{
 
 	virtual ~L1KalmanComb() {this->resetStates();}
 
-	L1fittedTrack fit(const L1track3D& l1track3D);
+	L1fittedTrack fit(const L1track3D& l1track3D, const unsigned int option=0);
 	std::vector<L1fittedTrack> findAndFit(const vector<const Stub*> inputStubs, const unsigned int iPhiSec, const unsigned int iEtaReg, 
 		  const float etaMinSector, const float etaMaxSector, const float phiCentreSector);
 
@@ -63,8 +63,8 @@ class L1KalmanComb : public TrackFitGeneric{
     protected:
         /* Track finding + fitting methods */
         L1track3D singleStubSeed ( const Stub* stub );
-        L1track3D singleStubClusterSeed ( const StubCluster* stub );
-        L1fittedTrack fitClusteredTrack ( const L1track3D& l1track3D );
+        L1track3D singleStubClusterSeed ( const StubCluster* stub, const unsigned int option=0 );
+        L1fittedTrack fitClusteredTrack ( const L1track3D& l1track3D, const unsigned int option=0 );
         //
     protected:
 	/* Methods */
@@ -96,7 +96,7 @@ class L1KalmanComb : public TrackFitGeneric{
 
 
 	virtual double getRofState( unsigned layerId, const vector<double> &xa )const{ return 0;}
-	std::vector<const kalmanState *> doKF( const L1track3D &l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa );
+	std::vector<const kalmanState *> doKF( const L1track3D &l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa, const unsigned int option=0 );
 
 	void fillSeedHists( const kalmanState *state, const TP *tpa );
 	void fillCandHists( const kalmanState &state, const TP *tpa=0 );

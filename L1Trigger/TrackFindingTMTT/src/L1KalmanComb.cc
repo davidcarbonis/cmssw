@@ -251,7 +251,7 @@ L1KalmanComb::L1KalmanComb(const Settings* settings, const uint nPar, const stri
   else seedingOption_ = 0;
 }
 
-L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D ){
+L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D, const unsigned int option ){
   resetStates();
   deleteStubClusters();
   numUpdateCalls_ = 0;
@@ -280,7 +280,7 @@ L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D ){
   }
 
   //Kalman Filter
-  std::vector<const kalmanState *> cands = doKF( l1track3D, cls, tpa );
+  std::vector<const kalmanState *> cands = doKF( l1track3D, cls, tpa, option );
 
   if( cands.size() ) {
     const kalmanState *cand = cands[0];
@@ -422,7 +422,7 @@ L1fittedTrack L1KalmanComb::fitClusteredTrack( const L1track3D& l1track3D ){
 
 }
 
-L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
+L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D, const unsigned int option){
 
   iLastPhiSec_ = iCurrentPhiSec_;
   iLastEtaReg_ = iCurrentEtaReg_;
@@ -703,7 +703,7 @@ L1fittedTrack L1KalmanComb::fit(const L1track3D& l1track3D){
   }
 
   //Kalman Filter
-  std::vector<const kalmanState *> cands = doKF( l1track3D, stubcls, tpa );
+  std::vector<const kalmanState *> cands = doKF( l1track3D, stubcls, tpa, option );
 
  
   //return L1fittedTrk for the selected state (if KF produced one it was happy with).
@@ -998,13 +998,10 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  if ( std::abs( l1track3D.pt() ) < 0.5 * settings_->houghMinPt() ) continue;
 	  if ( std::abs( l1track3D.z0() ) > 15.0 ) continue;
 
-	  trackCandidates.push_back(l1track3D);
+//	  trackCandidates.push_back(l1track3D);
+          L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, 1);
+          fittedTracks.push_back(fitTrk);
         }
-      }
-
-      for ( auto trk : trackCandidates ) {
-        L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(trk);
-        fittedTracks.push_back(fitTrk);
       }
   
       return fittedTracks;
@@ -1194,31 +1191,13 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	if ( std::abs( l1Trk3D.pt() ) < 0.75 * settings_->houghMinPt() ) continue;
 	if ( std::abs( l1Trk3D.z0() ) > 15.0 ) continue;
 
-//        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-//        std::cout << "layer1Stubs_2.size() : " << layer1Stubs_2.size() << std::endl;
-//	std::vector<const Stub*>::iterator it = std::find(layer1Stubs_2.begin(), layer1Stubs_2.end(), stub2);
-//	if ( it != layer1Stubs_2.end() ) layer1Stubs_2.erase( layer1Stubs_2.begin() + std::distance(layer1Stubs_2.begin(),it) );
-
-//        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-//        std::cout << "layer1Stubs_2.size() : " << layer1Stubs_2.size() << std::endl;
-
-	trackCandidates.push_back(l1Trk3D);
-/*        L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
-        if ( fitTrk.accepted() ) {
-          bool containsLayer1 {false};
-          for ( const Stub* stub : fitTrk.getStubs() ) if ( layerMap[iCurrentEtaReg_][stub->layerIdReduced()] == 1 ) containsLayer1 = true;
-          if ( containsLayer1 ) {
-            std::vector<const Stub*>::iterator it = std::find(layer1Stubs_2.begin(), layer1Stubs_2.end(), stub2);
-            if ( it != layer1Stubs_2.end() ) layer1Stubs_2.erase( layer1Stubs_2.begin() + std::distance(layer1Stubs_2.begin(),it) );
-          }
-        }*/
-//        fittedTracks.push_back(fitTrk);
+//	trackCandidates.push_back(l1Trk3D);
+        L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D, 1);
+        fittedTracks.push_back(fitTrk);
       }
     }
 
-//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-//    std::cout << "layer1Stubs_2.size() : " << layer1Stubs_2.size() << std::endl;
-/*
+
     // Create layer 1 seeds
     for ( auto stub : layer1Stubs_2 ) {
       float qOverPt = stub->qOverPt();
@@ -1235,15 +1214,9 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       
       L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
 //      trackCandidates.push_back(l1Trk3D);
-      L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
+      L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D, 0);
       fittedTracks.push_back(fitTrk);
 
-    }
-*/
-
-    for ( auto trk : trackCandidates ) {
-      L1fittedTrack fitTrk = L1KalmanComb::fit(trk);
-      fittedTracks.push_back(fitTrk);
     }
 
     return fittedTracks;
@@ -1336,7 +1309,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
   }
 }
 
-std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa ){
+std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa, const unsigned int option ){
 
 #ifdef RECALC_DEBUG
   cout<<"FITTER new track: HT cell=("<<l1track3D.getCellLocationHT().first<<","<<l1track3D.getCellLocationHT().second<<")"<<endl;
@@ -1483,8 +1456,6 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 			
       combinations_per_iteration += stubs.size() + next_stubs.size();
 
-      std::cout << "stubs.size(): " << stubs.size() << std::endl;
-			
       // loop over each stub in this layer and check for compatibility with this state
       for( unsigned i=0; i < stubs.size()  ; i++ ){
 	
@@ -1495,19 +1466,17 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	const kalmanState * new_state = kalmanUpdate( skipped, layer+1, next_stubCluster, *the_state, tpa );
 
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
-	// Cut on track chi2, pt etc. 
-//        if (isGoodState( *new_state ) ) next_states.push_back( new_state );
-	
-        if ( seedingOption_ == 15 && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 2 ) {
+
+        // If seeding from a pair of stubs, we want to keep both no matter what!	
+        if ( option == 1 && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 2 ) {
           next_states.push_back( new_state );
         }
+        // Otherwise or if doing fit to HT cand, cut on track chi2, pt etc. 
         else if (isGoodState( *new_state ) ) {
           next_states.push_back( new_state );
         }
 
       }
-
-      std::cout << "next_stubs.size(): " << next_stubs.size() << std::endl;
 
       // loop over each stub in next layer if we skip, and check for compatibility with this state
       for( unsigned i=0; i < next_stubs.size()  ; i++ ){
@@ -1518,10 +1487,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 				
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
 				
-//	if(isGoodState( *new_state ) ) next_states_skipped.push_back( new_state );
-
-        if ( seedingOption_ == 15 && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 3 ) {
-//          next_states_skipped.push_back( new_state );
+        // If seeding from a pair of stubs, we want to keep both no matter what! So no skipped layers are considered until we start running over iteration 2/layer 2 in main stub consideration	
+        if ( option == 1 && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 3 ) {
           continue;
         }
         else if (isGoodState( *new_state ) ) {
@@ -1574,13 +1541,11 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 			
       i = 0;
       for( auto state : next_states ){
-        std::cout << "i = " << i << std::endl;					
+
 	if( i < max_states ){
 	  new_states.push_back( state );
-          std::cout << "push back next_states into new states" << std::endl;
 	} else {
-          std::cout << "else break" << std::endl;
-	  break;
+          break;
 	}
 	i++;
 	
@@ -1591,10 +1556,8 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	
 	if( i < max_states_skip ){
 	  new_states.push_back( state );
-          std::cout << "push back next_states_skipped into new states" << std::endl;
 	} else {
-          std::cout << "else break" << std::endl;
-	  break;
+          break;
 	}
 	i++;
 	
@@ -1617,8 +1580,6 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
     // copy new_states into prev_states for next iteration or end if we are on 
     // last iteration by clearing all states and making final state selection
 		
-    std::cout << "new_states.size(): " << new_states.size() << std::endl;
-
     sort( new_states.begin(), new_states.end(), kalmanState::orderMinSkipChi2); // Sort by chi2*(skippedLayers+1)
 
     unsigned int nStubs = iteration + 1;
