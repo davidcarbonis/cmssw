@@ -288,6 +288,15 @@ TMTrackProducer_params = cms.PSet(
      KalmanSeedEtaPhiBinned = cms.bool(False),
      KalmanSeedNbinsPhiAxis = cms.double(100),
      KalmanSeedNbinsEtaAxis = cms.double(100),
+
+     ## Seeding options < 10 do not bin stubs into clusters in phi/eta bins
+     # Option 0/10 only uses kalman layer 0 as a single stub seed, option 1/11 uses either kalman layer 0/1 as a single stub seed
+     # Option 5/15 uses kalman layers 0+1 to create a pair of stubs seed, and layers 0/1 as a single stub seed for stubs
+     # in pairs that fail quality create during the seeding process. But will consider skipping layer 1 ...
+     # Option 6/16 is the same as 5/15, but skipping layer 1 is not allowed.
+     # Option 7/17 is the same as 6/16 plus considers layer 0 stub seedss from pairs that fail quality critiera.
+     # Option 8/18 is the same as 6/16 plus considers layer 1 stub seeds from pairs that fail quality critiera.
+     # Option 9/19 is the same as 6/16 plus considers layer 0 and 1 stub seeds from pairs that fail quality critiera.
      SeedingOption = cms.uint32(0),
   ),
 
@@ -390,6 +399,7 @@ TMTrackProducer_params = cms.PSet(
      # Internal histograms are filled if it is True
      KalmanFillInternalHists  = cms.bool(True),
      # Cluster stubs on the same layer. Best performance when set to false.
+     # Effects HT+KF and Full CKF for options < 10
      KalmanStubClustering = cms.bool(False),
      # Fit will reject fitted tracks unless it can assign at least this number of stubs to them.
      KalmanMinNumStubs       = cms.uint32(4),
