@@ -190,7 +190,7 @@ std::vector<double> KFParamsComb::seedx(const L1track3D& l1track3D)const{
 }
 
 /* Seed the covariance matrix */
-TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
+TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)const{
   TMatrixD p(nPar_,nPar_);
 
   double c = getSettings()->invPtToInvR() / 2; 
@@ -211,15 +211,33 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
 
   } else if ( getSettings()->runFullKalman() ) {
 
-    double cov = 1.;
-/*    if ( getSettings()->kalmanSeedingOption() >= 10 ) {
+    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4; // 250;
+    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4 * 4;
+    const unsigned int option = getSettings()->kalmanSeedingOption();
+    if ( option == 0 || option == 1 ) p(INV2R,INV2R) *= 0.85; // 0.85
+    if ( option == 0 ) p(PHI0,PHI0) *= 0.07; // 0.07
+    if ( option == 1 ) p(PHI0,PHI0) *= 0.05; // 0.05
+    if ( option == 5 ) {
+      p(INV2R,INV2R) *= 0.02; // 0.02
+      p(PHI0,PHI0) *= 0.1; // 0.1
+    }
+    if ( option > 5 && option < 10) {
+      if ( seedPair ) {
+        p(INV2R,INV2R) *= 0.000001; // option 6 = 0.000001;
+        p(PHI0,PHI0) *= 0.1; // option 6 =  0.1
+      }
+      else {
+        p(INV2R,INV2R) *= 0.85; //option 9 = 0.7
+        p(PHI0,PHI0) *= 0.07; // option 9 = 0.1
+      }
+    }
+    if ( option >= 10 ) {
       double alpha = 1000.;
       unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
-      cov = alpha * w;
+      double cov = alpha * w;
+      p(INV2R,INV2R) *= cov;
+      p(PHI0,PHI0) *= 1.0;
     }
-*/
-    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4 * cov; // 250;
-    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4 * 4;
     p(Z0,Z0) = 5.0 * 5.0;
     p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
     if (nPar_ == 5) {
@@ -230,10 +248,6 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
       p(T,T) = p(T,T) * 2 * 2;
     }
 
-//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-//    std::cout << "p(INV2R,INV2R): " << p(INV2R,INV2R) << std::endl;
-//    std::cout << "p(PHI0,PHI0): " << p(PHI0,PHI0) << std::endl;
-
   } else {
     // optimised for 18x2 with additional error factor in pt/phi to avoid pulling towards wrong HT params
     p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4;  // Base on HT cell size
@@ -243,10 +257,6 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D)const{
     if (nPar_ == 5) {
       p(D0,D0) = d0Sigma * d0Sigma; 
     } 
-
-//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-//    std::cout << "p(INV2R,INV2R): " << p(INV2R,INV2R) << std::endl;
-//    std::cout << "p(PHI0,PHI0): " << p(PHI0,PHI0) << std::endl;
 
     if ( getSettings()->numEtaRegions() <= 12 ) {    
       // Inflate eta errors

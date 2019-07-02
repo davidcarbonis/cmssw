@@ -79,7 +79,7 @@ class L1KalmanComb : public TrackFitGeneric{
 
 
 	virtual std::vector<double> seedx(const L1track3D& l1track3D)const=0;
-	virtual TMatrixD seedP(const L1track3D& l1track3D)const=0;
+	virtual TMatrixD seedP(const L1track3D& l1track3D, const bool seedPair=false)const=0;
 	virtual void barrelToEndcap( double r, const StubCluster *stubCluster, std::vector<double> &x, TMatrixD &cov_x )const{}
 	virtual std::vector<double> d(const StubCluster* stubCluster )const=0;
 	virtual TMatrixD H(const StubCluster* stubCluster)const=0;

@@ -22,7 +22,7 @@ class KFParamsComb : public L1KalmanComb {
 	virtual std::map<std::string, double> getTrackParams(const kalmanState *state )const;
         virtual std::map<std::string, double> getTrackParams_BeamConstr(const kalmanState *state, double& deltaChi2) const;
 	virtual std::vector<double> seedx(const L1track3D& l1track3D)const;
-	virtual TMatrixD seedP(const L1track3D& l1track3D)const;
+	virtual TMatrixD seedP(const L1track3D& l1track3D, const bool seedPair=false)const;
 	virtual std::vector<double> d(const StubCluster* stubCluster )const;
 	virtual TMatrixD H(const StubCluster* stubCluster)const;
 	virtual TMatrixD dH(const StubCluster* stubCluster)const;

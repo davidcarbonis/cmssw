@@ -1006,75 +1006,84 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  // Some further checks - pT and z0
 	  if ( std::abs( l1track3D.pt() ) < 0.75 * settings_->houghMinPt() ) continue;
 	  if ( std::abs( l1track3D.z0() ) > 15.0 ) continue;
-
+/*
           std::vector<const StubCluster*>::iterator it0 = std::find(layer0Clusters_2ndPass.begin(), layer0Clusters_2ndPass.end(), cls1);
           if ( it0 != layer0Clusters_2ndPass.end() ) layer0Clusters_2ndPass.erase( layer0Clusters_2ndPass.begin() + std::distance(layer0Clusters_2ndPass.begin(),it0) );
 
           std::vector<const StubCluster*>::iterator it1 = std::find(layer1Clusters_2ndPass.begin(), layer1Clusters_2ndPass.end(), cls2);
           if ( it1 != layer1Clusters_2ndPass.end() ) layer1Clusters_2ndPass.erase( layer1Clusters_2ndPass.begin() + std::distance(layer1Clusters_2ndPass.begin(),it1) );
-
+*/
           bool seedPair {false};
           if ( seedingOption_ > 15 ) seedPair = true;
 //	  trackCandidates.push_back(l1track3D);
           L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, seedPair);
+          if ( fitTrk.accepted() ) {
+            std::vector<const StubCluster*>::iterator it0 = std::find(layer0Clusters_2ndPass.begin(), layer0Clusters_2ndPass.end(), cls1);
+            if ( it0 != layer0Clusters_2ndPass.end() ) layer0Clusters_2ndPass.erase( layer0Clusters_2ndPass.begin() + std::distance(layer0Clusters_2ndPass.begin(),it0) );
+
+            std::vector<const StubCluster*>::iterator it1 = std::find(layer1Clusters_2ndPass.begin(), layer1Clusters_2ndPass.end(), cls2);
+            if ( it1 != layer1Clusters_2ndPass.end() ) layer1Clusters_2ndPass.erase( layer1Clusters_2ndPass.begin() + std::distance(layer1Clusters_2ndPass.begin(),it1) );
+          }
+          
+
           fittedTracks.push_back(fitTrk);
         }
       }
 
       if ( seedingOption_ == 17 || seedingOption_ == 19 ) {
-      // Create layer 0 only seeds
-      for ( auto seed : layer0Clusters_2ndPass ) {
-	float qOverPt = seed->stubs()[0]->qOverPt();
+	// Create layer 0 only seeds
+	for ( auto seed : layer0Clusters_2ndPass ) {
+	  float qOverPt = seed->stubs()[0]->qOverPt();
 
-	if ( seed->stubs().size() > 1 ) {
-	  for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
-	    if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
+	  if ( seed->stubs().size() > 1 ) {
+	    for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
+	      if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
+	    }
 	  }
+
+	  float phi0 = ( seed->phi()+ seed->dphi() );
+	  float z0 = 0;
+	  float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+
+	  const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	  const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	  const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+
+	  vector<const StubCluster*> cls {seed};
+	  cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
+
+	  L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+	  L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, false);
+	  fittedTracks.push_back(fitTrk);
 	}
-
-	float phi0 = ( seed->phi()+ seed->dphi() );
-	float z0 = 0;
-	float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-
-	const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-	const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-	const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-
-	vector<const StubCluster*> cls {seed};
-        cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
-
-	L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-	L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, false);
-	fittedTracks.push_back(fitTrk);
-      }
       }
 
       if ( seedingOption_ == 18 || seedingOption_ == 19 ) {
-      // Create layer 1 only seeds
-      for ( auto seed : layer1Clusters_2ndPass ) {
-	float qOverPt = seed->stubs()[0]->qOverPt();
-
-	if ( seed->stubs().size() > 1 ) {
-	  for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
-	    if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
+	// Create layer 1 only seeds
+	for ( auto seed : layer1Clusters_2ndPass ) {
+	  float qOverPt = seed->stubs()[0]->qOverPt();
+	  
+	  if ( seed->stubs().size() > 1 ) {
+	    for ( unsigned s = 1; s != seed->stubs().size(); s++ ) {
+	      if ( fabs(seed->stubs()[s]->qOverPt()) < qOverPt ) qOverPt = seed->stubs()[s]->qOverPt();
+	    }
 	  }
-	}
 
-	float phi0 = ( seed->phi()+ seed->dphi() );
-	float z0 = 0;
-	float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-
-	const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-	const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-	const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-
-	vector<const StubCluster*> cls {seed};
-        cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
-
-	L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+	  float phi0 = ( seed->phi()+ seed->dphi() );
+	  float z0 = 0;
+	  float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+	  
+	  const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	  const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	  const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+	  
+	  vector<const StubCluster*> cls {seed};
+	  cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
+	  
+	  L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
 	L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, false);
 	fittedTracks.push_back(fitTrk);
-      }
+	}
       }
 
       return fittedTracks;
@@ -1186,7 +1195,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
   }
 
   // Seeding (no clustering) from layers 1+2 using pairs of stubs for layers 1+2/3
-  else if ( seedingOption_ == 5 ) {
+  else if ( seedingOption_ >= 5 && seedingOption_ < 10 ) {
 
     vector< const Stub* > layer0Stubs;
     vector< const Stub* > layer0Stubs_2;
@@ -1280,58 +1289,67 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
         if ( seedingOption_ > 5 && seedingOption_ < 10 ) seedPair = true;
 //	trackCandidates.push_back(l1Trk3D);
         L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D, seedPair);
+/*
+        if ( fitTrk.accepted() ) {
+          std::vector<const Stub*>::iterator it0 = std::find(layer0Stubs_2.begin(), layer0Stubs_2.end(), stub1);
+          if ( it0 != layer0Stubs_2.end() ) layer0Stubs_2.erase( layer0Stubs_2.begin() + std::distance(layer0Stubs_2.begin(),it0) );
+
+          std::vector<const Stub*>::iterator it1 = std::find(layer1Stubs_2.begin(), layer1Stubs_2.end(), stub2);
+          if ( it1 != layer1Stubs_2.end() ) layer1Stubs_2.erase( layer1Stubs_2.begin() + std::distance(layer1Stubs_2.begin(),it1) );
+        }
+*/
         fittedTracks.push_back(fitTrk);
       }
     }
 
     if ( seedingOption_ == 7 || seedingOption_  == 9 ) {
-    // Create layer 0 only seeds
-    for ( auto stub : layer0Stubs_2 ) {
-      float qOverPt = stub->qOverPt();
-      float phi0 = stub->beta();
-      float z0 = 0;
-      float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-
-      vector<const Stub*> stubs {stub};
-      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+      // Create layer 0 only seeds
+      for ( auto stub : layer0Stubs_2 ) {
+	float qOverPt = stub->qOverPt();
+	float phi0 = stub->beta();
+	float z0 = 0;
+	float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+	
+	vector<const Stub*> stubs {stub};
+	stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+	
+	const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
       
-      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-      
-      L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-//      trackCandidates.push_back(l1Trk3D);
-      L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
-      fittedTracks.push_back(fitTrk);
-
-    }
+	L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+	//      trackCandidates.push_back(l1Trk3D);
+	L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
+	fittedTracks.push_back(fitTrk);
+	
+      }
     }
 
     if ( seedingOption_ == 8 || seedingOption_  == 9 ) {
-    // Create layer 1 only seeds
-    for ( auto stub : layer1Stubs_2 ) {
-      float qOverPt = stub->qOverPt();
-      float phi0 = stub->beta();
-      float z0 = 0;
-      float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
-
-      vector<const Stub*> stubs {stub};
-      stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
-      
-      const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
-      const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
-      const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
-      
-      L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
-//      trackCandidates.push_back(l1Trk3D);
-      L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
-      fittedTracks.push_back(fitTrk);
+      // Create layer 1 only seeds
+      for ( auto stub : layer1Stubs_2 ) {
+	float qOverPt = stub->qOverPt();
+	float phi0 = stub->beta();
+	float z0 = 0;
+	float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+	
+	vector<const Stub*> stubs {stub};
+	stubs.insert( stubs.end(), otherStubs.begin(), otherStubs.end() );
+	
+	const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+	
+	L1track3D l1Trk3D(getSettings(), stubs, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+	//      trackCandidates.push_back(l1Trk3D);
+	L1fittedTrack fitTrk = L1KalmanComb::fit(l1Trk3D);
+	fittedTracks.push_back(fitTrk);
+      }
     }
-    }
-
+    
     return fittedTracks;
   }
-
+  
   // Seeding (no clustering) from layers 1+2  
   else if ( seedingOption_ == 1 ) {
     
@@ -1432,7 +1450,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	
   // seed helix params & their covariance.
   std::vector<double> x0 = seedx(l1track3D);
-  TMatrixD pxx0 = seedP(l1track3D);
+  TMatrixD pxx0 = seedP(l1track3D, seedPair);
   TMatrixD K( nPar_, 2 );
   TMatrixD dcov( 2, 2 );
 	
