@@ -221,22 +221,45 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
       p(INV2R,INV2R) *= 0.02; // 0.02
       p(PHI0,PHI0) *= 0.1; // 0.1
     }
+    // Options 6-9
     if ( option > 5 && option < 10) {
       if ( seedPair ) {
-        p(INV2R,INV2R) *= 0.000001; // option 6 = 0.000001;
-        p(PHI0,PHI0) *= 0.1; // option 6 =  0.1
+        p(INV2R,INV2R) *= 0.000001; // 
+        p(PHI0,PHI0) *= 0.1; // 
       }
       else {
-        p(INV2R,INV2R) *= 0.85; //option 9 = 0.7
-        p(PHI0,PHI0) *= 0.07; // option 9 = 0.1
+        p(INV2R,INV2R) *= 0.85; //
+        p(PHI0,PHI0) *= 0.07; // 
       }
     }
-    if ( option >= 10 ) {
-      double alpha = 1000.;
+    if ( option == 10 ) {
       unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
+      double alpha = 1.7;
+      double cov {pow(alpha,double(w))};
+      p(INV2R,INV2R) *= cov;
+    }
+    if ( option == 11 ) {
+      unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
+      double alpha = 3.0; //3.0 alpha^w-1
+      double cov {pow(alpha,double(w)-1.)};
+      if ( w == 1 ) p(INV2R,INV2R) *= 0.85;
+      if ( w > 1 ) p(INV2R,INV2R) *= cov;
+      p(PHI0,PHI0) *= 0.05;
+      p(Z0,Z0) *= 0.7;
+      p(T,T) *= 1.0;
+    }
+    else if ( option == 15 ) {
+      unsigned int w = (l1track3D.getStubClusters()[0]->nStubs())/(l1track3D.getStubClusters()[1]->nStubs());
+      double alpha = 1.0;
       double cov = alpha * w;
       p(INV2R,INV2R) *= cov;
       p(PHI0,PHI0) *= 1.0;
+    }
+    else if ( option > 15 ) {
+      if ( seedPair ) {
+      }
+      else {
+      }
     }
     p(Z0,Z0) = 5.0 * 5.0;
     p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
