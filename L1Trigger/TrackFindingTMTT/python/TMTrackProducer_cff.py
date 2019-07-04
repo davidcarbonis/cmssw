@@ -37,8 +37,10 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(64)
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(16)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(1024)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(1024)
+
+TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(0)
 
 ### CKF Seeding and options
 ## Seeding options < 10 do not bin stubs into clusters in phi/eta bins
@@ -49,7 +51,7 @@ TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(16)
 ## Option 7/17 is the same as 6/16 plus considers layer 0 stub seedss from pairs that fail quality critiera.
 ## Option 8/18 is the same as 6/16 plus considers layer 1 stub seeds from pairs that fail quality critiera.
 ## Option 9/19 is the same as 6/16 plus considers layer 0 and 1 stub seeds from pairs that fail quality critiera.
-TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(15)
+
 ### Clusters stubs on the same layers for HT+KF and CKF options < 10
 #TMTrackProducer.TrackFitSettings.KalmanStubClustering = cms.bool (True) #Only applies to HT+KF and CKF options < 10
 
@@ -57,8 +59,8 @@ TMTrackProducer.DupTrkRemoval.DupTrkAlgRphi   = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlg3D     = cms.uint32(0)
 TMTrackProducer.DupTrkRemoval.DupTrkAlgFit    = cms.uint32(0)
 
-#TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF4ParamsComb")
-TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
+TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF4ParamsComb")
+#TMTrackProducer.TrackFitSettings.TrackFitters = cms.vstring("KF5ParamsComb","KF4ParamsComb")
 TMTrackProducer.TrackFitSettings.KalmanMaxStubsPerLayer  = cms.uint32(20) #(40)
 
 

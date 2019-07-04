@@ -192,15 +192,14 @@ std::vector<double> KFParamsComb::seedx(const L1track3D& l1track3D)const{
 /* Seed the covariance matrix */
 TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)const{
   TMatrixD p(nPar_,nPar_);
-
-  double c = getSettings()->invPtToInvR() / 2; 
+  const double c = getSettings()->invPtToInvR() / 2.; 
 
   // Assumed track seed (from HT) uncertainty in transverse impact parameter.
   const float d0Sigma = 1.0;
 
   if (getSettings()->hybrid()) {
 
-    //    p(INV2R,INV2R) = 100000*0.0157 * 0.0157 * c * c * 10; // N.B. Such large uncertainty may cause problems.
+//    p(INV2R,INV2R) = 100000*0.0157 * 0.0157 * c * c * 10; // N.B. Such large uncertainty may cause problems.
     p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4; 
     p(PHI0,PHI0) = 0.0051 * 0.0051 * 4; 
     p(Z0,Z0) = 5.0 * 5.0; // N.B. r-z seed uncertainties could be smaller for hybrid, except if seeded in 2S?
@@ -210,65 +209,74 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
     } 
 
   } else if ( getSettings()->runFullKalman() ) {
-
-    p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4; // 250;
-    p(PHI0,PHI0) = 0.0051 * 0.0051 * 4 * 4;
-    const unsigned int option = getSettings()->kalmanSeedingOption();
-    if ( option == 0 || option == 1 ) p(INV2R,INV2R) *= 0.85; // 0.85
-    if ( option == 0 ) p(PHI0,PHI0) *= 0.07; // 0.07
-    if ( option == 1 ) p(PHI0,PHI0) *= 0.05; // 0.05
-    if ( option == 5 ) {
-      p(INV2R,INV2R) *= 0.02; // 0.02
-      p(PHI0,PHI0) *= 0.1; // 0.1
-    }
-    // Options 6-9
-    if ( option > 5 && option < 10) {
-      if ( seedPair ) {
-        p(INV2R,INV2R) *= 0.000001; // 
-        p(PHI0,PHI0) *= 0.1; // 
-      }
-      else {
-        p(INV2R,INV2R) *= 0.85; //
-        p(PHI0,PHI0) *= 0.07; // 
-      }
-    }
-    if ( option == 10 ) {
-      unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
-      double alpha = 1.7;
-      double cov {pow(alpha,double(w))};
-      p(INV2R,INV2R) *= cov;
-    }
-    if ( option == 11 ) {
-      unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
-      double alpha = 3.0; //3.0 alpha^w-1
-      double cov {pow(alpha,double(w)-1.)};
-      if ( w == 1 ) p(INV2R,INV2R) *= 0.85;
-      if ( w > 1 ) p(INV2R,INV2R) *= cov;
-      p(PHI0,PHI0) *= 0.05;
-      p(Z0,Z0) *= 0.7;
-      p(T,T) *= 1.0;
-    }
-    else if ( option == 15 ) {
-      unsigned int w = (l1track3D.getStubClusters()[0]->nStubs())/(l1track3D.getStubClusters()[1]->nStubs());
-      double alpha = 1.0;
-      double cov = alpha * w;
-      p(INV2R,INV2R) *= cov;
-      p(PHI0,PHI0) *= 1.0;
-    }
-    else if ( option > 15 ) {
-      if ( seedPair ) {
-      }
-      else {
-      }
-    }
-    p(Z0,Z0) = 5.0 * 5.0;
-    p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
+    const double inv2r = 0.0157 * 0.0157 * c * c * 4;
+    const double phi0 = 0.0051 * 0.0051 * 4 * 4;
+    p(Z0,Z0) = 5.0 * 5.0; // N.B. r-z seed uncertainties could be smaller for hybrid, except if seeded in 2S?
+    p(T,T) = 0.25 * 0.25 * 4;
     if (nPar_ == 5) {
       p(D0,D0) = d0Sigma * d0Sigma;
     }
-    if ( getSettings()->numEtaRegions() <= 12 ) {
-      // Inflate eta errors
-      p(T,T) = p(T,T) * 2 * 2;
+
+    const unsigned int option = getSettings()->kalmanSeedingOption();
+    if ( option == 0 ) {
+      p(INV2R,INV2R) = inv2r * 0.85; // 0.85
+      p(PHI0,PHI0) = phi0 * 0.07; // 0.07
+    }
+    else if ( option == 1 ) {
+      p(INV2R,INV2R) = inv2r * 0.85;// 0.85
+      p(PHI0,PHI0) = phi0 * 0.05; // 0.05
+    }
+    else if ( option == 5 ) {
+      p(INV2R,INV2R) = inv2r * 0.02; // 0.02
+      p(PHI0,PHI0) = phi0 * 0.1; // 0.1
+      p(Z0,Z0) = 1.0; // N.B. r-z seed uncertainties could be smaller for hybrid, except if seeded in 2S?
+      //p(T,T) = 0.25 * 0.25 * 4;
+    }
+    // Options 6-9
+    else if ( option > 5 && option < 10) {
+      if ( seedPair ) {
+        p(INV2R,INV2R) = inv2r * 0.000001; // 
+        p(PHI0,PHI0) = phi0 * 0.1; // 
+      }
+      else {
+        p(INV2R,INV2R) = inv2r * 0.85; //
+        p(PHI0,PHI0) = phi0 * 0.07; // 
+      }
+    }
+    else if ( option == 10 ) {
+      unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
+      double alpha = 3.0;
+      double cov {alpha*(double(w)-1.)};
+      p(INV2R,INV2R) = inv2r * cov;
+    }
+    else if ( option == 11 ) {
+      unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
+      double alpha = 3.0; //3.0 alpha^w-1
+      double cov {alpha*(double(w)-1.)};
+      if ( w == 1 ) p(INV2R,INV2R) = inv2r * 0.85;
+      if ( w > 1 ) p(INV2R,INV2R) = inv2r * cov;
+      p(PHI0,PHI0) = phi0 * 0.05;
+    }
+    else if ( option == 15 ) {
+      double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
+      double alpha = 0.05;
+      double cov {alpha*(double(w)-1.)};
+      if ( w == 1 ) p(INV2R,INV2R) = inv2r * .85; 
+      p(PHI0,PHI0) = phi0 * 0.05; // 0.05
+    }
+    else if ( option > 15 ) {
+      if ( seedPair ) {
+        double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
+        double alpha = 0.05; //01; // 0.05
+        double cov {alpha*(double(w)-1.)};
+        if ( w == 1 ) p(INV2R,INV2R) = inv2r * 1.; // 0.85
+        if ( w > 1 ) p(INV2R,INV2R) = inv2r * 1.;
+        p(PHI0,PHI0) = phi0 * 0.05; // 0.05
+      }
+      else {
+        p(INV2R,INV2R) = inv2r; // 0.85
+        p(PHI0,PHI0) = phi0 * 0.05; // 0.05
+      }
     }
 
   } else {
@@ -286,6 +294,7 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
       p(T,T) = p(T,T) * 2 * 2;
     }
   }
+
 
   return p;
 }
@@ -458,13 +467,13 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
   d0Cut       = { 999.,  999.,  999.,  10.,   5.,    5.,   5.};  // Only used for 5 param helix fit
 
-//  chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
+  chi2Cut     = { 999.,  999.,   10.,  30.,  80.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
 //  chi2Cut     = { 999.,  500.,  120.,  140., 160.,  10.,  10.};  // Consider reducing chi2 cut 2 to 7.
 
 //  chi2Cut     = { 999.,  500.,  120.,  140., 160.,  10., 10.};  // Consider reducing chi2 cut 2 to 7. // old option 15
 
 //  chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
-  chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
+//  chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
 
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );
