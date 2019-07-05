@@ -193,7 +193,7 @@ std::vector<double> KFParamsComb::seedx(const L1track3D& l1track3D)const{
 TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)const{
   TMatrixD p(nPar_,nPar_);
 
-  double c = getSettings()->invPtToInvR() / 2; 
+  const double c = getSettings()->invPtToInvR() / 2; 
 
   // Assumed track seed (from HT) uncertainty in transverse impact parameter.
   const float d0Sigma = 1.0;
@@ -214,9 +214,14 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
     p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4; // 250;
     p(PHI0,PHI0) = 0.0051 * 0.0051 * 4 * 4;
     const unsigned int option = getSettings()->kalmanSeedingOption();
-    if ( option == 0 || option == 1 ) p(INV2R,INV2R) *= 0.85; // 0.85
-    if ( option == 0 ) p(PHI0,PHI0) *= 0.07; // 0.07
-    if ( option == 1 ) p(PHI0,PHI0) *= 0.05; // 0.05
+    if ( option == 0 ) {
+      p(INV2R,INV2R) *= 0.85; // 0.85
+      p(PHI0,PHI0) *= 0.07; // 0.07
+    }
+    if ( option == 1 ) {
+      p(INV2R,INV2R) *= 0.85; // 0.85
+      p(PHI0,PHI0) *= 0.05; // 0.05
+    }
     if ( option == 5 ) {
       p(INV2R,INV2R) *= 0.02; // 0.02
       p(PHI0,PHI0) *= 0.1; // 0.1
