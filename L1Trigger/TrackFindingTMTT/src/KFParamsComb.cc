@@ -213,6 +213,12 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
 
     p(INV2R,INV2R) = 0.0157 * 0.0157 * c * c * 4; // 250;
     p(PHI0,PHI0) = 0.0051 * 0.0051 * 4 * 4;
+    p(Z0,Z0) = 5.0 * 5.0;
+    p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
+    if (nPar_ == 5) {
+      p(D0,D0) = d0Sigma * d0Sigma;
+    }
+
     const unsigned int option = getSettings()->kalmanSeedingOption();
     if ( option == 0 ) {
       p(INV2R,INV2R) *= 0.85; // 0.85
@@ -241,36 +247,38 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
       unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
       double alpha = 1.7;
       double cov {pow(alpha,double(w))};
-      p(INV2R,INV2R) *= cov;
-    }
+      p(INV2R,INV2R) *= cov;    }
     if ( option == 11 ) {
       unsigned int w = l1track3D.getStubClusters()[0]->nStubs();
       double alpha = 3.0; //3.0 alpha^w-1
-      double cov {pow(alpha,double(w)-1.)};
+      double cov {alpha*(double(w)-1.)};
       if ( w == 1 ) p(INV2R,INV2R) *= 0.85;
       if ( w > 1 ) p(INV2R,INV2R) *= cov;
       p(PHI0,PHI0) *= 0.05;
-      p(Z0,Z0) *= 0.7;
-      p(T,T) *= 1.0;
     }
     else if ( option == 15 ) {
-      unsigned int w = (l1track3D.getStubClusters()[0]->nStubs())/(l1track3D.getStubClusters()[1]->nStubs());
-      double alpha = 1.0;
-      double cov = alpha * w;
-      p(INV2R,INV2R) *= cov;
-      p(PHI0,PHI0) *= 1.0;
+      double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
+      double alpha = 0.05;
+      double cov {alpha*(double(w)-1.)};
+      if ( w == 1 ) p(INV2R,INV2R) *= .85; 
+      if ( w > 1 )  p(INV2R,INV2R) *= cov;
+      p(PHI0,PHI0) *= 0.05;
     }
     else if ( option > 15 ) {
+      double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
       if ( seedPair ) {
+        double alpha = 0.05; //01; // 0.05
+        double cov {alpha*(double(w)-1.)};
+        if ( w == 1 ) p(INV2R,INV2R) *= 1.; // 0.85
+        if ( w > 1 ) p(INV2R,INV2R) *= 1.;
+        p(PHI0,PHI0) *= 0.05; // 0.05
       }
       else {
+        p(INV2R,INV2R) *= 1.; // 0.85
+        p(PHI0,PHI0) *= 0.05; // 0.05
       }
     }
-    p(Z0,Z0) = 5.0 * 5.0;
-    p(T,T) = 0.25 * 0.25 * 4; // IRT: increased by factor 4, as was affecting fit chi2.
-    if (nPar_ == 5) {
-      p(D0,D0) = d0Sigma * d0Sigma;
-    }
+
     if ( getSettings()->numEtaRegions() <= 12 ) {
       // Inflate eta errors
       p(T,T) = p(T,T) * 2 * 2;

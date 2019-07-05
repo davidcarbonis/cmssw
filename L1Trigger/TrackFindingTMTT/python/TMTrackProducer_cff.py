@@ -40,7 +40,7 @@ TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(1024)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(1024)
 
-TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(9)
+TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(19)
 
 ### CKF Seeding and options
 ## Seeding options < 10 do not bin stubs into clusters in phi/eta bins
