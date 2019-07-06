@@ -970,7 +970,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  float phi2 = cls2->phi();
 
           // Crude curvature check
-//          if( std::abs(phi1 - phi2 ) >= ( settings_->invPtToInvR() * std::abs( r1 - r2 ) / ( 1.5*settings_->houghMinPt() ) ) )
+//          if( std::abs(phi1 - phi2 ) >= ( settings_->invPtToInvR() * std::abs( r1 - r2 ) / ( 2.0*settings_->houghMinPt() ) ) )
 //            continue;
 
 
@@ -1017,20 +1017,19 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
           if ( seedingOption_ > 15 ) seedPair = true;
 //	  trackCandidates.push_back(l1track3D);
           L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, seedPair);
-/*          if ( fitTrk.accepted() ) {
+          if ( fitTrk.accepted() && seedingOption_ == 20 ) {
             std::vector<const StubCluster*>::iterator it0 = std::find(layer0Clusters_2ndPass.begin(), layer0Clusters_2ndPass.end(), cls1);
             if ( it0 != layer0Clusters_2ndPass.end() ) layer0Clusters_2ndPass.erase( layer0Clusters_2ndPass.begin() + std::distance(layer0Clusters_2ndPass.begin(),it0) );
 
             std::vector<const StubCluster*>::iterator it1 = std::find(layer1Clusters_2ndPass.begin(), layer1Clusters_2ndPass.end(), cls2);
             if ( it1 != layer1Clusters_2ndPass.end() ) layer1Clusters_2ndPass.erase( layer1Clusters_2ndPass.begin() + std::distance(layer1Clusters_2ndPass.begin(),it1) );
-          }
-*/          
+          }        
 
           fittedTracks.push_back(fitTrk);
         }
       }
 
-      if ( seedingOption_ == 17 || seedingOption_ == 19 ) {
+      if ( seedingOption_ == 17 || seedingOption_ == 19 || seedingOption_ == 20 ) {
 	// Create layer 0 only seeds
 	for ( auto seed : layer0Clusters_2ndPass ) {
 	  float qOverPt = seed->stubs()[0]->qOverPt();
@@ -1058,7 +1057,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	}
       }
 
-      if ( seedingOption_ == 18 || seedingOption_ == 19 ) {
+      if ( seedingOption_ == 18 || seedingOption_ == 19 || seedingOption_ == 20 ) {
 	// Create layer 1 only seeds
 	for ( auto seed : layer1Clusters_2ndPass ) {
 	  float qOverPt = seed->stubs()[0]->qOverPt();

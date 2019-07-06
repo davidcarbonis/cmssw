@@ -264,21 +264,36 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
       if ( w > 1 )  p(INV2R,INV2R) *= cov;
       p(PHI0,PHI0) *= 0.05;
     }
-    else if ( option > 15 ) {
+    else if ( option > 15 && option < 20) {
       double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
       if ( seedPair ) {
-        double alpha = 0.05; //01; // 0.05
+        double alpha = 1.; //01; // 0.05
         double cov {alpha*(double(w)-1.)};
         if ( w == 1 ) p(INV2R,INV2R) *= 1.; // 0.85
-        if ( w > 1 ) p(INV2R,INV2R) *= 1.;
-        p(PHI0,PHI0) *= 0.05; // 0.05
+        if ( w > 1 ) p(INV2R,INV2R) *= cov; 
+        p(PHI0,PHI0) *= .05; // 0.05
       }
       else {
-        p(INV2R,INV2R) *= 1.; // 0.85
-        p(PHI0,PHI0) *= 0.05; // 0.05
+        if ( w == 1 ) p(INV2R,INV2R) *= 1.0; //0.05; // 0.85
+        if ( w > 1 )  p(INV2R,INV2R) *= 1.0; // 0.85
+        p(PHI0,PHI0) *= 0.01; // 0.01
       }
     }
-
+    else if ( option == 20 ) {
+      double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
+      if ( seedPair ) {
+        double alpha = 0.0; //01; // 0.05
+        double cov {alpha*(double(w)-1.)};
+        if ( w == 1 ) p(INV2R,INV2R) *= 0.0; // 0.85
+        if ( w > 1 ) p(INV2R,INV2R) *= cov;
+        p(PHI0,PHI0) *= .05; // 0.05
+      }
+      else {
+        if ( w == 1 ) p(INV2R,INV2R) *= 1.5;//0.05; // 0.85
+        if ( w > 1 )  p(INV2R,INV2R) *= 0.85; // 0.85
+        p(PHI0,PHI0) *= 0.05; // 0.01
+      }
+    }
     if ( getSettings()->numEtaRegions() <= 12 ) {
       // Inflate eta errors
       p(T,T) = p(T,T) * 2 * 2;
@@ -456,6 +471,8 @@ TMatrixD KFParamsComb::PxxModel( const kalmanState *state, const StubCluster *st
 
 bool KFParamsComb::isGoodState( const kalmanState &state )const
 {
+  const unsigned int option = getSettings()->kalmanSeedingOption();
+
   // Cut values. (Layer 0 entry here is dummy). -- todo : make configurable
 
   vector<float> z0Cut, ptTolerance, d0Cut, chi2Cut;
@@ -478,6 +495,10 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
 //  chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
   chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
+  if ( option == 16 ) chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  10.,  10.};
+  if ( option == 19 ) chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  10.,  10.};
+  if ( option == 29 ) chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  10.,  10.};
+
 
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );
