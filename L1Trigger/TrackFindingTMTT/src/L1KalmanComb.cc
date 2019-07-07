@@ -1007,16 +1007,21 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  if ( std::abs( l1track3D.pt() ) < 0.75 * settings_->houghMinPt() ) continue;
 	  if ( std::abs( l1track3D.z0() ) > 15.0 ) continue;
 
-          std::vector<const StubCluster*>::iterator it0 = std::find(layer0Clusters_2ndPass.begin(), layer0Clusters_2ndPass.end(), cls1);
-          if ( it0 != layer0Clusters_2ndPass.end() ) layer0Clusters_2ndPass.erase( layer0Clusters_2ndPass.begin() + std::distance(layer0Clusters_2ndPass.begin(),it0) );
+          if ( seedingOption_ != 20 ) {
+            std::vector<const StubCluster*>::iterator it0 = std::find(layer0Clusters_2ndPass.begin(), layer0Clusters_2ndPass.end(), cls1);
+            if ( it0 != layer0Clusters_2ndPass.end() ) layer0Clusters_2ndPass.erase( layer0Clusters_2ndPass.begin() + std::distance(layer0Clusters_2ndPass.begin(),it0) );
 
-          std::vector<const StubCluster*>::iterator it1 = std::find(layer1Clusters_2ndPass.begin(), layer1Clusters_2ndPass.end(), cls2);
-          if ( it1 != layer1Clusters_2ndPass.end() ) layer1Clusters_2ndPass.erase( layer1Clusters_2ndPass.begin() + std::distance(layer1Clusters_2ndPass.begin(),it1) );
+            std::vector<const StubCluster*>::iterator it1 = std::find(layer1Clusters_2ndPass.begin(), layer1Clusters_2ndPass.end(), cls2);
+            if ( it1 != layer1Clusters_2ndPass.end() ) layer1Clusters_2ndPass.erase( layer1Clusters_2ndPass.begin() + std::distance(layer1Clusters_2ndPass.begin(),it1) );
+          }
+
+//	  trackCandidates.push_back(l1track3D);
 
           bool seedPair {false};
           if ( seedingOption_ > 15 ) seedPair = true;
-//	  trackCandidates.push_back(l1track3D);
+
           L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, seedPair);
+
           if ( fitTrk.accepted() && seedingOption_ == 20 ) {
             std::vector<const StubCluster*>::iterator it0 = std::find(layer0Clusters_2ndPass.begin(), layer0Clusters_2ndPass.end(), cls1);
             if ( it0 != layer0Clusters_2ndPass.end() ) layer0Clusters_2ndPass.erase( layer0Clusters_2ndPass.begin() + std::distance(layer0Clusters_2ndPass.begin(),it0) );
