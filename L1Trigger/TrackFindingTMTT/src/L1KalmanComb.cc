@@ -1604,7 +1604,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
           next_states.push_back( new_state );
         }
         // Otherwise or if doing fit to HT cand, cut on track chi2, pt etc. 
-        else if (isGoodState( *new_state ) ) {
+        else if (isGoodState( *new_state, seedPair ) ) {
           next_states.push_back( new_state );
         }
 
@@ -1623,7 +1623,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
         if ( seedPair == true && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 3 ) {
           continue;
         }
-        else if (isGoodState( *new_state ) ) {
+        else if (isGoodState( *new_state, seedPair ) ) {
           next_states_skipped.push_back( new_state );
         }
 

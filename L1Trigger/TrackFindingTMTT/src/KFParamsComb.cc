@@ -282,16 +282,17 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
     else if ( option == 20 ) {
       double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
       if ( seedPair ) {
-        double alpha = 0.; //01; // 0.05
+        double alpha = 0.; //1.0 64x32  //0. 1024x1024
         double cov {alpha*(double(w)-1.)};
-        if ( w == 1 ) p(INV2R,INV2R) *= 0.; // 0.85
-        if ( w > 1 ) p(INV2R,INV2R) *= cov;
-        p(PHI0,PHI0) *= .05; // 0.5
+        if ( w == 1 ) p(INV2R,INV2R) *= 0.; // 0.0 1024x1024
+        if ( w > 1 )  p(INV2R,INV2R) *= cov;
+        if ( w == 1 ) p(PHI0,PHI0) *= 0.05; // 0.05 1024x1024
+        if ( w > 1 )  p(PHI0,PHI0) *= 0.05; // 0.05 1024x1024
       }
       else {
-//        if ( w == 1 ) p(INV2R,INV2R) *= 1.5;//0.05; // 0.85
-//        if ( w > 1 )  p(INV2R,INV2R) *= 0.85; // 0.85
-        p(PHI0,PHI0) *= 0.05; // 0.01
+        if ( w == 1 ) p(INV2R,INV2R) *= 1.0; // 1.0 1024x1024
+        if ( w > 1 )  p(INV2R,INV2R) *= 1.0; // 1.0 1024x1024
+        p(PHI0,PHI0) *= 0.05; // 0.05 1024x1024
       }
     }
     if ( getSettings()->numEtaRegions() <= 12 ) {
@@ -469,7 +470,7 @@ TMatrixD KFParamsComb::PxxModel( const kalmanState *state, const StubCluster *st
   return p;
 }
 
-bool KFParamsComb::isGoodState( const kalmanState &state )const
+bool KFParamsComb::isGoodState( const kalmanState &state, const bool seedPair )const
 {
   const unsigned int option = getSettings()->kalmanSeedingOption();
 
@@ -495,9 +496,10 @@ bool KFParamsComb::isGoodState( const kalmanState &state )const
 
 //  chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
   chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
-  if ( option == 16 ) chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  10.,  10.};
-  if ( option == 19 ) chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  10.,  10.};
-  if ( option == 29 ) chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  10.,  10.};
+//  if ( option == 16 ) chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  10.,  10.};
+//  if ( option == 19 ) chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  10.,  10.};
+//  if ( option == 20 && seedPair ) chi2Cut     = { 0.,  0.,   0.,  100.,  120.,  10.,  10.};
+//  if ( option == 20 && !seedPair ) chi2Cut    = { 999.,  999.,  500.,  500.,  999.,  10.,  10.};
 
 
   unsigned nStubLayers = state.nStubLayers();

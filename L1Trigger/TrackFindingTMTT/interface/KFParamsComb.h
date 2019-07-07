@@ -29,7 +29,7 @@ class KFParamsComb : public L1KalmanComb {
 	virtual TMatrixD F(const StubCluster* stubCluster=0, const kalmanState *state = 0)const;
   	virtual TMatrixD PxxModel( const kalmanState *state, const StubCluster *stubCluster )const; 
 	virtual TMatrixD PddMeas(const StubCluster* stubCluster, const kalmanState *state )const;
-	virtual bool isGoodState( const kalmanState &state )const;
+	virtual bool isGoodState( const kalmanState &state, const bool seedPair = false )const;
 
     private:
 	std::vector<double> mapToVec(std::map<std::string, double> x)const;

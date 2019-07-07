@@ -89,7 +89,7 @@ class L1KalmanComb : public TrackFitGeneric{
 
         virtual std::vector<double> residual(const StubCluster* stubCluster, const std::vector<double> &x, double candQoverPt )const;
 	virtual const kalmanState *updateSeedWithStub( const kalmanState &state, const StubCluster *stubCluster ){ return 0; }
-	virtual bool isGoodState( const kalmanState &state )const{ return true; }
+	virtual bool isGoodState( const kalmanState &state, const bool seedPair=false )const{ return true; }
 
 	double calcChi2( const kalmanState &state )const;
 	void printTP( std::ostream &os, const TP *tp )const;
