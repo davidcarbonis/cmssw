@@ -1,5 +1,5 @@
 
-///=== This is the base class for the Kalman Combinatorial Filter track fit algorithm.
+///=== This is the base class for the Almanac Combinatorial Filter track fit algorithm.
 
 ///=== Written by: S. Summers, K. Uchida, M. Pesaresi
 ///=== Modifications by A. D. Morton for track finding + fitting
@@ -161,6 +161,7 @@ static void printStubCluster( std::ostream &os, const StubCluster * stubCluster,
   os << "r=" << stubCluster->r() << " ";
   os << "phi=" << stubCluster->phi() << " ";
   os << "z=" << stubCluster->z() << " ";
+  os << "eta=" << stubCluster->eta() << " ";
   os << "sigmaX=" << stubCluster->sigmaX() << " ";
   os << "sigmaZ=" << stubCluster->sigmaZ() << " ";
   os << "dphi_dr=" << stubCluster->dphi_dr() << " ";
@@ -187,6 +188,7 @@ static void printStub( std::ostream &os, const Stub * stub, bool addReturn=true 
   os << "r=" << stub->r() << " ";
   os << "phi=" << stub->phi() << " ";
   os << "z=" << stub->z() << " ";
+  os << "eta=" << stub->eta() << " ";
   os << "sigmaX=" << stub->sigmaX() << " ";
   os << "sigmaZ=" << stub->sigmaZ() << " ";
   os << "TPids="; 
@@ -901,33 +903,145 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
     // Create stub clusters for each kf stub array cell
     std::vector<const StubCluster*> stubcls;
+    std::vector< std::vector<const StubCluster*> > stubcls_towers;
+
+//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
     for ( unsigned int phiBin = 0; phiBin != nBinsKalmanSeedPhiAxis_; phiBin++ ) {
       for ( unsigned int etaBin = 0; etaBin != nBinsKalmanSeedEtaAxis_; etaBin++ ) {
 	// Access stubs in each KF array bin
 	const vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
+        vector< const StubCluster* > clsTower;
 
 	// create vector of stubs for each layer
 	for ( unsigned j_layer=0; j_layer < 16; j_layer++ ){
+
 
 	  std::vector<const Stub *> layer_stubs;
 	  for(unsigned i=0; i < arrayStubs.size(); i++ ){
 	    const Stub *stub = arrayStubs.at(i);
 	    if( stub->layerId() == LayerId[j_layer] ){
 	      layer_stubs.push_back( stub );
+//              std::cout << "phiBin/etaBin: " << phiBin << "/" << etaBin << std::endl;
+//              std::cout << "j_layer: " << j_layer << std::endl;
+//              std::cout << "kalman layer: " << layerMap[iCurrentEtaReg_][LayerId[j_layer]] << std::endl;
+//              std::cout << "stub index/layer: " << stub->index() << "/" << layerMap[iCurrentEtaReg_][LayerId[j_layer]] << std::endl;
 	    } // pushed back stub to layer vector
 	  } // end loop over stubs
 
 	  if ( layer_stubs.size() == 0 ) continue; // if no stubs in layer, do not make stub cluster! 
 
 	  StubCluster *stbcl = new StubCluster( layer_stubs, sectorPhi(), 0);
+//          std::cout << "layer_stubs.size(): " << layer_stubs.size() << std::endl;
+
 	  stubcls.push_back( stbcl );
+          if ( seedingOption_ >= 30 ) clsTower.push_back( stbcl );
 
 	} // end layer loop
+	if ( seedingOption_ >= 30 ) stubcls_towers.push_back( clsTower );
       } // end eta loop
     } // end phi loop
 
-    if ( seedingOption_ >= 15 ) {
+
+//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+
+    // tower projections (options 30+)
+    if ( seedingOption_ == 30 ) {
+
+      // Loop over each tower
+      for ( auto tower : stubcls_towers ) {
+
+        vector< const StubCluster* > layer0Clusters;
+        vector< const StubCluster* > layer1Clusters;
+        vector< const StubCluster* > otherClusters;
+	// vector< const StubCluster* > layer2Clusters;
+	// vector< const StubCluster* > layer3Clusters;
+	// vector< const StubCluster* > layer4Clusters;
+	// vector< const StubCluster* > layer5Clusters;
+	// vector< const StubCluster* > layer6Clusters;
+
+        // Loop over all stubs in the tower
+        for ( auto cls : tower ) {
+          const int kalmanLayer = layerMap[iCurrentEtaReg_][cls->layerIdReduced()];
+          if ( kalmanLayer == 0 ) layer0Clusters.push_back(cls);
+          if ( kalmanLayer == 1 ) layer1Clusters.push_back(cls);
+          if ( kalmanLayer > 1 )  otherClusters.push_back(cls);
+	  // if ( kalmanLayer == 2 ) layer2Clusters.push_back(cls);
+	  // if ( kalmanLayer == 3 ) layer3Clusters.push_back(cls);
+	  // if ( kalmanLayer == 4 ) layer4Clusters.push_back(cls);
+	  // if ( kalmanLayer == 5 ) layer5Clusters.push_back(cls);
+	  // if ( kalmanLayer == 6 ) layer6Clusters.push_back(cls);
+        }
+
+        // Create seeds from layers 0+1
+        for ( auto cls1 : layer0Clusters ) {
+          for ( auto cls2 : layer1Clusters ) {
+
+            if ( cls1->barrel() && !cls2->barrel() ) {
+              if ( cls2->r() > 50. ) continue; // No other condition as stub is always layer 0
+            }
+
+  	    // Crude z check;
+	    float z1 = cls1->z();
+	    float z2 = cls2->z();
+	    float r1 = cls1->r();
+	    float r2 = cls2->r();
+
+	    float zcrude=z1-(z2-z1)*r1/(r2-r1);
+	    if ( std::abs(zcrude) > 30. ) continue;
+
+	    float phi1 = cls1->phi();
+	    float phi2 = cls2->phi();
+
+            // Crude curvature check - currently unused
+	    // if( std::abs(phi1 - phi2 ) >= ( settings_->invPtToInvR() * std::abs( r1 - r2 ) / ( 2.0*settings_->houghMinPt() ) ) )
+	    //   continue;
+
+
+  	    float deltaPhi = reco::deltaPhi ( phi1, phi2 );
+	    float displacement = std::sqrt( r2*r2 + r1*r1 - 2*r2*r1*cos( deltaPhi ) );
+	    float rInv = 2*sin( deltaPhi )/displacement;
+	    float qOverPt = rInv / settings_->invPtToInvR();
+	    float phi0 = ( cls1->phi()+ cls1->dphi() );
+	    float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
+  
+	    float z0 = z1;
+	    if ( rInv != 0 ) z0 -= ( 2/rInv * tan_lambda * asin( 0.5 * rInv * r1 ) );
+	    else z0 -= r1 * tan_lambda;
+
+	    const pair<unsigned int, unsigned int> cellLocation { make_pair(0,0) }; // No HT seed location - use dummy location
+	    const pair< float, float > helixParamsRphi { make_pair(qOverPt, phi0) }; // q/Pt + phi0
+	    const pair< float, float > helixParamsRz { make_pair(z0, tan_lambda) }; // z0, tan_lambda
+
+	    vector<const StubCluster*> cls {cls1};
+	    cls.push_back(cls2);
+            cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
+
+//            for ( auto cl : cls ) {
+//              for ( auto s : cl->stubs() ) std::cout << "stub indices/layer: " << s->index() << "/" << layerMap[iCurrentEtaReg_][s->layerIdReduced()] << std::endl;
+//            }            
+//            std::cout << "cls.size(): " << cls.size() << std::endl;
+
+  	    L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+
+	    // Some further checks - pT and z0
+	    if ( std::abs( l1track3D.pt() ) < 0.75 * settings_->houghMinPt() ) continue;
+	    if ( std::abs( l1track3D.z0() ) > 15.0 ) continue;
+      
+
+	    // trackCandidates.push_back(l1track3D);
+            bool seedPair {false};
+            L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, seedPair);
+
+            fittedTracks.push_back(fitTrk);
+	  }// end loop over layer 1 clusters
+	} // end loop over layer 0 clusters
+      } // end loop over towers
+
+    } // end options 30+
+
+    // Consider all stubs in non-seed layers
+    if ( seedingOption_ >= 15 && seedingOption_ < 30 ) {
 
       vector< const StubCluster* > layer0Clusters;
       vector< const StubCluster* > layer0Clusters_2ndPass;
@@ -1084,7 +1198,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  vector<const StubCluster*> cls {seed};
 	  cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
 	  
-	  L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
+        L1track3D l1track3D(getSettings(), cls, cellLocation, helixParamsRphi, helixParamsRz, iCurrentPhiSec_, iCurrentEtaReg_, optoLinkID, false);
 	L1fittedTrack fitTrk = L1KalmanComb::fitClusteredTrack(l1track3D, false);
 	fittedTracks.push_back(fitTrk);
 	}

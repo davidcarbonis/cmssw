@@ -282,17 +282,17 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
     else if ( option == 20 ) {
       double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
       if ( seedPair ) {
-        double alpha = 0.; //1.0 64x32  //0. 1024x1024
+        double alpha = 0.; //0.0 64x16  //0. 1024x1024
         double cov {alpha*(double(w)-1.)};
-        if ( w == 1 ) p(INV2R,INV2R) *= 0.; // 0.0 1024x1024
+        if ( w == 1 ) p(INV2R,INV2R) *= 0.; //0.0 64x16 // 0.0 1024x1024
         if ( w > 1 )  p(INV2R,INV2R) *= cov;
-        if ( w == 1 ) p(PHI0,PHI0) *= 0.05; // 0.05 1024x1024
-        if ( w > 1 )  p(PHI0,PHI0) *= 0.05; // 0.05 1024x1024
+        if ( w == 1 ) p(PHI0,PHI0) *= 0.05; // 0.05 64x16 // 0.05 1024x1024
+        if ( w > 1 )  p(PHI0,PHI0) *= 0.05; // 0.05 64x16 // 0.05 1024x1024
       }
       else {
-        if ( w == 1 ) p(INV2R,INV2R) *= 1.0; // 1.0 1024x1024
-        if ( w > 1 )  p(INV2R,INV2R) *= 1.0; // 1.0 1024x1024
-        p(PHI0,PHI0) *= 0.05; // 0.05 1024x1024
+        if ( w == 1 ) p(INV2R,INV2R) *= 0.85; // 0.85 64x16 // 1.0 1024x1024
+        if ( w > 1 )  p(INV2R,INV2R) *= 1.0; // 0.05 64x16 // 1.0 1024x1024
+        p(PHI0,PHI0) *= 0.05; // 0.05 64x16 // 0.05 1024x1024
       }
     }
     if ( getSettings()->numEtaRegions() <= 12 ) {

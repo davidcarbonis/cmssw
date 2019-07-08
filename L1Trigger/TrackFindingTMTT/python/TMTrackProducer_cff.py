@@ -37,10 +37,12 @@ TMTrackProducer = cms.EDProducer('TMTrackProducer',
 
 TMTrackProducer.FullKalmanCombSettings.RunFullKalman = cms.bool(True)
 TMTrackProducer.FullKalmanCombSettings.KalmanSeedMinPt = cms.double(3.0)
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(1024)
-TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(1024)
+## options 10-20 64x16 is default
+## options 30+ 
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsPhiAxis = cms.double(64)
+TMTrackProducer.FullKalmanCombSettings.KalmanSeedNbinsEtaAxis = cms.double(16)
 
-TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(19)
+TMTrackProducer.FullKalmanCombSettings.SeedingOption = cms.uint32(30)
 
 ### CKF Seeding and options
 ## Seeding options < 10 do not bin stubs into clusters in phi/eta bins
