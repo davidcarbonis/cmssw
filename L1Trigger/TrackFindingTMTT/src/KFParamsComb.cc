@@ -295,6 +295,15 @@ TMatrixD KFParamsComb::seedP(const L1track3D& l1track3D, const bool seedPair)con
         p(PHI0,PHI0) *= 0.05; // 0.05 64x16 // 0.05 1024x1024
       }
     }
+/*    else if ( option == 30 ) {
+      double w = double(l1track3D.getStubClusters()[0]->nStubs())+(l1track3D.getStubClusters()[1]->nStubs())/2.0;
+      double alpha = 1.; // 
+      double cov {alpha*(double(w)-1.)};
+      if ( w == 1 ) p(INV2R,INV2R) *= 1.; 
+      if ( w > 1 )  p(INV2R,INV2R) *= cov;
+      if ( w == 1 ) p(PHI0,PHI0) *= 0.5;
+      if ( w > 1 )  p(PHI0,PHI0) *= 0.5;
+    }*/
     if ( getSettings()->numEtaRegions() <= 12 ) {
       // Inflate eta errors
       p(T,T) = p(T,T) * 2 * 2;

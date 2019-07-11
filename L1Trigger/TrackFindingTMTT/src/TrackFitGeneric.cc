@@ -7,6 +7,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/Utility.h"
 #include "L1Trigger/TrackFindingTMTT/interface/ChiSquared4ParamsApprox.h"
 #include "L1Trigger/TrackFindingTMTT/interface/KFParamsComb.h"
+//#include "L1Trigger/TrackFindingTMTT/interface/KFRunningComb.h"
 #include "L1Trigger/TrackFindingTMTT/interface/SimpleLR.h"
 #ifdef USE_HLS
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/KFParamsCombCallHLS.h"
@@ -39,17 +40,10 @@ vector<L1fittedTrack> TrackFitGeneric::findAndFit( const vector< const Stub* > i
  
 TrackFitGeneric* TrackFitGeneric::create(std::string fitter, const Settings* settings) {
 
-    // Wait a second ...
-    // Need to ensure that when running in CKF for track finding and fitting mode only KF fitters are used
-/*    if ( settings->runFullKalman() ) {
-      if ( !fitter.compare("ChiSquared4ParamsApprox")==0 || !fitter.compare("SimpleLR")==0 || 
-           !fitter.compare("KF4ParamsCombHLS")==0 || !fitter.compare("KF5ParamsCombHLS")==0 ) 
-        throw cms::Exception("TrackFitGeneric: ERROR you requested non-KF track fitter to be used to FIND and FIT tracks!")<<fitter<<endl;
-    }
-*/
-    // Resume normal business ...
     if (fitter.compare("ChiSquared4ParamsApprox")==0) {
 	return new ChiSquared4ParamsApprox(settings, 4);
+//    } else if (fitter.compare("KF4RunningComb")==0) {
+//	return new KFRunningComb(settings, 4, fitter );
     } else if (fitter.compare("KF4ParamsComb")==0) {
 	return new KFParamsComb(settings, 4, fitter );
     } else if (fitter.compare("KF5ParamsComb")==0) {

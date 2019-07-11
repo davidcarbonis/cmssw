@@ -905,13 +905,11 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
     std::vector<const StubCluster*> stubcls;
     std::vector< std::vector<const StubCluster*> > stubcls_towers;
 
-//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-
     for ( unsigned int phiBin = 0; phiBin != nBinsKalmanSeedPhiAxis_; phiBin++ ) {
       for ( unsigned int etaBin = 0; etaBin != nBinsKalmanSeedEtaAxis_; etaBin++ ) {
 	// Access stubs in each KF array bin
 	const vector<const Stub*>& arrayStubs = kfStubArray_(phiBin,etaBin);
-        vector< const StubCluster* > clsTower;
+        vector< const StubCluster* > seedTower;
 
 	// create vector of stubs for each layer
 	for ( unsigned j_layer=0; j_layer < 16; j_layer++ ){
@@ -922,28 +920,21 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	    const Stub *stub = arrayStubs.at(i);
 	    if( stub->layerId() == LayerId[j_layer] ){
 	      layer_stubs.push_back( stub );
-//              std::cout << "phiBin/etaBin: " << phiBin << "/" << etaBin << std::endl;
-//              std::cout << "j_layer: " << j_layer << std::endl;
-//              std::cout << "kalman layer: " << layerMap[iCurrentEtaReg_][LayerId[j_layer]] << std::endl;
-//              std::cout << "stub index/layer: " << stub->index() << "/" << layerMap[iCurrentEtaReg_][LayerId[j_layer]] << std::endl;
 	    } // pushed back stub to layer vector
 	  } // end loop over stubs
 
 	  if ( layer_stubs.size() == 0 ) continue; // if no stubs in layer, do not make stub cluster! 
 
 	  StubCluster *stbcl = new StubCluster( layer_stubs, sectorPhi(), 0);
-//          std::cout << "layer_stubs.size(): " << layer_stubs.size() << std::endl;
 
 	  stubcls.push_back( stbcl );
-          if ( seedingOption_ >= 30 ) clsTower.push_back( stbcl );
+          if ( seedingOption_ >= 30 && layerMap[iCurrentEtaReg_][stbcl->layerIdReduced()] < 2 ) seedTower.push_back( stbcl );
 
 	} // end layer loop
-	if ( seedingOption_ >= 30 ) stubcls_towers.push_back( clsTower );
+	if ( seedingOption_ >= 30 ) stubcls_towers.push_back( seedTower );
       } // end eta loop
     } // end phi loop
 
-
-//    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 
     // tower projections (options 30+)
     if ( seedingOption_ == 30 ) {
@@ -965,12 +956,15 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
           const int kalmanLayer = layerMap[iCurrentEtaReg_][cls->layerIdReduced()];
           if ( kalmanLayer == 0 ) layer0Clusters.push_back(cls);
           if ( kalmanLayer == 1 ) layer1Clusters.push_back(cls);
-          if ( kalmanLayer > 1 )  otherClusters.push_back(cls);
 	  // if ( kalmanLayer == 2 ) layer2Clusters.push_back(cls);
 	  // if ( kalmanLayer == 3 ) layer3Clusters.push_back(cls);
 	  // if ( kalmanLayer == 4 ) layer4Clusters.push_back(cls);
 	  // if ( kalmanLayer == 5 ) layer5Clusters.push_back(cls);
 	  // if ( kalmanLayer == 6 ) layer6Clusters.push_back(cls);
+        }
+        for  ( auto cls : stubcls ) {
+          const int kalmanLayer = layerMap[iCurrentEtaReg_][cls->layerIdReduced()];
+          if ( kalmanLayer > 1 ) otherClusters.push_back(cls);
         }
 
         // Create seeds from layers 0+1
@@ -1565,7 +1559,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   std::vector<const kalmanState *> finished_states;
 
   std::map<unsigned int, const kalmanState *, std::greater<unsigned int> > best_state_by_nstubs; // Best state (if any) for each viable no. of stubs on track value. 
-	
+
   // seed helix params & their covariance.
   std::vector<double> x0 = seedx(l1track3D);
   TMatrixD pxx0 = seedP(l1track3D, seedPair);
