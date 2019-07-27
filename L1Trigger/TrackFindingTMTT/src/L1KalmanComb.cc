@@ -30,36 +30,6 @@ namespace TMTT {
 
 unsigned LayerId[16] = { 1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 21, 22, 23, 24, 25 };
 
-// === Layer Mapping (i.e. layer order in which stubs should be processed) ===
-
-// index across is ian encoded layer id (where barrel layers=1,2,7,5,4,3 & endcap wheels=3,4,5,6,7 & 0 never occurs)
-// index down is eta reg
-// element is kalman layer where 7 is invalid
-// assumes we are in barrel, endcap adjustments later
-// should really be defined once in constructor 
-
-unsigned layerMap[18][8] = 
-  { 
-    { 7,  0,  7,  1,  2,  3,  4,  5 },
-    { 7,  0,  7,  1,  2,  3,  4,  5 },
-    { 7,  0,  1,  2,  3,  4,  5,  5 },
-    { 7,  0,  1,  2,  3,  4,  5,  2 },
-    { 7,  0,  1,  3,  4,  3,  6,  2 },
-    { 7,  0,  1,  5,  4,  3,  7,  2 },
-    { 7,  0,  1,  5,  4,  3,  7,  2 },
-    { 7,  0,  1,  5,  4,  3,  7,  2 },
-    { 7,  0,  1,  5,  4,  3,  7,  2 },
-    { 7,  0,  1,  5,  4,  3,  7,  2 },
-    { 7,  0,  1,  5,  4,  3,  7,  2 },
-    { 7,  0,  1,  5,  4,  3,  7,  2 },
-    { 7,  0,  1,  5,  4,  3,  7,  2 },
-    { 7,  0,  1,  3,  4,  3,  6,  2 },
-    { 7,  0,  1,  2,  3,  4,  5,  2 },
-    { 7,  0,  1,  2,  3,  4,  5,  5 },
-    { 7,  0,  7,  1,  2,  3,  4,  5 },
-    { 7,  0,  7,  1,  2,  3,  4,  5 },
-  };
-
 static double wrapRadian( double t ){
 	
   if( t > 0 ){
@@ -928,7 +898,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  StubCluster *stbcl = new StubCluster( layer_stubs, sectorPhi(), 0);
 
 	  stubcls.push_back( stbcl );
-          if ( seedingOption_ >= 30 && layerMap[iCurrentEtaReg_][stbcl->layerIdReduced()] < 2 ) seedTower.push_back( stbcl );
+          if ( seedingOption_ >= 30 && Utility::layerMap(iCurrentEtaReg_, stbcl->layerIdReduced()) < 2 ) seedTower.push_back( stbcl );
 
 	} // end layer loop
 	if ( seedingOption_ >= 30 ) stubcls_towers.push_back( seedTower );
@@ -953,7 +923,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
         // Loop over all stubs in the tower
         for ( auto cls : tower ) {
-          const int kalmanLayer = layerMap[iCurrentEtaReg_][cls->layerIdReduced()];
+          const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_, cls->layerIdReduced());
           if ( kalmanLayer == 0 ) layer0Clusters.push_back(cls);
           if ( kalmanLayer == 1 ) layer1Clusters.push_back(cls);
 	  // if ( kalmanLayer == 2 ) layer2Clusters.push_back(cls);
@@ -963,7 +933,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 	  // if ( kalmanLayer == 6 ) layer6Clusters.push_back(cls);
         }
         for  ( auto cls : stubcls ) {
-          const int kalmanLayer = layerMap[iCurrentEtaReg_][cls->layerIdReduced()];
+          const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_, cls->layerIdReduced());
           if ( kalmanLayer > 1 ) otherClusters.push_back(cls);
         }
 
@@ -1012,7 +982,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
             cls.insert( cls.end(), otherClusters.begin(), otherClusters.end() );
 
 //            for ( auto cl : cls ) {
-//              for ( auto s : cl->stubs() ) std::cout << "stub indices/layer: " << s->index() << "/" << layerMap[iCurrentEtaReg_][s->layerIdReduced()] << std::endl;
+//              for ( auto s : cl->stubs() ) std::cout << "stub indices/layer: " << s->index() << "/" << Utility::layerMap(iCurrentEtaReg_,s->layerIdReduced()) << std::endl;
 //            }            
 //            std::cout << "cls.size(): " << cls.size() << std::endl;
 
@@ -1045,7 +1015,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       // Create seeds
       for ( auto cls : stubcls ) {
-        const int kalmanLayer = layerMap[iCurrentEtaReg_][cls->layerIdReduced()];
+        const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_,cls->layerIdReduced());
 
         if ( kalmanLayer == 0 ) layer0Clusters.push_back(cls);
         if ( kalmanLayer == 0 ) layer0Clusters_2ndPass.push_back(cls);
@@ -1210,7 +1180,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       // Create seeds
       for ( auto cls : stubcls ) {
-        const int kalmanLayer = layerMap[iCurrentEtaReg_][cls->layerIdReduced()];
+        const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_,cls->layerIdReduced());
         if ( kalmanLayer == 0 || kalmanLayer == 1 ) seedClusters.push_back(cls);
         if ( kalmanLayer > 0 ) otherClusters.push_back(cls);
         if ( kalmanLayer > 1 ) otherClusters2.push_back(cls);
@@ -1240,7 +1210,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
 	vector<const StubCluster*> cls {seed};
 
-        const int kalmanLayer = layerMap[iCurrentEtaReg_][seed->layerIdReduced()];
+        const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_,seed->layerIdReduced());
 
 	if ( kalmanLayer == 0 )  cls.insert( cls.end(), otherClusters.begin(),   otherClusters.end() );
 	if ( kalmanLayer == 1 )  cls.insert( cls.end(), otherClusters2.begin(),  otherClusters2.end() );
@@ -1266,7 +1236,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
       // Create seeds
       for ( auto cls : stubcls ) {
-        const int kalmanLayer = layerMap[iCurrentEtaReg_][cls->layerIdReduced()];
+        const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_,cls->layerIdReduced());
         if ( kalmanLayer == 0 ) seedClusters.push_back(cls);
         else otherClusters.push_back(cls);
       }
@@ -1318,7 +1288,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
     // Layer seeding
     for ( auto stub : inputStubs ) {
-      const int kalmanLayer = layerMap[iCurrentEtaReg_][stub->layerIdReduced()];
+      const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_,stub->layerIdReduced());
       if ( kalmanLayer == 0 ) layer0Stubs.push_back(stub);
       if ( kalmanLayer == 0 ) layer0Stubs_2.push_back(stub);
       if ( kalmanLayer == 1 ) layer1Stubs.push_back(stub);
@@ -1472,7 +1442,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
     // Default seeding option
 
     for ( auto stub : inputStubs ) {
-      const int kalmanLayer = layerMap[iCurrentEtaReg_][stub->layerIdReduced()];
+      const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_,stub->layerIdReduced());
       if ( kalmanLayer == 0 || kalmanLayer == 1 ) seedStubs.push_back(stub);
       if ( kalmanLayer > 0 ) otherStubs.push_back(stub);
       if ( kalmanLayer > 1 ) otherStubs2.push_back(stub);
@@ -1490,7 +1460,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
       float tan_lambda = 0.5*(1/tan(2*atan(exp(-etaMinSector))) + 1/tan(2*atan(exp(-etaMaxSector))));
 
       vector<const Stub*> stubs {stub};
-      const int kalmanLayer = layerMap[iCurrentEtaReg_][stub->layerIdReduced()];
+      const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_,stub->layerIdReduced());
       
       if ( kalmanLayer == 0 )  stubs.insert( stubs.end(), otherStubs.begin(),    otherStubs.end() );
       if ( kalmanLayer == 1 )  stubs.insert( stubs.end(), otherStubs2.begin(),   otherStubs2.end() );
@@ -1517,7 +1487,7 @@ std::vector <L1fittedTrack> L1KalmanComb::findAndFit(const vector<const Stub*> i
 
     // Default seeding option
     for ( auto stub : inputStubs ) {
-      const int kalmanLayer = layerMap[iCurrentEtaReg_][stub->layerIdReduced()];
+      const int kalmanLayer = Utility::layerMap(iCurrentEtaReg_,stub->layerIdReduced());
       if ( kalmanLayer == 0 ) seedStubs.push_back(stub);
       else otherStubs.push_back(stub);
     }
@@ -1585,12 +1555,12 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   // Get dead layers, if any.
   // They are assumed to be idetnical to those defined in StubKiller.cc
   bool remove2PSCut = getSettings()->kalmanRemove2PScut();
-  set<unsigned> kalmanDeadLayers = getKalmanDeadLayers( layerMap, remove2PSCut );
+  set<unsigned> kalmanDeadLayers = getKalmanDeadLayers( remove2PSCut );
 
   // Fill layerStubs map
   for( auto stubCluster : stubClusters ){
 		
-    int kalmanLayer = layerMap[etaReg][stubCluster->layerIdReduced()];
+    int kalmanLayer = Utility::layerMap(etaReg,stubCluster->layerIdReduced());
 
     if ( !stubCluster->barrel() ) {
 			
@@ -1700,7 +1670,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       for( unsigned i=0; i < stubs.size()  ; i++ ){
 	
 	const StubCluster * next_stubCluster = stubs[i];
-        const unsigned int stubLayer = layerMap[etaReg][next_stubCluster->layerIdReduced()];
+        const unsigned int stubLayer = Utility::layerMap(etaReg,next_stubCluster->layerIdReduced());
 				
 	// Update helix params by adding this stub.
 	const kalmanState * new_state = kalmanUpdate( skipped, layer+1, next_stubCluster, *the_state, tpa );
@@ -1708,7 +1678,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
 
         // If seeding from a pair of stubs, we want to keep both no matter what!	
-        if ( seedPair == true && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 2 ) {
+        if ( seedPair == true && Utility::layerMap(etaReg,next_stubCluster->layerIdReduced()) < 2 ) {
           next_states.push_back( new_state );
         }
         // Otherwise or if doing fit to HT cand, cut on track chi2, pt etc. 
@@ -1728,7 +1698,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
 				
         // If seeding from a pair of stubs, we want to keep both no matter what! So no skipped layers are considered until we start running over iteration 2/layer 2 in main stub consideration	
-        if ( seedPair == true && layerMap[etaReg][next_stubCluster->layerIdReduced()] < 3 ) {
+        if ( seedPair == true && Utility::layerMap(etaReg,next_stubCluster->layerIdReduced()) < 3 ) {
           continue;
         }
         else if (isGoodState( *new_state, seedPair ) ) {
@@ -1874,7 +1844,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       cout<<" q/pt="<<y["qOverPt"]<<" tanL="<<y["t"]<<" z0="<<y["z0"]<<" phi0="<<y["phi0"] << " chi2ndf="<<stateFinal->reducedChi2()<< endl;
       cout <<" contains stubs: " << std::endl;
       for ( const Stub* stateStubs : stateFinal->stubs() ) {
-        std::cout << "index / kalmanLayer / TP: " << stateStubs->index() << " / " << layerMap[l1track3D.iEtaReg()][stateStubs->layerIdReduced()];
+        std::cout << "index / kalmanLayer / TP: " << stateStubs->index() << " / " << Utility::layerMap(l1track3D.iEtaReg(),stateStubs->layerIdReduced());
         if ( stateStubs->assocTP() != nullptr ) std::cout << " / " << stateStubs->assocTP()->index() << std::endl;
         else std::cout << " / no matching TP " << std::endl;
       }
@@ -2620,7 +2590,7 @@ bool L1KalmanComb::isOverlap( const Stub* a, const Stub*b, OVERLAP_TYPE type ){
   }
 }
 
-set<unsigned> L1KalmanComb::getKalmanDeadLayers( unsigned layerMap[18][8], bool& remove2PSCut ) const {
+set<unsigned> L1KalmanComb::getKalmanDeadLayers( bool& remove2PSCut ) const {
 
   // By which Stress Test scenario (if any) are dead modules being emulated?
   const unsigned int killScenario = getSettings()->killScenario(); 
@@ -2668,7 +2638,7 @@ set<unsigned> L1KalmanComb::getKalmanDeadLayers( unsigned layerMap[18][8], bool&
 
   set<unsigned> kalmanDeadLayers;
   for ( auto layer : deadLayers ) {
-    kalmanDeadLayers.insert( layerMap[iCurrentEtaReg_][layer] );
+    kalmanDeadLayers.insert( Utility::layerMap(iCurrentEtaReg_,layer) );
   }
 
   return kalmanDeadLayers;

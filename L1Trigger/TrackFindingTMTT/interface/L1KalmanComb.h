@@ -106,7 +106,7 @@ class L1KalmanComb : public TrackFitGeneric{
 	double DeltaRForClustering( unsigned endcapRing );
 	bool isOverlap( const Stub* a, const Stub*b, OVERLAP_TYPE type );
 
-	set<unsigned> getKalmanDeadLayers( unsigned layerMap[18][8], bool& remove2PSCut ) const;
+	set<unsigned> getKalmanDeadLayers( bool& remove2PSCut ) const;
 
         // Function to calculate approximation for tilted barrel modules (aka B) copied from Stub class.
         float getApproxB(float z, float r) const;

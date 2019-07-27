@@ -9,6 +9,41 @@
 
 namespace TMTT {
 
+// === Layer Mapping (i.e. layer order in which stubs should be processed) ===
+
+// index across is ian encoded layer id (where barrel layers=1,2,7,5,4,3 & endcap wheels=3,4,5,6,7 & 0 never occurs)
+// index down is eta reg
+// element is kalman layer where 7 is invalid
+// assumes we are in barrel, endcap adjustments later
+// should really be defined once in constructor
+
+unsigned int Utility::layerMap(unsigned int iEtaReg, unsigned int layer ) {
+
+  unsigned int map[18][8] = 
+  {
+    { 7,  0,  7,  1,  2,  3,  4,  5 },
+    { 7,  0,  7,  1,  2,  3,  4,  5 },
+    { 7,  0,  1,  2,  3,  4,  5,  5 },
+    { 7,  0,  1,  2,  3,  4,  5,  2 },
+    { 7,  0,  1,  3,  4,  3,  6,  2 },
+    { 7,  0,  1,  5,  4,  3,  7,  2 },
+    { 7,  0,  1,  5,  4,  3,  7,  2 },
+    { 7,  0,  1,  5,  4,  3,  7,  2 },
+    { 7,  0,  1,  5,  4,  3,  7,  2 },
+    { 7,  0,  1,  5,  4,  3,  7,  2 },
+    { 7,  0,  1,  5,  4,  3,  7,  2 },
+    { 7,  0,  1,  5,  4,  3,  7,  2 },
+    { 7,  0,  1,  5,  4,  3,  7,  2 },
+    { 7,  0,  1,  3,  4,  3,  6,  2 },
+    { 7,  0,  1,  2,  3,  4,  5,  2 },
+    { 7,  0,  1,  2,  3,  4,  5,  5 },
+    { 7,  0,  7,  1,  2,  3,  4,  5 },
+    { 7,  0,  7,  1,  2,  3,  4,  5 },
+  };
+
+  return map[iEtaReg][layer];
+}
+
 //=== Count number of tracker layers a given list of stubs are in.
 //=== By default, consider both PS+2S modules, but optionally consider only the PS ones.
 

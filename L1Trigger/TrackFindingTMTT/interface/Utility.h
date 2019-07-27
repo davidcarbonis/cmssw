@@ -13,6 +13,9 @@ class StubCluster;
 class Settings;
 
 namespace Utility {
+
+  unsigned int layerMap(unsigned int iEtaReg, unsigned int layer);
+
   // Count number of tracker layers a given list of stubs are in.
   //
   // By default uses the "reduced" layer ID if the configuration file requested it. However, 
