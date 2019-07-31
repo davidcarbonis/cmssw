@@ -1536,8 +1536,16 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   TMatrixD K( nPar_, 2 );
   TMatrixD dcov( 2, 2 );
 	
-  const kalmanState *state0 = mkState( l1track3D, 0, 0, 0, 0, x0, pxx0, K, dcov, 0, 0 );
-	
+  // for helix param fit
+//  const kalmanState *state0 = mkState( l1track3D, 0, 0, 0, 0, x0, pxx0, K, dcov, 0, 0 );
+  // for running param fit
+//  const kalmanState *state0 = mkState( l1track3D, nSkipped, next Layer, layerId, lastState, x, pxx, K, dcov, stubCluster, chi2 fitter, f)
+  const StubCluster* inputCls = l1track3D.getStubClusters()[0];
+  const unsigned clsLayer = Utility::layerMap(l1track3D.iEtaReg(), inputCls->layerIdReduced());
+  const kalmanState *state0 = mkState( l1track3D, 0, clsLayer+1, clsLayer, 0, x0, pxx0, K, dcov, inputCls, 0);
+
+  // CONTINUE
+ 
   if( getSettings()->kalmanFillInternalHists() ) fillSeedHists( state0, tpa );
 	
 	
@@ -1673,6 +1681,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
         const unsigned int stubLayer = Utility::layerMap(etaReg,next_stubCluster->layerIdReduced());
 				
 	// Update helix params by adding this stub.
+        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 	const kalmanState * new_state = kalmanUpdate( skipped, layer+1, next_stubCluster, *the_state, tpa );
 
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
@@ -1693,15 +1702,17 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
 	
 	const StubCluster * next_stubCluster = next_stubs[i];
 				
-	const kalmanState * new_state = kalmanUpdate( skipped+1+nSkippedDeadLayers_nextStubs, layer+2+nSkippedDeadLayers_nextStubs, next_stubCluster, *the_state, tpa );
-				
-	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
-				
         // If seeding from a pair of stubs, we want to keep both no matter what! So no skipped layers are considered until we start running over iteration 2/layer 2 in main stub consideration	
         if ( seedPair == true && Utility::layerMap(etaReg,next_stubCluster->layerIdReduced()) < 3 ) {
           continue;
         }
-        else if (isGoodState( *new_state, seedPair ) ) {
+
+        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+	const kalmanState * new_state = kalmanUpdate( skipped+1+nSkippedDeadLayers_nextStubs, layer+2+nSkippedDeadLayers_nextStubs, next_stubCluster, *the_state, tpa );
+				
+	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
+				
+        if (isGoodState( *new_state, seedPair ) ) {
           next_states_skipped.push_back( new_state );
         }
 

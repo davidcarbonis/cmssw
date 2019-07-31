@@ -8,7 +8,7 @@
 #include "L1Trigger/TrackFindingTMTT/interface/ChiSquared4ParamsApprox.h"
 #include "L1Trigger/TrackFindingTMTT/interface/KFParamsComb.h"
 #include "L1Trigger/TrackFindingTMTT/interface/KF4ParamsCombIV.h"
-#include "L1Trigger/TrackFindingTMTT/interface/KF4ParamsCombV2.h"
+//#include "L1Trigger/TrackFindingTMTT/interface/KF4ParamsCombV2.h"
 #include "L1Trigger/TrackFindingTMTT/interface/KFRunningComb.h"
 #include "L1Trigger/TrackFindingTMTT/interface/SimpleLR.h"
 #ifdef USE_HLS
@@ -48,8 +48,8 @@ TrackFitGeneric* TrackFitGeneric::create(std::string fitter, const Settings* set
 	return new KFRunningComb(settings, 4, fitter );
     } else if (fitter.compare("KF4ParamsCombIV")==0) {
 	return new KF4ParamsCombIV(settings, 4, fitter );
-    } else if (fitter.compare("KF4ParamsCombV2")==0) {
-	return new KF4ParamsCombV2(settings, 4, fitter );
+//    } else if (fitter.compare("KF4ParamsCombV2")==0) {
+//	return new KF4ParamsCombV2(settings, 4, fitter );
     } else if (fitter.compare("KF4ParamsComb")==0) {
 	return new KFParamsComb(settings, 4, fitter );
     } else if (fitter.compare("KF5ParamsComb")==0) {

@@ -118,52 +118,34 @@ TMatrixD KF4ParamsCombIV::H(const StubCluster* stubCluster)const{
 std::vector<double> KF4ParamsCombIV::seedx(const L1track3D& l1track3D)const{
 
     std::vector<double> x(nPar_);
+
+    // Seed using stubcluster from innermost layer
+    // If clustering occured ...
+    if ( l1track3D.getNumStubClusters() > 0 ) {
+      const vector<const StubCluster*> stubClusters = l1track3D.getStubClusters();
+      double r   = stubClusters[0]->r();
+      double phi = stubClusters[0]->phi();
+      double z   = stubClusters[0]->z();
+      x[BP_RHOPHI] = r*phi;
+//      std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//      std::cout << "r / phi : " << r << " / " << phi << std::endl;
+//      std::cout << "x[BP_RHOPHI] = " << x[BP_RHOPHI] << std::endl;
+      x[BP_Z] = z;
+    }
+    // else just use innermost stub
+    else {
+      const vector<const Stub*> stubs = l1track3D.getStubs();
+        double r   = stubs[0]->r();
+        double phi = stubs[0]->phi();
+        double z   = stubs[0]->z();
+      x[BP_RHOPHI] = r*phi;
+      x[BP_Z] = z;
+    }
+
     x[BP_RHOPHI] = 0.1 * wrapRadian( l1track3D.phi0() - sectorPhi() );
     x[BP_Z]   = l1track3D.z0();
     x[BP_INV2R] = getSettings()->invPtToInvR() * l1track3D.qOverPt()/2;
-//    x[BP_T] = 0.;
-//    if (settings_->useZTrkFilter() || settings_->useSeedFilter()) {
-	x[BP_T]     = l1track3D.tanLambda();
-//    }
-/*    else{
-
-	if( getSettings()->numEtaRegions() == 9 ) { 
-	    switch ( iCurrentEtaReg_ ){
-		case 0 :
-		    x[BP_T] = -4.4;
-		    break;
-		case 1 :
-		    x[BP_T] = -2.8;
-		    break;
-		case 2 :
-		    x[BP_T] = -1.6;
-		    break;
-		case 3 :
-		    x[BP_T] = -0.7;
-		    break;
-		case 4 :
-		    x[BP_T] =  0.0;
-		    break;
-		case 8 :
-		    x[BP_T] = +4.4;
-		    break;
-		case 7 :
-		    x[BP_T] = +2.8;
-		    break;
-		case 6 :
-		    x[BP_T] = +1.6;
-		    break;
-		case 5 :
-		    x[BP_T] = +0.7;
-		    break;
-	    }
-	}
-	else{
-	    x[BP_T] = 0.0;
-	    if( iCurrentEtaReg_ > getSettings()->numEtaRegions() / 2 ) x[BP_T] = 2.8;
-	    else if( iCurrentEtaReg_ < getSettings()->numEtaRegions() / 2 - 1 ) x[BP_T] = -2.8;
-	}
-    }*/
+    x[BP_T]     = l1track3D.tanLambda();
     return x;
 }
 
@@ -176,9 +158,12 @@ TMatrixD KF4ParamsCombIV::seedP(const L1track3D& l1track3D, const bool seedPair)
     //
     p(BP_RHOPHI,BP_RHOPHI) = 0.1 * 0.006* 0.1 * 0.006; 
     p(BP_Z,BP_Z) = 4.0*4.0; 
-    p(BP_INV2R,BP_INV2R) = 0.020*0.020 * c * c; 
+//    p(BP_INV2R,BP_INV2R) = 0.020*0.020 * c * c; 
+    p(BP_INV2R,BP_INV2R) = 0.0157 * 0.0157 * c * c * 4; 
     //0.020*c = 0.0001
+    p(BP_T,BP_T) = 0.25 * 0.25 *4;
 
+/*
     if( getSettings()->numEtaRegions() == 9 ) { 
 	switch ( iCurrentEtaReg_ ){
 	    case 0 :
@@ -205,7 +190,7 @@ TMatrixD KF4ParamsCombIV::seedP(const L1track3D& l1track3D, const bool seedPair)
     else{
 	p(BP_T,BP_T) = 0.5*0.5; 
     }
-
+*/
     return p;
 }
 double KF4ParamsCombIV::getZ( const kalmanState *state )const{
@@ -244,7 +229,6 @@ double KF4ParamsCombIV::getZVariance( const kalmanState *state )const{
 }
 
 double KF4ParamsCombIV::getZ0Variance( const kalmanState *state )const{
-
 
     double vz0(0); 
     if( state->barrel() ){
@@ -289,6 +273,21 @@ TMatrixD KF4ParamsCombIV::F(const StubCluster* stubCluster, const kalmanState *s
     TMatrixD F(4,4);
     for(int n = 0; n < 4; n++)
 	F(n, n) = 1;
+
+
+    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+    std::cout << "stubCluster->r(): " << stubCluster->r() << std::endl;
+    std::cout << "stubCluster->phi(): " << stubCluster->phi() << std::endl;
+    std::cout << "stubCluster layerIdReduced: " << stubCluster->layerIdReduced() << std::endl;;  
+
+    std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+    std::cout << "state->nextLayer(): " << state->nextLayer() << std::endl;
+    std::cout << "state->nStubLayers(): " << state->nStubLayers() << std::endl;
+    std::cout << "state->r(): " << state->r() << std::endl;
+    std::cout << "state->layerId: " << state->layerId() << std::endl;
+
+
+//    if ( state->nextLayer() == 0 ) return F;
 
     if( stubCluster->barrel() ){ 
 	double deltar = stubCluster->r() - state->r();
@@ -378,7 +377,7 @@ TMatrixD KF4ParamsCombIV::PxxModel( const kalmanState *state, const StubCluster 
 	    p(0,0) = drphi * drphi; 
 	}
     }
-
+*/
     if( stubCluster->barrel() || state->nStubLayers() == 0 ) return p;
     //    if( stubCluster->barrel() ) return p;
 
@@ -396,7 +395,7 @@ TMatrixD KF4ParamsCombIV::PxxModel( const kalmanState *state, const StubCluster 
 	dfx = -1. * x.at(EP_INVT);
 	p(EP_RHO, EP_RHO) += vz * dfx * dfx;
 
-    }*/
+    }
     return p;
 }
 
