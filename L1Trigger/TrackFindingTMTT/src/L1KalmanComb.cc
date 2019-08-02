@@ -1537,12 +1537,20 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
   TMatrixD dcov( 2, 2 );
 	
   // for helix param fit
-//  const kalmanState *state0 = mkState( l1track3D, 0, 0, 0, 0, x0, pxx0, K, dcov, 0, 0 );
+  const kalmanState *state0 = mkState( l1track3D, 0, 0, 0, 0, x0, pxx0, K, dcov, 0, 0 );
+
   // for running param fit
 //  const kalmanState *state0 = mkState( l1track3D, nSkipped, next Layer, layerId, lastState, x, pxx, K, dcov, stubCluster, chi2 fitter, f)
   const StubCluster* inputCls = l1track3D.getStubClusters()[0];
-  const unsigned clsLayer = Utility::layerMap(l1track3D.iEtaReg(), inputCls->layerIdReduced());
-  const kalmanState *state0 = mkState( l1track3D, 0, clsLayer+1, clsLayer, 0, x0, pxx0, K, dcov, inputCls, 0);
+  const unsigned clsLayer = inputCls->layerId();
+
+  //const kalmanState *state0 = mkState( l1track3D, 0, clsLayer+1, clsLayer, 0, x0, pxx0, K, dcov, inputCls, 0);
+
+/*  std::cout << "inputClsLayer: " << clsLayer << std::endl;
+  std::cout << "state seed r/z: " << state0->r() << "/" << state0->z() << std::endl;
+  std::cout << "state nStubLayers: " << state0->nStubLayers() << std::endl;;
+  std::cout << "current kalman layer: " << Utility::layerMap( state0->candidate().iEtaReg(), state0->layerIdReduced() ) << std::endl;
+  std::cout << "next kalman layer : "   << state0->nextLayer() << std::endl;*/
 
   // CONTINUE
  
@@ -1678,10 +1686,10 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
       for( unsigned i=0; i < stubs.size()  ; i++ ){
 	
 	const StubCluster * next_stubCluster = stubs[i];
-        const unsigned int stubLayer = Utility::layerMap(etaReg,next_stubCluster->layerIdReduced());
-				
+//        const unsigned int stubLayer = Utility::layerMap(etaReg,next_stubCluster->layerIdReduced());
+
 	// Update helix params by adding this stub.
-        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 	const kalmanState * new_state = kalmanUpdate( skipped, layer+1, next_stubCluster, *the_state, tpa );
 
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
@@ -1707,7 +1715,7 @@ std::vector<const kalmanState *> L1KalmanComb::doKF( const L1track3D& l1track3D,
           continue;
         }
 
-        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
+//        std::cout << __LINE__ << " : " << __FILE__ << std::endl;
 	const kalmanState * new_state = kalmanUpdate( skipped+1+nSkippedDeadLayers_nextStubs, layer+2+nSkippedDeadLayers_nextStubs, next_stubCluster, *the_state, tpa );
 				
 	if( getSettings()->kalmanFillInternalHists() ) fillStepHists( tpa, iteration, new_state );
@@ -1910,6 +1918,8 @@ const kalmanState *L1KalmanComb::kalmanUpdate( unsigned skipped, unsigned layer,
   TMatrixD f = F(stubCluster, &state );
   TMatrixD ft(TMatrixD::kTransposed, f );
   if( getSettings()->kalmanDebugLevel() >= 4 ){
+    cout << "xa" << endl;
+    cout << "state : " << xa.at(0) << " " << xa.at(1) << " " << xa.at(2) << " " << xa.at(3) << endl;
     cout << "f" << endl;
     f.Print();
     cout << "ft" << endl;
@@ -2255,12 +2265,10 @@ std::vector<double> L1KalmanComb::residual(const StubCluster* stubCluster, const
   std::vector<double> vd = d(stubCluster); // Get (phi relative to sector, z) of hit.
   std::vector<double> hx = Hx( H(stubCluster), x ); // Ditto for intercept of helix with layer, in linear approximation.
   std::vector<double> delta(2);
-  for( unsigned i=0; i<2; i++ ) delta.at(i) = vd.at(i) - hx.at(i);
-
+  for( unsigned i=0; i<2; i++ )  delta.at(i) = vd.at(i) - hx.at(i);
   // Calculate higher order corrections to residuals.
 
   if (not getSettings()->kalmanHOdodgy()) {
-
     std::vector<double> correction = {0.,0.};
 
     float inv2R = (getSettings()->invPtToInvR()) * 0.5 * candQoverPt; // alternatively use x().at(0)

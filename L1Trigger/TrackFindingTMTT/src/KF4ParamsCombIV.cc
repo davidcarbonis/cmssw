@@ -82,7 +82,8 @@ std::map<std::string, double> KF4ParamsCombIV::getTrackParams(const kalmanState 
 
     std::map<std::string, double> y;
     if( state->barrel() ){
-	y["phi0"] = wrapRadian( state->xa().at(BP_RHOPHI) / state->r() + state->r() * state->xa().at(BP_INV2R) + sectorPhi() );
+//	y["phi0"] = wrapRadian( state->xa().at(BP_RHOPHI) / state->r() + state->r() * state->xa().at(BP_INV2R) ) + sectorPhi() ;
+	y["phi0"] = wrapRadian(state->xa().at(BP_RHOPHI)/state->r() + asin(state->r() * state->xa().at(BP_INV2R)));;
 	y["z0"]   = state->xa().at(BP_Z)   - state->r() * state->xa().at(BP_T);
 	y["qOverPt"] = state->xa().at(BP_INV2R) / getSettings()->invPtToInvR() * 2.; 
 	y["t"] = state->xa().at(BP_T);
@@ -91,7 +92,8 @@ std::map<std::string, double> KF4ParamsCombIV::getTrackParams(const kalmanState 
     else{
 	double t = 1./state->xa().at(EP_INVT);
 	double inv2R = state->xa().at(EP_INV2RT) * t;
-	y["phi0"] = wrapRadian( state->xa().at(EP_RHOPHI) / state->xa().at(EP_RHO) + state->xa().at(EP_RHO) * inv2R + sectorPhi() );
+//	y["phi0"] = wrapRadian( state->xa().at(EP_RHOPHI) / state->xa().at(EP_RHO) + state->xa().at(EP_RHO) * inv2R + sectorPhi() );
+	y["phi0"] = wrapRadian( state->xa().at(EP_RHOPHI) / state->xa().at(EP_RHO) + asin(state->xa().at(EP_RHO) * inv2R) );
 	y["z0"]   = state->z() - state->xa().at(EP_RHO) * t;
 	y["qOverPt"] = inv2R / getSettings()->invPtToInvR() * 2.; 
 	y["t"] = t;
@@ -142,8 +144,8 @@ std::vector<double> KF4ParamsCombIV::seedx(const L1track3D& l1track3D)const{
       x[BP_Z] = z;
     }
 
-    x[BP_RHOPHI] = 0.1 * wrapRadian( l1track3D.phi0() - sectorPhi() );
-    x[BP_Z]   = l1track3D.z0();
+//    x[BP_RHOPHI] = 0.1 * wrapRadian( l1track3D.phi0() - sectorPhi() );
+//    x[BP_Z]   = l1track3D.z0();
     x[BP_INV2R] = getSettings()->invPtToInvR() * l1track3D.qOverPt()/2;
     x[BP_T]     = l1track3D.tanLambda();
     return x;
@@ -274,7 +276,7 @@ TMatrixD KF4ParamsCombIV::F(const StubCluster* stubCluster, const kalmanState *s
     for(int n = 0; n < 4; n++)
 	F(n, n) = 1;
 
-
+/*
     std::cout << __LINE__ << " : " << __FILE__ << std::endl;
     std::cout << "stubCluster->r(): " << stubCluster->r() << std::endl;
     std::cout << "stubCluster->phi(): " << stubCluster->phi() << std::endl;
@@ -285,9 +287,9 @@ TMatrixD KF4ParamsCombIV::F(const StubCluster* stubCluster, const kalmanState *s
     std::cout << "state->nStubLayers(): " << state->nStubLayers() << std::endl;
     std::cout << "state->r(): " << state->r() << std::endl;
     std::cout << "state->layerId: " << state->layerId() << std::endl;
+*/
 
-
-//    if ( state->nextLayer() == 0 ) return F;
+    if ( state->nextLayer() == 0 ) return F;
 
     if( stubCluster->barrel() ){ 
 	double deltar = stubCluster->r() - state->r();
@@ -332,11 +334,13 @@ std::vector<double> KF4ParamsCombIV::d(const StubCluster* stubCluster )const{
     std::vector<double> meas;
     meas.resize(2);
     if( stubCluster->barrel() ){ 
-	meas[0] = stubCluster->r() * wrapRadian( stubCluster->phi() - sectorPhi() );
+//	meas[0] = stubCluster->r() * wrapRadian( stubCluster->phi() - sectorPhi() );
+	meas[0] = stubCluster->r() * stubCluster->phi();
 	meas[1] = stubCluster->z();
     }
     else{
-	meas[0] = stubCluster->r() * wrapRadian( stubCluster->phi() - sectorPhi() );
+//	meas[0] = stubCluster->r() * wrapRadian( stubCluster->phi() - sectorPhi() );
+	meas[0] = stubCluster->r() * stubCluster->phi();
 	meas[1] = stubCluster->r();
     }
     return meas;
@@ -525,7 +529,8 @@ bool KF4ParamsCombIV::isGoodState( const kalmanState &state )const
   z0Cut       = { 999.,  999.,   15.,  15.,  15.,   15.,   15.};
   ptTolerance = { 999., 999., 0.3, 0.1, 0.05, 0.05, 0.05}; /// optimum for Full CKF 5 params
   d0Cut       = { 999.,  999.,  999.,  10.,   5.,    5.,   5.};  // Only used for 5 param helix fit
-  chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
+//  chi2Cut     = { 999.,  999.,   999.,  999.,  999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
+  chi2Cut     = { 9999999.,  999999999.,   999999999.,  99999999999.,  9999999999.,  120.,  160.};  // Consider reducing chi2 cut 2 to 7.
   unsigned nStubLayers = state.nStubLayers();
   bool goodState( true );
 
