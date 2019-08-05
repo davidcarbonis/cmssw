@@ -12,19 +12,19 @@ class L1KalmanComb;
 class kalmanState;
 class StubCluster;
 
-typedef std::map<std::string, double> (*GET_TRACK_PARAMS)( const L1KalmanComb *p, const kalmanState *state );
+typedef std::map<std::string, double> (*GET_TRACK_PARAMS)( const L1KalmanComb *p, kalmanState *state );
  
 class kalmanState{
     public:
 	kalmanState();
-	kalmanState( const L1track3D& candidate, unsigned n_skipped, unsigned kLayer_next, unsigned layerId, const kalmanState *last_state, 
+	kalmanState( const L1track3D& candidate, unsigned n_skipped, unsigned kLayer_next, unsigned layerId, kalmanState *last_state, 
 		const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, 
 		const StubCluster* stubcl, double chi2, 
 		L1KalmanComb *fitter, GET_TRACK_PARAMS f );
-	kalmanState(const kalmanState &p);
+	kalmanState(kalmanState &p);
 	~kalmanState(){}
 
-	kalmanState & operator=( const kalmanState &other );
+	kalmanState & operator=( kalmanState &other );
 
 	unsigned             nextLayer()const{ return      kLayerNext_; }
 	unsigned              layerId()const{ return         layerId_; }
@@ -35,7 +35,7 @@ class kalmanState{
         // Hit coordinates.
 	double                       r()const{ return               r_; }
 	double                       z()const{ return               z_; }
-	const kalmanState  *last_state()const{ return      last_state_; }
+	kalmanState  *last_state()const{ return      last_state_; }
         // Helix parameters (1/2R, phi relative to sector, z0, tanLambda) 
 	std::vector<double>         xa()const{ return              xa_; }
         // Covariance matrix on helix params.
@@ -50,22 +50,23 @@ class kalmanState{
 	unsigned           nStubLayers()const{ return         n_stubs_; }
         L1track3D            candidate()const{ return       l1track3D_; }
 
-	bool                            good( const TP *tp )const;
+	bool                            good( const TP *tp );
 	double                   reducedChi2()const;
-	const kalmanState *last_update_state()const;
-	std::vector<const Stub *>      stubs()const;
-	std::vector<const StubCluster *> stubClusters()const;
+	kalmanState *last_update_state();
+	std::vector<const Stub *>      stubs();
+	std::vector<const StubCluster *> stubClusters();
 	L1KalmanComb                 *fitter()const{ return fitter_; }
 	GET_TRACK_PARAMS     fXtoTrackParams()const{ return fXtoTrackParams_; };
 
 
-	static bool orderReducedChi2(const kalmanState *left, const kalmanState *right);
-	static bool orderChi2(const kalmanState *left, const kalmanState *right);
-	static bool orderMinSkipChi2(const kalmanState *left, const kalmanState *right);
+	static bool orderReducedChi2(kalmanState *left, kalmanState *right);
+	static bool orderChi2(kalmanState *left, kalmanState *right);
+	static bool orderMinSkipChi2(kalmanState *left, kalmanState *right);
 
-	static bool order(const kalmanState *left, const kalmanState *right);
-	void dump( ostream &os, const TP *tp=0, bool all=0 )const;
+	static bool order(kalmanState *left, kalmanState *right);
+	void dump( ostream &os, const TP *tp=0, bool all=0 );
 	void setChi2( double p ){ chi2_ = p; }
+        void setSeed( std::vector<double> x ) { xa_ = x; }
 
         // If using HLS, note/get additional output produced by HLS core.
         void setHLSextra(unsigned int mBinHelix, unsigned int cBinHelix, bool consistent) { mBinHelixHLS_ = mBinHelix; cBinHelixHLS_ = cBinHelix; consistentHLS_ = consistent;}
@@ -76,7 +77,7 @@ class kalmanState{
 	unsigned                 layerId_;
 	unsigned              endcapRing_;
 	double                         r_;
-	const kalmanState    *last_state_;
+	kalmanState    *last_state_;
 	std::vector<double>           xa_;
 	TMatrixD                    pxxa_;
 	TMatrixD                       K_;

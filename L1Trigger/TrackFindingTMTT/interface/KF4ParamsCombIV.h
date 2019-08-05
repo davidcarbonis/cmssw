@@ -26,25 +26,26 @@ class KF4ParamsCombIV : public L1KalmanComb{
         std::string getParams();
  
     protected:
-	virtual std::map<std::string, double> getTrackParams(const kalmanState *state )const;
+	virtual std::map<std::string, double> getTrackParams(kalmanState *state )const;
 	virtual std::vector<double> seedx(const L1track3D& l1track3D)const;
 	virtual TMatrixD seedP(const L1track3D& l1track3D, const bool seedPair=false)const;
 	virtual std::vector<double> d(const StubCluster* stubCluster )const;
 	virtual TMatrixD H(const StubCluster* stubCluster)const;
-	virtual TMatrixD F(const StubCluster* stubCluster, const kalmanState *state )const;
-	virtual TMatrixD PxxModel( const kalmanState *state, const StubCluster *stubCluster )const; 
-	virtual TMatrixD PddMeas(const StubCluster* stubCluster, const kalmanState *state )const;
+	virtual TMatrixD F(const StubCluster* stubCluster, kalmanState *state )const;
+	virtual TMatrixD PxxModel( kalmanState *state, const StubCluster *stubCluster )const; 
+	virtual TMatrixD PddMeas(const StubCluster* stubCluster, kalmanState *state )const;
+        virtual void setSeedX( kalmanState &state, const StubCluster *stubCluster )const;
 	virtual void barrelToEndcap( double r, const StubCluster* stubCluster, std::vector<double> &state, TMatrixD &cov_x )const;
 	virtual bool stubBelongs(const StubCluster* stubCluster, kalmanState& state, unsigned itr )const;
 	virtual double validationGateCutValue( const StubCluster *stubCluster, unsigned path )const;
-	virtual bool isGoodState( const kalmanState &state )const;
+	virtual bool isGoodState( kalmanState &state )const;
 	virtual std::vector<double> residual(const StubCluster* stubCluster, const std::vector<double> &x )const;
 
     private:
-	double getZ( const kalmanState *state )const;
-	double getZ0( const kalmanState *state )const;
-	double getZ0Variance( const kalmanState *state )const;
-	double getZVariance( const kalmanState *state )const;
+	double getZ( kalmanState *state )const;
+	double getZ0( kalmanState *state )const;
+	double getZ0Variance( kalmanState *state )const;
+	double getZVariance( kalmanState *state )const;
 	void   barrelToEndcap( double r, const StubCluster *stubCluster, std::vector<double> &state )const;
 };
 }

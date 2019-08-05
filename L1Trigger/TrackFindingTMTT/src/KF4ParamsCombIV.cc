@@ -78,7 +78,7 @@ KF4ParamsCombIV::KF4ParamsCombIV(const Settings* settings, const uint nPar, cons
     hxaxtmax[3] = +6.e-0;
 }
 
-std::map<std::string, double> KF4ParamsCombIV::getTrackParams(const kalmanState *state )const{
+std::map<std::string, double> KF4ParamsCombIV::getTrackParams( kalmanState *state )const{
 
     std::map<std::string, double> y;
     if( state->barrel() ){
@@ -121,34 +121,44 @@ std::vector<double> KF4ParamsCombIV::seedx(const L1track3D& l1track3D)const{
 
     std::vector<double> x(nPar_);
 
-    // Seed using stubcluster from innermost layer
-    // If clustering occured ...
-    if ( l1track3D.getNumStubClusters() > 0 ) {
-      const vector<const StubCluster*> stubClusters = l1track3D.getStubClusters();
-      double r   = stubClusters[0]->r();
-      double phi = stubClusters[0]->phi();
-      double z   = stubClusters[0]->z();
-      x[BP_RHOPHI] = r*phi;
-//      std::cout << __LINE__ << " : " << __FILE__ << std::endl;
-//      std::cout << "r / phi : " << r << " / " << phi << std::endl;
-//      std::cout << "x[BP_RHOPHI] = " << x[BP_RHOPHI] << std::endl;
-      x[BP_Z] = z;
-    }
-    // else just use innermost stub
-    else {
-      const vector<const Stub*> stubs = l1track3D.getStubs();
-        double r   = stubs[0]->r();
-        double phi = stubs[0]->phi();
-        double z   = stubs[0]->z();
-      x[BP_RHOPHI] = r*phi;
-      x[BP_Z] = z;
-    }
-
-//    x[BP_RHOPHI] = 0.1 * wrapRadian( l1track3D.phi0() - sectorPhi() );
-//    x[BP_Z]   = l1track3D.z0();
+    // placeholder as rphi and z need first stub considered info
+    x[BP_RHOPHI] = 0.1 * wrapRadian( l1track3D.phi0() - sectorPhi() );
+    x[BP_Z]   = l1track3D.z0();
     x[BP_INV2R] = getSettings()->invPtToInvR() * l1track3D.qOverPt()/2;
     x[BP_T]     = l1track3D.tanLambda();
+
     return x;
+}
+
+// Set the seed running params state vector
+void KF4ParamsCombIV::setSeedX( kalmanState &state, const StubCluster *stubCluster )const{
+
+  std::vector<double> x(nPar_);
+  double r = stubCluster->r();
+  double phi = stubCluster->phi();
+  double rphi = r*phi;
+  double inv2R = getSettings()->invPtToInvR() * state.candidate().qOverPt() / 2.;
+  double t = state.candidate().tanLambda();
+
+  if ( state.barrel() ) {
+    x[BP_RHOPHI] = rphi;
+    x[BP_Z]	 = stubCluster->z();
+    x[BP_INV2R]  = inv2R;
+    x[BP_T]	 = t;
+  }
+  else {
+    x[EP_RHOPHI] = rphi;
+    x[EP_RHO]    = r;
+    if ( t ) {
+      x[EP_INV2RT] = inv2R / t;
+      x[EP_INVT]   = 1./t;
+    }
+    else {
+      x[EP_INV2RT] = inv2R * t;
+      x[EP_INVT]   = 1.*t;
+    }
+  }
+  state.setSeed(x);
 }
 
 /* Seed the covariance matrix
@@ -195,7 +205,7 @@ TMatrixD KF4ParamsCombIV::seedP(const L1track3D& l1track3D, const bool seedPair)
 */
     return p;
 }
-double KF4ParamsCombIV::getZ( const kalmanState *state )const{
+double KF4ParamsCombIV::getZ( kalmanState *state )const{
 
     double z(0);
     if( state->barrel() ){
@@ -207,7 +217,7 @@ double KF4ParamsCombIV::getZ( const kalmanState *state )const{
     return z;
 }
 
-double KF4ParamsCombIV::getZ0( const kalmanState *state )const{
+double KF4ParamsCombIV::getZ0( kalmanState *state )const{
 
     double z0(0); 
     if( state->barrel() ){
@@ -220,7 +230,7 @@ double KF4ParamsCombIV::getZ0( const kalmanState *state )const{
     }
     return z0;
 }
-double KF4ParamsCombIV::getZVariance( const kalmanState *state )const{
+double KF4ParamsCombIV::getZVariance( kalmanState *state )const{
 
     double vz(0); 
     if( state->barrel() ){
@@ -230,7 +240,7 @@ double KF4ParamsCombIV::getZVariance( const kalmanState *state )const{
     return vz;
 }
 
-double KF4ParamsCombIV::getZ0Variance( const kalmanState *state )const{
+double KF4ParamsCombIV::getZ0Variance( kalmanState *state )const{
 
     double vz0(0); 
     if( state->barrel() ){
@@ -270,7 +280,7 @@ void KF4ParamsCombIV::barrelToEndcap( double r, const StubCluster *stubCluster, 
 
 
 /* The forecast matrix */
-TMatrixD KF4ParamsCombIV::F(const StubCluster* stubCluster, const kalmanState *state )const{
+TMatrixD KF4ParamsCombIV::F(const StubCluster* stubCluster, kalmanState *state )const{
 
     TMatrixD F(4,4);
     for(int n = 0; n < 4; n++)
@@ -346,7 +356,7 @@ std::vector<double> KF4ParamsCombIV::d(const StubCluster* stubCluster )const{
     return meas;
 }
 
-TMatrixD KF4ParamsCombIV::PddMeas(const StubCluster* stubCluster, const kalmanState *state )const{
+TMatrixD KF4ParamsCombIV::PddMeas(const StubCluster* stubCluster, kalmanState *state )const{
 
 
     double rdphi = stubCluster->r() * stubCluster->dphi();
@@ -358,7 +368,7 @@ TMatrixD KF4ParamsCombIV::PddMeas(const StubCluster* stubCluster, const kalmanSt
 }
 
 /* State uncertainty */
-TMatrixD KF4ParamsCombIV::PxxModel( const kalmanState *state, const StubCluster *stubCluster )const
+TMatrixD KF4ParamsCombIV::PxxModel( kalmanState *state, const StubCluster *stubCluster )const
 {
 
     TMatrixD p(4,4);
@@ -368,7 +378,7 @@ TMatrixD KF4ParamsCombIV::PxxModel( const kalmanState *state, const StubCluster 
 	if( i_eta > 24 ) i_eta = 24;
 	double dl = matx_outer[i_eta] / nlayer_eta[i_eta];
 
-	const kalmanState * last_update_state = state->last_update_state();
+	kalmanState * last_update_state = state->last_update_state();
 	unsigned last_itr(1);
 	if( last_update_state ) last_itr = last_update_state->nIterations();
 	dl = ( stub_itr - last_itr ) * dl; 
@@ -522,7 +532,7 @@ double KF4ParamsCombIV::validationGateCutValue( const StubCluster *stubCluster, 
     return max_rchi2;
 }
 
-bool KF4ParamsCombIV::isGoodState( const kalmanState &state )const
+bool KF4ParamsCombIV::isGoodState( kalmanState &state )const
 {
 
   vector<float> z0Cut, ptTolerance, d0Cut, chi2Cut;

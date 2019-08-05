@@ -40,11 +40,11 @@ class L1KalmanComb : public TrackFitGeneric{
 	void bookHists();
 
     protected:
-	static  std::map<std::string, double> getTrackParams( const L1KalmanComb *p, const kalmanState *state );
-	virtual std::map<std::string, double> getTrackParams( const kalmanState *state ) const=0;
+	static  std::map<std::string, double> getTrackParams( const L1KalmanComb *p, kalmanState *state );
+	virtual std::map<std::string, double> getTrackParams( kalmanState *state ) const=0;
 
         // Get track params with beam-spot constraint & chi2 increase from applying it..
-        virtual std::map<std::string, double> getTrackParams_BeamConstr( const kalmanState *state, double& deltaChi2 ) const {
+        virtual std::map<std::string, double> getTrackParams_BeamConstr( kalmanState *state, double& deltaChi2 ) const {
           deltaChi2 = 0.0;
           return (this->getTrackParams(state)); // Returns unconstrained result, unless derived class overrides it.
         }
@@ -54,10 +54,10 @@ class L1KalmanComb : public TrackFitGeneric{
 	    return 2.*M_PI * (0.5 + float(iCurrentPhiSec_)) / float(getSettings()->numPhiSectors()) - M_PI; // Centre of sector in phi
 	}
         //bool kalmanUpdate( const StubCluster *stubCluster, kalmanState &state, kalmanState &new_state, const TP *tpa );
-	virtual const kalmanState *kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster* stubCluster, const kalmanState &state, const TP *);
+	virtual kalmanState *kalmanUpdate( unsigned skipped, unsigned layer, const StubCluster* stubCluster, kalmanState &state, const TP *);
 	void resetStates();
 	void deleteStubClusters();
-	const kalmanState *mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, const kalmanState *last_state, 
+	kalmanState *mkState( const L1track3D &candidate, unsigned skipped, unsigned layer, unsigned layerId, kalmanState *last_state, 
 				    const std::vector<double> &x, const TMatrixD &pxx, const TMatrixD &K, const TMatrixD &dcov, const StubCluster* stubCluster, double chi2 );
 
     protected:
@@ -80,27 +80,28 @@ class L1KalmanComb : public TrackFitGeneric{
 
 	virtual std::vector<double> seedx(const L1track3D& l1track3D)const=0;
 	virtual TMatrixD seedP(const L1track3D& l1track3D, const bool seedPair=false)const=0;
+        virtual void setSeedX( kalmanState &state, const StubCluster *stubCluster)const{}
 	virtual void barrelToEndcap( double r, const StubCluster *stubCluster, std::vector<double> &x, TMatrixD &cov_x )const{}
 	virtual std::vector<double> d(const StubCluster* stubCluster )const=0;
 	virtual TMatrixD H(const StubCluster* stubCluster)const=0;
-	virtual TMatrixD F(const StubCluster* stubCluster=0, const kalmanState *state=0 )const=0;
-	virtual TMatrixD PxxModel( const kalmanState *state, const StubCluster *stubCluster )const=0; 
-  	virtual TMatrixD PddMeas(const StubCluster* stubCluster, const kalmanState *state )const=0;
+	virtual TMatrixD F(const StubCluster* stubCluster=0, kalmanState *state=0 )const=0;
+	virtual TMatrixD PxxModel( kalmanState *state, const StubCluster *stubCluster )const=0; 
+  	virtual TMatrixD PddMeas(const StubCluster* stubCluster, kalmanState *state )const=0;
 
         virtual std::vector<double> residual(const StubCluster* stubCluster, const std::vector<double> &x, double candQoverPt )const;
-	virtual const kalmanState *updateSeedWithStub( const kalmanState &state, const StubCluster *stubCluster ){ return 0; }
+	virtual kalmanState *updateSeedWithStub( const kalmanState &state, const StubCluster *stubCluster ){ return 0; }
 	virtual bool isGoodState( const kalmanState &state, const bool seedPair=false )const{ return true; }
 
-	double calcChi2( const kalmanState &state )const;
+	double calcChi2( kalmanState &state )const;
 	void printTP( std::ostream &os, const TP *tp )const;
 
 
 	virtual double getRofState( unsigned layerId, const vector<double> &xa )const{ return 0;}
-	std::vector<const kalmanState *> doKF( const L1track3D &l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa, const bool seedPair=false );
+	std::vector<kalmanState *> doKF( const L1track3D &l1track3D, const std::vector<const StubCluster *> &stubClusters, const TP *tpa, const bool seedPair=false );
 
-	void fillSeedHists( const kalmanState *state, const TP *tpa );
-	void fillCandHists( const kalmanState &state, const TP *tpa=0 );
-	void fillStepHists( const TP *tpa, unsigned nItr, const kalmanState *new_state );
+	void fillSeedHists( kalmanState *state, const TP *tpa );
+	void fillCandHists( kalmanState &state, const TP *tpa=0 );
+	void fillStepHists( const TP *tpa, unsigned nItr, kalmanState *new_state );
 
 	double DeltaRphiForClustering( unsigned layerId, unsigned endcapRing );
 	double DeltaRForClustering( unsigned endcapRing );
